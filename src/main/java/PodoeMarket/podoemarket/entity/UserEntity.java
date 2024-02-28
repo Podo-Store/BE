@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.UUID;
 
@@ -24,4 +25,17 @@ public class UserEntity {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "phoneNumber", nullable = false, length = 11)
+    private String phoneNumber;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
+
+    @Column(name = "auth", nullable = false)
+    @ColumnDefault("0")
+    private boolean auth;
 }
