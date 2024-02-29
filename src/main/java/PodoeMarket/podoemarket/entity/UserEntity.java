@@ -20,22 +20,28 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name = "userId", unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String userId;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "phoneNumber", nullable = false, length = 11)
+    @Column(nullable = false, length = 11)
     private String phoneNumber;
 
-    @Column(name = "email", nullable = false)
+    @Column(nullable = false)
     private String email;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(nullable = false)
     private String nickname;
 
-    @Column(name = "auth", nullable = false)
+    @Column(nullable = false)
     @ColumnDefault("0")
     private boolean auth;
+
+    // user : product = 1 : N
+
+    // user : baseket = 1 : N
+
+    // user : like = 1 : N
 }
