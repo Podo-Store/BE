@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,8 +42,14 @@ public class UserEntity {
     private boolean auth;
 
     // user : product = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductEntity> product = new ArrayList<>();
 
-    // user : baseket = 1 : N
+    // user : basket = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BasketEntity> basket = new ArrayList<>();
 
-    // user : like = 1 : N
+    // user : favorite = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FavoriteEntity> favorite = new ArrayList<>();
 }

@@ -20,7 +20,13 @@ public class FavoriteEntity {
     // 회원 시퀀스 아이디 uuid
     // 작품 시퀀스 아이디 int
 
-    // user : like = 1 : N
+    // user : favorite = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    // product : like = 1 : N
+    // product : favorite = 1 : N
+    @ManyToOne(targetEntity = ProductEntity.class)
+    @JoinColumn(name = "product_id", nullable = false)
+    private ProductEntity product;
 }
