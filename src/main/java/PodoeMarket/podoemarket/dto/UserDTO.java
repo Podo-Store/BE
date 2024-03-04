@@ -13,10 +13,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserDTO {
     private UUID id;
-    private String userId;
+    private String email;
     private String password;
     private String phoneNumber;
-    private String email;
     private String nickname;
     private boolean auth;
 }

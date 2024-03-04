@@ -25,16 +25,13 @@ public class UserEntity implements UserDetails { // UserDetails를 상속받아 
     private UUID id;
 
     @Column(unique = true, nullable = false)
-    private String userId;
+    private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, length = 11)
     private String phoneNumber;
-
-    @Column(nullable = false)
-    private String email;
 
     @Column(nullable = false)
     private String nickname;
@@ -56,8 +53,8 @@ public class UserEntity implements UserDetails { // UserDetails를 상속받아 
     private List<FavoriteEntity> favorite = new ArrayList<>();
 
     @Builder
-    public UserEntity(String userId, String password, String auth) {
-        this.userId = userId;
+    public UserEntity(String email, String password, String auth) {
+        this.email = email;
         this.password = password;
     }
 
@@ -68,7 +65,7 @@ public class UserEntity implements UserDetails { // UserDetails를 상속받아 
 
     @Override
     public String getUsername() {
-        return userId;
+        return email;
     }
 
     @Override
