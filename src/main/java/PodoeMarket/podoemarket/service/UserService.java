@@ -14,5 +14,21 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class UserService {
+    private final UserRepository repo;
+    public UserEntity create(final UserEntity userEntity) {
+        final String email = userEntity.getEmail();
+        final String password = userEntity.getPassword();
+        final String phonenumber = userEntity.getPhoneNumber();
+        final String nickname = userEntity.getNickname();
 
+//        // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
+//        if(userEntity == null) {
+//            throw new RuntimeException("some fields are empty");
+//        }
+//
+//        // 아이디(이메일) 확인
+//        if(email = )
+
+        return repo.save(userEntity);
+    }
 }
