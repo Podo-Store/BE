@@ -11,11 +11,5 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 @Slf4j
 public class UserController {
-    private final UserService service;
 
-    @PostMapping("/user")
-    public String signup(UserDTO dto) {
-        service.save(dto);
-        return "redirect:/login";
-    }
 }

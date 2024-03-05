@@ -14,13 +14,5 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class UserService {
-    private final UserRepository repo;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UUID save(UserDTO dto) {
-        return repo.save(UserEntity.builder()
-                .email(dto.getEmail())
-                .password(bCryptPasswordEncoder.encode(dto.getPassword()))
-                .build()).getId();
-    }
 }
