@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -30,10 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // token을 사용하여 사용자 인증 및 등록
     @Override
-    protected  void doFilterInternal(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     FilterChain filterChain)
-            throws ServletException, IOException {
+    protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             log.info("Filter is running...");
             String token = parseBearerToken(request);
@@ -87,7 +85,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 다음 필터로 계속 진행
         filterChain.doFilter(request, response);
-
     }
 
     private String parseBearerToken(HttpServletRequest request){
