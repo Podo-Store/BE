@@ -1,10 +1,13 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +25,7 @@ import java.util.regex.Pattern;
 public class UserController {
 
     private final UserService service;
+    private final TokenProvider tokenProvider;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/signup")
@@ -47,6 +51,45 @@ public class UserController {
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             return ResponseEntity.badRequest().body(false);
+        }
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticate(@RequestBody UserDTO dto) {
+        try{
+            log.info("Start signin");
+
+            UserEntity user = service.getByCredentials(dto.getEmail(), dto.getPassword(), pwdEncoder);
+            log.info("user: {}", user);
+
+            if(user != null) {
+                final String accessToken = tokenProvider.createAccessToken(user);
+                final String refreshToken = tokenProvider.createRefreshToken(user);
+                log.info("accessToken value: {}", accessToken);
+                log.info("finish creating token");
+
+                final UserDTO resUserDTO = UserDTO.builder()
+                        .email(user.getEmail())
+                        .password(user.getPassword())
+                        .phoneNumber(user.getPhoneNumber())
+                        .nickname(user.getNickname())
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .build();
+
+                return ResponseEntity.ok().body(resUserDTO);
+            } else {
+                // 이메일, 비번으로 찾은 유저 없음 = 로그인 실패
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("Login failed")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+        }catch (Exception e){
+            log.error("exception in /auth/signin", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("signin fail");
         }
     }
     

@@ -18,4 +18,6 @@ public class UserDTO {
     private String phoneNumber;
     private String nickname;
     private boolean auth;
+    private String accessToken; // jwt 저장공간
+    private String refreshToken; // jwt 저장공간
 }
