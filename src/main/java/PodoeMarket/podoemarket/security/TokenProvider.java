@@ -25,12 +25,12 @@ public class TokenProvider {
 
         return Jwts.builder()
                 .signWith(SignatureAlgorithm.HS512,jwtProperties.getSecretKey())
-                .setSubject(String.valueOf(user.getId()))
-                .setIssuer(jwtProperties.getIssuer())
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .claim("id", user.getId())
-                .compact();
+                .setSubject(String.valueOf(user.getId())) // 토큰 제목
+                .setIssuer(jwtProperties.getIssuer()) // 토큰 발급자
+                .setIssuedAt(new Date()) // 토큰 발급 시간
+                .setExpiration(expiryDate) // 토큰 만료 시간
+                .claim("id", user.getId()) // 토큰에 사용자 아이디 추가하여 전달
+                .compact(); // 토큰 생성
     }
     public String createRefreshToken(UserEntity user){
         log.info("creating refresh token");
@@ -48,6 +48,7 @@ public class TokenProvider {
                 .compact();
     }
 
+    // 토큰 검증 및 토큰에 포함된 정보를 추출하여 인증 및 권한 부여
     public Claims validateAndGetClaims(String token) {
         log.info("extract");
         try{

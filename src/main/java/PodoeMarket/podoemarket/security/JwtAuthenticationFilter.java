@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -26,7 +25,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final TokenProvider tokenProvider;
 
     // token을 사용하여 사용자 인증 및 등록
@@ -40,11 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if(token != null && !token.equalsIgnoreCase("null")){
                 Claims claims = tokenProvider.validateAndGetClaims(token);
+
                 log.info("claims : {}", claims);
                 log.info("expire Time: {}", claims.getExpiration());
 
                 if(claims.getIssuer() == "Token error"){
                     log.info("Token error from filter");
+
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
@@ -55,15 +55,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 엑세스 토큰이 유효시간이 지난 경우
                     log.info("Token is expired");
                     log.info("req url: {}", request.getContextPath());
+
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.getWriter().write("토큰 재발급을 받으세요");
-                    return;
 
+                    return;
                 }else {
                     // 토큰의 유효기간이 안지난 경우
                     log.info("insert new user");
+
                     UserEntity user = new UserEntity();
                     user.setId(UUID.fromString(claims.getSubject()));
 
@@ -92,9 +94,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String bearerToken = request.getHeader("Authorization");
 
         // 토큰 파싱
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer "))
             return bearerToken.substring(7); // Bearer 6글자 + 공백 1글자
-        }
 
         return null;
     }

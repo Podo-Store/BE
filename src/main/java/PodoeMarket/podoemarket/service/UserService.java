@@ -2,30 +2,48 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Slf4j
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository repository;
+    private final UserRepository repo;
 
     public UserEntity create(final UserEntity userEntity) {
-        if (userEntity == null || userEntity.getEmail() == null) {
+        final String email = userEntity.getEmail();
+        final String password = userEntity.getPassword();
+        final String nickname = userEntity.getNickname();
+
+        // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
+        if (userEntity == null) {
             throw new RuntimeException("Invalid arguments");
         }
 
-        final String email = userEntity.getEmail();
+        // 이메일
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("UserId is invalid arguments");
+        }
 
-//        if (repository.existsByEmail(email)) {
-//            log.warn("Email already exists {}", email);
-//            throw new RuntimeException("Email already exists");
-//        }
+        if (repo.existsByEmail(email)) {
+            log.warn("email already exists {}", email);
+            throw new RuntimeException("UserId already exists");
+        }
 
-        return repository.save(userEntity); // userEntity 를 DB 에 저장
+        // 비밀번호
+        if (password == null) {
+            log.info(password);
+            throw new RuntimeException("Password is invalid arguments");
+        }
+
+        // 닉네임
+        if (nickname == null || nickname.isBlank()) {
+            throw new RuntimeException("Nickname is invalid arguments");
+        }
+
+        return repo.save(userEntity);
     }
 
     // [before] 패스워드 암호화 적용 전
