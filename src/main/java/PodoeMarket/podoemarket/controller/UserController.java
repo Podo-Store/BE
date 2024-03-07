@@ -62,13 +62,14 @@ public class UserController {
             UserEntity user = service.getByCredentials(dto.getEmail(), dto.getPassword(), pwdEncoder);
             log.info("user: {}", user);
 
-            if(user != null) {
+            if(user.getId() != null) {
                 final String accessToken = tokenProvider.createAccessToken(user);
                 final String refreshToken = tokenProvider.createRefreshToken(user);
                 log.info("accessToken value: {}", accessToken);
                 log.info("finish creating token");
 
                 final UserDTO resUserDTO = UserDTO.builder()
+                        .id(user.getId())
                         .email(user.getEmail())
                         .password(user.getPassword())
                         .phoneNumber(user.getPhoneNumber())
@@ -81,7 +82,7 @@ public class UserController {
             } else {
                 // 이메일, 비번으로 찾은 유저 없음 = 로그인 실패
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("Login failed")
+                        .error(user.getNickname())
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
