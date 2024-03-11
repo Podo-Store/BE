@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 @Slf4j
 @RequestMapping("/auth")
 public class UserController {
-
     private final UserService service;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
