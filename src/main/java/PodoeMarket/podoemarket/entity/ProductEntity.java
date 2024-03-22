@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "product")
@@ -20,8 +21,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column(nullable = false)
     private String title;

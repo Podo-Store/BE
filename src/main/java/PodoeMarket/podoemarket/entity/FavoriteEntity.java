@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "favorite")
 @Data
@@ -14,11 +16,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FavoriteEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     // 회원 시퀀스 아이디 uuid
-    // 작품 시퀀스 아이디 int
+    // 작품 시퀀스 아이디 uuid
 
     // user : favorite = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)

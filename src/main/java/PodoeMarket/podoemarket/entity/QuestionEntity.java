@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "question")
 @Data
@@ -12,9 +14,7 @@ import org.hibernate.annotations.ColumnDefault;
 @NoArgsConstructor
 @Getter
 public class QuestionEntity {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO)
-//    private int id;
-
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 }
