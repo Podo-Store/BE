@@ -20,17 +20,17 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column
     private String title;
 
     @Column(columnDefinition = "JSON")
     private String file;
 
-    @Column(nullable = false)
+    @Column
     private int category;
     // 0 : 전체, 1 : 장막극, 2 : 중막극, 3 : 단막극 , 4 : 촌극
 
-    @Column(nullable = false)
+    @Column
     private int genre;
     // 0 : 전체, .. 추후 논의 필요
 
