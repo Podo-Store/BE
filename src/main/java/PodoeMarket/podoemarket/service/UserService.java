@@ -44,6 +44,11 @@ public class UserService {
             throw new RuntimeException("Nickname is invalid arguments");
         }
 
+        if(repo.existsByNickname(nickname)) {
+            log.warn("nickname already exists {}", nickname);
+            throw new RuntimeException("Nickname already exists");
+        }
+
         return repo.save(userEntity);
     }
 
