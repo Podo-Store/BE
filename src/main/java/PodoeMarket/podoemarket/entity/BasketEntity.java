@@ -28,7 +28,7 @@ public class BasketEntity {
     private UserEntity user;
 
     // product : basket = 1 : N
-    @ManyToOne(targetEntity = ProductEntity.class)
+    @ManyToOne(targetEntity = ProductInfoEntity.class)
     @JoinColumn(name = "product_id", nullable = false)
-    private ProductEntity product;
+    private ProductInfoEntity product;
 }

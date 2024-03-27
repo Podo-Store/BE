@@ -38,7 +38,7 @@ public class UserEntity {
 
     // user : product = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductEntity> product = new ArrayList<>();
+    private List<ProductInfoEntity> product = new ArrayList<>();
 
     // user : basket = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
