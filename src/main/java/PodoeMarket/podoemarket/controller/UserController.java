@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.regex.Pattern;
 
@@ -48,6 +46,40 @@ public class UserController {
             service.create(user);
 
             return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(false);
+        }
+    }
+
+    @GetMapping("/checkemail")
+    public ResponseEntity<?> duplicateEmail(@RequestParam String email) {
+        try {
+            log.info("check email duplication");
+
+            boolean isexists = service.checkEmail(email);
+
+            if(isexists) {
+                return ResponseEntity.badRequest().body(false);
+            } else{
+                return ResponseEntity.ok().body(true);
+            }
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(false);
+        }
+    }
+
+    @GetMapping("/checknickname")
+    public ResponseEntity<?> duplicateNickname(@RequestParam String nickname){
+        try {
+            log.info("check nickname duplication");
+
+            boolean isexists = service.checkNickname(nickname);
+
+            if(isexists) {
+                return ResponseEntity.badRequest().body(false);
+            } else{
+                return ResponseEntity.ok().body(true);
+            }
         } catch(Exception e) {
             return ResponseEntity.badRequest().body(false);
         }
@@ -95,9 +127,10 @@ public class UserController {
     
     // 유효성 검사
     private boolean isValidUser(UserDTO userDTO){ // 이메일, 비밀번호, 전화번호
-        String regx_pwd = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{5,}$"; // 숫자 최소 1개, 대소문자 최소 1개, 최소 길이 5개 이상
+        String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@$!%*#?&]).{5,}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, 최소 길이 5개 이상
         String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
         String regx_tel = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$";
+        String regx_nick = "^[0-9a-zA-Zㄱ-ㅎ가-힣 ]*$"; // 한글, 영어, 숫자
 
         if(userDTO.getEmail() == null || userDTO.getEmail().isBlank()){ //이메일이 null이거나 빈 값일때
             log.warn("email is null or empty");
@@ -114,8 +147,11 @@ public class UserController {
         }else if(!Pattern.matches(regx_email, userDTO.getEmail())){
             log.warn("email is not fit in the rule");
             return false;
-        }else if(!Pattern.matches(regx_tel, userDTO.getPhoneNumber())){
+        }else if(!Pattern.matches(regx_tel, userDTO.getPhoneNumber())) {
             log.warn("phonenumber is not fit in the rule");
+            return false;
+        }else if(!Pattern.matches(regx_nick, userDTO.getNickname())) {
+            log.warn("nickname is not fit in the rule");
             return false;
         }else {
             log.info("user valid checked");

@@ -86,4 +86,12 @@ public class UserService {
             return null;
         }
     }
+
+    public Boolean checkEmail(final String email) {
+        return repo.existsByEmail(email);
+    }
+
+    public Boolean checkNickname(final String nickname) {
+        return repo.existsByNickname(nickname);
+    }
 }
