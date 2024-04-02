@@ -37,6 +37,9 @@ public class ProductInfoEntity {
     private int status;
     // 0 : 판매 중, 1 : 판매 중단
 
+    @Column(nullable = false)
+    private int characterNumber;
+
     // CreatedAt과 UpdatedAt 필드 추가
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)
