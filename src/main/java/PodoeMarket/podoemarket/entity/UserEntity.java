@@ -36,7 +36,7 @@ public class UserEntity {
     @ColumnDefault("0")
     private boolean auth;
 
-    // user : product = 1 : N
+    // user : product_info = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductInfoEntity> product = new ArrayList<>();
 
@@ -47,4 +47,8 @@ public class UserEntity {
     // user : favorite = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoriteEntity> favorite = new ArrayList<>();
+
+    // user : question = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<QuestionEntity> question = new ArrayList<>();
 }

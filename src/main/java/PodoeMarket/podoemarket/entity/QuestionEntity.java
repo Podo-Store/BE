@@ -33,4 +33,9 @@ public class QuestionEntity {
     @Column(name = "updated_at", nullable = false)
     @LastModifiedDate
     private Date updatedAt;
+
+    // user : question = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }
