@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -19,6 +19,5 @@ public class ProductDTO {
     private int category;
     private int genre;
     private boolean checked;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDate date;
 }

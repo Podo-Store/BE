@@ -2,10 +2,9 @@ package PodoeMarket.podoemarket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
@@ -23,16 +22,16 @@ public class QuestionEntity {
     @Column(nullable = false)
     private String content;
 
-    // CreatedAt과 UpdatedAt 필드 추가
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreatedDate
-    private Date createdAt;
+    @Column(nullable = false)
+    private LocalDate date;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    @LastModifiedDate
-    private Date updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    }
+    @PreUpdate
+    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
+
 
     // user : question = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)

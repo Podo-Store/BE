@@ -14,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 @Controller
 @Slf4j
-//@RequestMapping("/register")
 public class RegisterController {
     private final ProductService service;
 
-    @PostMapping("/product")
+    @PostMapping("/register")
     public ResponseEntity<?> registerProduct(@RequestBody ProductDTO dto) {
         try {
             log.info("Start register");
@@ -28,6 +27,8 @@ public class RegisterController {
                     .build();
 
             service.create(product);
+
+            log.info(String.valueOf(product));
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

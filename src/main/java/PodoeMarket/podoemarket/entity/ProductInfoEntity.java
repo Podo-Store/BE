@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,18 +40,14 @@ public class ProductInfoEntity {
     // 0 : 판매 중, 1 : 판매 중단
 
     @Column(nullable = false)
-    private int characterNumber;
+    private LocalDate date;
 
-    // CreatedAt과 UpdatedAt 필드 추가
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreatedDate
-    private Date createdAt;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    @LastModifiedDate
-    private Date updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    }
+    @PreUpdate
+    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
     // user : product_info = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)

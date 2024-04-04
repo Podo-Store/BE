@@ -3,10 +3,9 @@ package PodoeMarket.podoemarket.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
@@ -23,32 +22,37 @@ public class ProductEntity {
     @Column
     private String title;
 
-    @Column(columnDefinition = "JSON")
+    @Column
     private String file;
 
-    @Column
+    @Column(nullable = false)
+    @ColumnDefault("0")
     private int category;
     // 0 : 전체, 1 : 장막극, 2 : 중막극, 3 : 단막극 , 4 : 촌극
 
-    @Column
+    @Column(nullable = false)
+    @ColumnDefault("0")
     private int genre;
     // 0 : 전체, .. 추후 논의 필요
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int characterNumber;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
     @ColumnDefault("0")
     private boolean checked;
 
-    // CreatedAt과 UpdatedAt 필드 추가
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreatedDate
-    private Date createdAt;
+    @Column(nullable = false)
+    private LocalDate date;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    @LastModifiedDate
-    private Date updatedAt;
+    @PrePersist // entity가 영속화되기 직전에 실행
+    protected void onCreate() {
+        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    }
+    @PreUpdate // db에 entity가 업데이트되기 직전에 실행
+    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
     // product : product_info = 1 : 1
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)

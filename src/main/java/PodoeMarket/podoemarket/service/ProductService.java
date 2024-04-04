@@ -13,6 +13,11 @@ public class ProductService {
     private final ProductRepository repo;
 
     public ProductEntity create(final ProductEntity productEntity) {
-        return repo.save(productEntity);
+        try {
+            return repo.save(productEntity);
+        } catch (Exception e) {
+            log.error("ProductService.path 저장 중 예외 발생", e);
+            return null;
+        }
     }
 }
