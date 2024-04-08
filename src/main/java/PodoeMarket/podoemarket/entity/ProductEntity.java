@@ -23,6 +23,9 @@ public class ProductEntity {
     private String title;
 
     @Column
+    private String writer;
+
+    @Column
     private String file;
 
     @Column(nullable = false)

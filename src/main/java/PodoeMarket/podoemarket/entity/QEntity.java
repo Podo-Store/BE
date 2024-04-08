@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class QuestionEntity {
+public class QEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;

@@ -50,5 +50,5 @@ public class UserEntity {
 
     // user : question = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<QuestionEntity> question = new ArrayList<>();
+    private List<QEntity> question = new ArrayList<>();
 }
