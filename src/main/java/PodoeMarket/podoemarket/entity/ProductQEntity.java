@@ -40,4 +40,9 @@ public class ProductQEntity {
     // product_q : product_a = 1 : 1
     @OneToOne(mappedBy = "product_q", cascade = CascadeType.ALL, orphanRemoval = true)
     private ProductAEntity product_a;
+
+    // user : product_q = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }
