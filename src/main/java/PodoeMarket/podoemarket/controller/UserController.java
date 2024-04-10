@@ -108,7 +108,7 @@ public class UserController {
         try{
             log.info("Start signin");
 
-            UserEntity user = service.getByCredentials(dto.getEmail(), dto.getPassword(), pwdEncoder);
+            UserEntity user = service.getByCredentials(dto.getUserId(), dto.getPassword(), pwdEncoder);
             log.info("user: {}", user);
 
             if(user.getId() != null) {
@@ -119,6 +119,7 @@ public class UserController {
 
                 final UserDTO resUserDTO = UserDTO.builder()
                         .id(user.getId())
+                        .userId(user.getUserId())
                         .email(user.getEmail())
                         .password(user.getPassword())
                         .phoneNumber(user.getPhoneNumber())
@@ -129,7 +130,7 @@ public class UserController {
 
                 return ResponseEntity.ok().body(resUserDTO);
             } else {
-                // 이메일, 비번으로 찾은 유저 없음 = 로그인 실패
+                // 아이디, 비번으로 찾은 유저 없음 = 로그인 실패
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error(user.getNickname())
                         .build();
