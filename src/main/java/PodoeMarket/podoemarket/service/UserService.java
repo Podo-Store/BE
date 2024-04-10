@@ -98,6 +98,10 @@ public class UserService {
         }
     }
 
+    public Boolean checkUserId(final String userId) {
+        return repo.existsByUserId(userId);
+    }
+
     public Boolean checkEmail(final String email) {
         return repo.existsByEmail(email);
     }

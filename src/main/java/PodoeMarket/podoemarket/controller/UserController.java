@@ -52,6 +52,23 @@ public class UserController {
         }
     }
 
+    @GetMapping("/checkuserId")
+    public ResponseEntity<?> duplicateUserId(@RequestParam String userId) {
+        try {
+            log.info("check userId duplication");
+
+            boolean isexists = service.checkUserId(userId);
+
+            if(isexists) {
+                return ResponseEntity.badRequest().body(false);
+            } else{
+                return ResponseEntity.ok().body(true);
+            }
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(false);
+        }
+    }
+
     @GetMapping("/checkemail")
     public ResponseEntity<?> duplicateEmail(@RequestParam String email) {
         try {
