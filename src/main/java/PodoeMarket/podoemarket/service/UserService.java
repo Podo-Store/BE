@@ -14,33 +14,44 @@ public class UserService {
     private final UserRepository repo;
 
     public UserEntity create(final UserEntity userEntity) {
+        final String userId = userEntity.getUserId();
         final String email = userEntity.getEmail();
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
 
         // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
-        if (userEntity == null) {
+        if(userEntity == null) {
             throw new RuntimeException("Invalid arguments");
         }
 
-        // 이메일
-        if (email == null || email.isBlank()) {
+        // 아이디
+        if(userId == null || userId.isBlank()) {
             throw new RuntimeException("UserId is invalid arguments");
         }
 
-        if (repo.existsByEmail(email)) {
-            log.warn("email already exists {}", email);
+        if(repo.existsByUserId(userId)) {
+            log.warn("userId already exists {}", userId);
             throw new RuntimeException("UserId already exists");
         }
 
+        // 이메일
+        if(email == null || email.isBlank()) {
+            throw new RuntimeException("Email is invalid arguments");
+        }
+
+        if(repo.existsByEmail(email)) {
+            log.warn("email already exists {}", email);
+            throw new RuntimeException("Email already exists");
+        }
+
         // 비밀번호
-        if (password == null) {
+        if(password == null) {
             log.info(password);
             throw new RuntimeException("Password is invalid arguments");
         }
 
         // 닉네임
-        if (nickname == null || nickname.isBlank()) {
+        if(nickname == null || nickname.isBlank()) {
             throw new RuntimeException("Nickname is invalid arguments");
         }
 
@@ -52,32 +63,32 @@ public class UserService {
         return repo.save(userEntity);
     }
 
-    public UserEntity getByCredentials(final String email, final String password, final PasswordEncoder encoder){
-        log.info("find user by email");
+    public UserEntity getByCredentials(final String userId, final String password, final PasswordEncoder encoder){
+        log.info("find user by userId");
 
         try {
-            final UserEntity originalUser = repo.findByEmail(email);
+            final UserEntity originalUser = repo.findByUserId(userId);
             log.info("original User: {}", originalUser);
 
-            if (originalUser != null && encoder.matches(password, originalUser.getPassword())) {
+            if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
                 log.info("same Password");
                 return originalUser;
-            } else if (originalUser == null) {
+            }else if (originalUser == null) {
                 log.info("wrong email");
 
                 // 로그인 실패 시, 실패 이유 전달을 위한 메세지 작성
                 UserEntity user = new UserEntity();
-                user.setNickname("wrong email");
+                user.setNickname("wrong userId");
 
                 return user;
-            } else if (!encoder.matches(password, originalUser.getPassword())) {
+            }else if(!encoder.matches(password, originalUser.getPassword())) {
                 log.info("wrong password");
 
                 UserEntity user = new UserEntity();
                 user.setNickname("wrong password");
 
                 return user;
-            } else {
+            }else{
                 log.info("signin error");
                 return null;
             }

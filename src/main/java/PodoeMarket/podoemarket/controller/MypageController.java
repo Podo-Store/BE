@@ -33,6 +33,7 @@ public class MypageController {
 //                    .password(dto.)
 //                    .build();
 
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
