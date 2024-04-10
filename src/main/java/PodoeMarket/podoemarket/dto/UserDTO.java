@@ -15,6 +15,7 @@ public class UserDTO {
     private UUID id;
     private String email;
     private String password;
+    private String confirmPassword;
     private String phoneNumber;
     private String nickname;
     private boolean auth;
