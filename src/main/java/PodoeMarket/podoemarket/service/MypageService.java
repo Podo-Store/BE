@@ -39,14 +39,6 @@ public class MypageService {
             throw new RuntimeException("Nickname is invalid arguments");
         }
 
-        if(phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            throw new RuntimeException("PhoneNumber is invalid arguments");
-        }
-
-        if(userRepo.existsByPhoneNumber(phoneNumber)) {
-            throw new RuntimeException("PhoneNumber is already exist");
-        }
-
         if(email == null || email.trim().isEmpty()) {
             throw new RuntimeException("Email is invalid arguments");
         }

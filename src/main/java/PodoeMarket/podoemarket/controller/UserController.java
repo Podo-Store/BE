@@ -39,7 +39,6 @@ public class UserController {
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
-                    .phoneNumber(dto.getPhoneNumber())
                     .email(dto.getEmail())
                     .auth(false)
                     .build();
@@ -103,23 +102,6 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkphoneNumber")
-    public ResponseEntity<?> duplicatePhoneNumber(@RequestParam String phoneNumber){
-        try {
-            log.info("check phoneNumber duplication");
-
-            boolean isexists = service.checkPhonenumber(phoneNumber);
-
-            if(isexists) {
-                return ResponseEntity.badRequest().body(false);
-            } else{
-                return ResponseEntity.ok().body(true);
-            }
-        } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
-        }
-    }
-
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO dto) {
         try{
@@ -139,7 +121,6 @@ public class UserController {
                         .userId(user.getUserId())
                         .email(user.getEmail())
                         .password(user.getPassword())
-                        .phoneNumber(user.getPhoneNumber())
                         .nickname(user.getNickname())
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)

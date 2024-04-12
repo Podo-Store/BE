@@ -109,6 +109,4 @@ public class UserService {
     public Boolean checkNickname(final String nickname) {
         return repo.existsByNickname(nickname);
     }
-
-    public Boolean checkPhonenumber(final String phoneNumber) { return repo.existsByPhoneNumber(phoneNumber); }
 }

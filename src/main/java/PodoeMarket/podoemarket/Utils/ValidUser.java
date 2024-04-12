@@ -12,7 +12,6 @@ public class ValidUser {
         String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
         String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@$!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
         String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
-        String regx_tel = "^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$";
         String regx_nick = "^[0-9a-zA-Zㄱ-ㅎ가-힣 ]{0,8}$"; // 한글, 영어, 숫자, (-8)
 
         if(userDTO.getUserId() == null || userDTO.getUserId().isBlank()){ //userId가 null이거나 빈 값일 때
@@ -38,9 +37,6 @@ public class ValidUser {
             return false;
         }else if(!Pattern.matches(regx_email, userDTO.getEmail())){
             log.warn("email is not fit in the rule");
-            return false;
-        }else if(!Pattern.matches(regx_tel, userDTO.getPhoneNumber())) {
-            log.warn("phonenumber is not fit in the rule");
             return false;
         }else if(!Pattern.matches(regx_nick, userDTO.getNickname())) {
             log.warn("nickname is not fit in the rule");
