@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,12 @@ public class MailSendService {
     private RedisUtil redisUtil;
     private int authNumber;
 
+    @Value("${spring.mail.username}")
+    private String username;
+
     //추가 되었다.
     public boolean CheckAuthNum(String email,String authNum){
-        if(redisUtil.getData(authNum)==null)
+        if(redisUtil.getData(authNum) == null)
             return false;
         else if(redisUtil.getData(authNum).equals(email))
             return true;
@@ -44,11 +48,11 @@ public class MailSendService {
     //mail을 어디서 보내는지, 어디로 보내는지 , 인증 번호를 html 형식으로 어떻게 보내는지 작성합니다.
     public String joinEmail(String email) {
         makeRandomNumber();
-        String setFrom = "dionisos198@naver.com"; // email-config에 설정한 자신의 이메일 주소를 입력
+        String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String toMail = email;
         String title = "회원 가입 인증 이메일 입니다."; // 이메일 제목
         String content =
-                "나의 APP을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
+                "Podo Store를 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
                         "<br><br>" +
                         "인증 번호는 " + authNumber + "입니다." +
                         "<br>" +
