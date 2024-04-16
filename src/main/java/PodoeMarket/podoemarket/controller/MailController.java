@@ -23,11 +23,10 @@ public class MailController {
     @PostMapping("/mailauthCheck")
     public String AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
         Boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
-        if(Checked){
+
+        if(Checked)
             return "ok";
-        }
-        else{
+        else
             throw new NullPointerException("뭔가 잘못!");
-        }
     }
 }

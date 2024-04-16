@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
+@Slf4j
 @Service
 public class MailSendService {
     @Autowired
@@ -19,24 +21,21 @@ public class MailSendService {
 
     //추가 되었다.
     public boolean CheckAuthNum(String email,String authNum){
-        if(redisUtil.getData(authNum)==null){
+        if(redisUtil.getData(authNum)==null)
             return false;
-        }
-        else if(redisUtil.getData(authNum).equals(email)){
+        else if(redisUtil.getData(authNum).equals(email))
             return true;
-        }
-        else{
+        else
             return false;
-        }
     }
 
     //임의의 6자리 양수를 반환합니다.
     public void makeRandomNumber() {
         Random r = new Random();
         String randomNumber = "";
-        for(int i = 0; i < 6; i++) {
+
+        for(int i = 0; i < 6; i++)
             randomNumber += Integer.toString(r.nextInt(10));
-        }
 
         authNumber = Integer.parseInt(randomNumber);
     }
@@ -73,7 +72,6 @@ public class MailSendService {
             // 이러한 경우 MessagingException이 발생
             e.printStackTrace();//e.printStackTrace()는 예외를 기본 오류 스트림에 출력하는 메서드
         }
-
-
+        redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
 }

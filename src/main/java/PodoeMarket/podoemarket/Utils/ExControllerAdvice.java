@@ -13,7 +13,7 @@ public class ExControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<ErrorResult> testing(NullPointerException e){
-        ErrorResult errorResult=new ErrorResult("EMAIL",e.getMessage());
+        ErrorResult errorResult = new ErrorResult("EMAIL",e.getMessage());
         return new ResponseEntity<>(errorResult,HttpStatus.BAD_REQUEST);
     }
 }
