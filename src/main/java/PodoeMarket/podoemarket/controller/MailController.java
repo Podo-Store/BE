@@ -23,6 +23,7 @@ public class MailController {
     public String mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         System.out.println("이메일 인증 요청이 들어옴");
         System.out.println("이메일 인증 이메일 :" + emailDTO.getEmail());
+
         return mailService.joinEmail(emailDTO.getEmail());
     }
     @PostMapping("/mailauthCheck")
