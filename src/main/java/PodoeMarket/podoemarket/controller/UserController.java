@@ -53,6 +53,7 @@ public class UserController {
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
+                    .name(dto.getName())
                     .auth(false)
                     .build();
 
@@ -166,6 +167,7 @@ public class UserController {
                         .email(user.getEmail())
                         .password(user.getPassword())
                         .nickname(user.getNickname())
+                        .name(user.getName())
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .build();

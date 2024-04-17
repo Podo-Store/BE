@@ -23,6 +23,9 @@ public class ValidUser {
         }else if(userDTO.getPassword() == null || userDTO.getPassword().isBlank()){ //password가 null이거나 빈 값일때
             log.warn("password is null or empty");
             return false;
+        }else if(userDTO.getName() == null || userDTO.getName().isBlank()) {
+            log.warn("name is null or empty");
+            return false;
         }else if(userDTO.getPassword().length() < 4 || userDTO.getPassword().length() > 12) { // password의 길이는 4 초과, 12 미만
             log.warn("password is too long or short");
             return false;

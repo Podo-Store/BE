@@ -18,6 +18,7 @@ public class UserService {
         final String email = userEntity.getEmail();
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
+        final String name = userEntity.getName();
 
         // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
         if(userEntity == null) {
@@ -58,6 +59,11 @@ public class UserService {
         if(repo.existsByNickname(nickname)) {
             log.warn("nickname already exists {}", nickname);
             throw new RuntimeException("Nickname already exists");
+        }
+
+        // 이름
+        if(name == null || name.isBlank()) {
+            throw new RuntimeException("Name is invalid arguments");
         }
 
         return repo.save(userEntity);
