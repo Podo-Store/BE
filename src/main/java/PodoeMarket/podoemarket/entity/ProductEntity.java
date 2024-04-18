@@ -6,6 +6,8 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -62,4 +64,8 @@ public class ProductEntity {
     // product : product_info = 1 : 1
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
     private ProductInfoEntity product_info;
+
+    // product : product_review = 1 : N
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<ProductReviewEntity> product_review = new ArrayList<>();
 }
