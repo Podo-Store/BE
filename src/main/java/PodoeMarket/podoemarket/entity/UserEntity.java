@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +43,16 @@ public class UserEntity {
     @Column(nullable = false)
     @ColumnDefault("0")
     private boolean auth;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @PrePersist
+    protected void onCreate() {
+        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    }
+    @PreUpdate
+    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
     // user : product_info = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
