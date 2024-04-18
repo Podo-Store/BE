@@ -186,4 +186,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("signin fail");
         }
     }
+
+//    @PostMapping("/findUserId")
+//    public ResponseEntity<?> findUserId(@RequestBody UserDTO dto) {
+//        try{
+//
+//        }catch (Exception e){
+//            log.error("exception in findUserId", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
+//        }
+//    }
 }
