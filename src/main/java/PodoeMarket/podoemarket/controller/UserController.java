@@ -200,7 +200,7 @@ public class UserController {
         try{
             log.info("Start find userId");
 
-            UserEntity user = userService.userInfo(dto.getName(), dto.getEmail());
+            UserEntity user = userService.userInfoFindUserId(dto.getName(), dto.getEmail());
 
             // 이름, 이메일로 존재하는 사용자인지 확인하기
             if(user == null) {
@@ -231,6 +231,39 @@ public class UserController {
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(resDTO);
+        }catch (Exception e){
+            log.error("exception in findUserId", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
+        }
+    }
+
+    @PostMapping("/findPassword")
+    public ResponseEntity<?> findPassword(@RequestBody UserDTO dto) {
+        try{
+            log.info("Start find password");
+
+            Boolean user = userService.userInfoFindPw(dto.getUserId(), dto.getEmail());
+
+            // 아이디, 이메일로 존재하는 사용자인지 확인하기
+            if(!user) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("회원 정보 없음")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            // 인증번호 확인
+            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            return ResponseEntity.ok().body(true);
         }catch (Exception e){
             log.error("exception in findUserId", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
