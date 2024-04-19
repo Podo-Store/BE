@@ -115,4 +115,8 @@ public class UserService {
     public Boolean checkNickname(final String nickname) {
         return repo.existsByNickname(nickname);
     }
+
+    public UserEntity userInfo(final String name, final String email) {
+        return repo.findByNameAndEmail(name, email);
+    }
 }

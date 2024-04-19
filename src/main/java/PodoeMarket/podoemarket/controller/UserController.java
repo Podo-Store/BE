@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @RequiredArgsConstructor
 @Controller
 @Slf4j
@@ -38,14 +40,20 @@ public class UserController {
 
             // 유저 유효성 검사
             if(!ValidUser.isValidUser(dto)){
-                String msg = "유효성 검사 통과 실패";
-                return ResponseEntity.badRequest().body(msg);
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("유효성 검사 통과 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
             }
 
             // 인증번호 확인
             if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-                String msg = "이메일 인증 실패";
-                return ResponseEntity.badRequest().body(msg);
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
             }
 
             UserEntity user = UserEntity.builder()
@@ -187,13 +195,45 @@ public class UserController {
         }
     }
 
-//    @PostMapping("/findUserId")
-//    public ResponseEntity<?> findUserId(@RequestBody UserDTO dto) {
-//        try{
-//
-//        }catch (Exception e){
-//            log.error("exception in findUserId", e);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
-//        }
-//    }
+    @PostMapping("/findUserId")
+    public ResponseEntity<?> findUserId(@RequestBody UserDTO dto) {
+        try{
+            log.info("Start find userId");
+
+            UserEntity user = userService.userInfo(dto.getName(), dto.getEmail());
+
+            // 이름, 이메일로 존재하는 사용자인지 확인하기
+            if(user == null) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("회원 정보 없음")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            // 인증번호 확인
+            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            String userId = user.getUserId();
+            String date = String.valueOf(user.getDate());
+
+            List<Object> userInfo = new ArrayList<>(Arrays.asList(userId, date));
+
+            ResponseDTO resDTO = ResponseDTO.builder()
+                    .data(userInfo)
+                    .build();
+
+            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            return ResponseEntity.ok().body(resDTO);
+        }catch (Exception e){
+            log.error("exception in findUserId", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
+        }
+    }
 }
