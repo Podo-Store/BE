@@ -115,4 +115,12 @@ public class UserService {
     public Boolean checkNickname(final String nickname) {
         return repo.existsByNickname(nickname);
     }
+
+    public UserEntity userInfoFindUserId(final String name, final String email) {
+        return repo.findByNameAndEmail(name, email);
+    }
+
+    public Boolean userInfoFindPw(final String userId, final String email) {
+        return repo.existsByUserIdAndEmail(userId, email);
+    }
 }
