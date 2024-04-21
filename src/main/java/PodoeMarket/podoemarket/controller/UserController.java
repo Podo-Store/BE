@@ -91,23 +91,6 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checkemail")
-    public ResponseEntity<?> duplicateEmail(@RequestParam String email) {
-        try {
-            log.info("check email duplication");
-
-            boolean isexists = userService.checkEmail(email);
-
-            if(isexists) {
-                return ResponseEntity.badRequest().body(false);
-            } else{
-                return ResponseEntity.ok().body(true);
-            }
-        } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
-        }
-    }
-
     @GetMapping("/checknickname")
     public ResponseEntity<?> duplicateNickname(@RequestParam String nickname){
         try {
@@ -116,7 +99,11 @@ public class UserController {
             boolean isexists = userService.checkNickname(nickname);
 
             if(isexists) {
-                return ResponseEntity.badRequest().body(false);
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("닉네임 중복")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
             } else{
                 return ResponseEntity.ok().body(true);
             }
@@ -130,8 +117,18 @@ public class UserController {
         try {
             String email = emailDTO.getEmail();
 
-            System.out.println("이메일 인증 요청이 들어옴");
-            System.out.println("이메일 인증 이메일 :" + email);
+            log.info("이메일 인증 요청이 들어옴");
+            log.info("이메일 인증 이메일 :" + email);
+
+            boolean isexists = userService.checkEmail(email);
+
+            if(isexists) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 중복")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
             return ResponseEntity.ok().body(mailService.joinEmail(email));
         }catch (Exception e){

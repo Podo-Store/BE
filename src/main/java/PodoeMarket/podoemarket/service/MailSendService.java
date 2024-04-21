@@ -2,8 +2,8 @@ package PodoeMarket.podoemarket.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,13 +11,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
+@RequiredArgsConstructor
 @Slf4j
 @Service
 public class MailSendService {
-    @Autowired
-    private JavaMailSender mailSender;
-    @Autowired
-    private RedisUtil redisUtil;
+    private final JavaMailSender mailSender;
+    private final RedisUtil redisUtil;
     private int authNumber;
 
     @Value("${spring.mail.username}")
@@ -58,6 +57,7 @@ public class MailSendService {
                         "<br>" +
                         "인증번호를 제대로 입력해주세요"; //이메일 내용 삽입
         mailSend(setFrom, toMail, title, content);
+
         return Integer.toString(authNumber);
     }
 
