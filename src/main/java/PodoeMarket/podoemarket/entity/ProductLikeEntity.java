@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "favorite")
+@Table(name = "product_like")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FavoriteEntity {
+public class ProductLikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -22,12 +22,12 @@ public class FavoriteEntity {
     // 회원 시퀀스 아이디 uuid
     // 작품 시퀀스 아이디 uuid
 
-    // user : favorite = 1 : N
+    // user : product_like = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // product : favorite = 1 : N
+    // product_info : product_like = 1 : N
     @ManyToOne(targetEntity = ProductInfoEntity.class)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductInfoEntity product;

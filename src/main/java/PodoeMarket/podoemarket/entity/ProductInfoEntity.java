@@ -2,13 +2,10 @@ package PodoeMarket.podoemarket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,7 +57,7 @@ public class ProductInfoEntity {
 
     // product_info : favorite = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FavoriteEntity> favorite = new ArrayList<>();
+    private List<ProductLikeEntity> product_like = new ArrayList<>();
 
     // product : product_info = 1 : 1
     @OneToOne

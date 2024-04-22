@@ -6,6 +6,8 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -52,4 +54,8 @@ public class WishScriptEntity {
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name="user_id", nullable = false)
     private UserEntity user;
+
+    // wish_script : wish_script_like = 1 : N
+    @OneToMany(mappedBy = "wish_script", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishScriptLikeEntity> wish_script_like = new ArrayList<>();
 }
