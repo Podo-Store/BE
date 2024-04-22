@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.UserRepository;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/profile")
 public class MypageController {
     private final MypageService mypageService;
+    private final MailSendService mailService;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/checkPw")
@@ -56,10 +58,20 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(msg);
             }
 
+            // 인증번호 확인x
+            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             UserEntity user = UserEntity.builder()
-                    .password(dto.getPassword())
+                    .userId(dto.getUserId())
+                    .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
-                    .phoneNumber(dto.getPhoneNumber())
+                    .name(dto.getName())
                     .email(dto.getEmail())
                     .build();
 
