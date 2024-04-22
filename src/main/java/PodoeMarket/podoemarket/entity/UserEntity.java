@@ -77,4 +77,8 @@ public class UserEntity {
     // user : product_review = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<ProductReviewEntity> product_review = new ArrayList<>();
+
+    // user : with_script = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<WishScriptEntity> wish_script = new ArrayList<>();
 }
