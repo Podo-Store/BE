@@ -70,7 +70,8 @@ public class UserController {
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -87,7 +88,8 @@ public class UserController {
                 return ResponseEntity.ok().body(true);
             }
         } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -108,7 +110,8 @@ public class UserController {
                 return ResponseEntity.ok().body(true);
             }
         } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -131,10 +134,10 @@ public class UserController {
             }
 
             return ResponseEntity.ok().body(mailService.joinEmail(email));
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(false);
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
-
     }
     @PostMapping("/mailauthCheck")
     public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
@@ -147,8 +150,9 @@ public class UserController {
                 return ResponseEntity.ok().body(true);
             } else
                 throw new NullPointerException("Null Exception");
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(false);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -186,9 +190,9 @@ public class UserController {
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
-        }catch (Exception e){
-            log.error("exception in /auth/signin", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("signin fail");
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -228,9 +232,9 @@ public class UserController {
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(resDTO);
-        }catch (Exception e){
-            log.error("exception in findUserId", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
@@ -261,9 +265,9 @@ public class UserController {
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(true);
-        }catch (Exception e){
-            log.error("exception in findUserId", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("findUserId fail");
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 }

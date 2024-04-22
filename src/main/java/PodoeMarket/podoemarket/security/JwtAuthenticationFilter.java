@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -29,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // token을 사용하여 사용자 인증 및 등록
     @Override
-    protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             log.info("Filter is running...");
             String token = parseBearerToken(request);
@@ -42,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.info("claims : {}", claims);
                 log.info("expire Time: {}", claims.getExpiration());
 
-                if(claims.getIssuer() == "Token error"){
+                if(Objects.equals(claims.getIssuer(), "Token error")){
                     log.info("Token error from filter");
 
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -51,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.getWriter().write("토큰 에러 발생");
                     return;
 
-                }else if(claims.getIssuer() == "Expired"){
+                }else if(Objects.equals(claims.getIssuer(), "Expired")){
                     // 엑세스 토큰이 유효시간이 지난 경우
                     log.info("Token is expired");
                     log.info("req url: {}", request.getContextPath());

@@ -54,4 +54,18 @@ public class MypageService {
 
         return userRepo.save(user);
     }
+
+    public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {
+        try{
+            final UserEntity originalUser = userRepo.findById(id);
+
+            if(originalUser != null && encoder.matches(password, originalUser.getPassword()))
+                return true;
+            else
+                return false;
+        } catch (Exception e){
+            log.error("MypageService.checkUser 메소드 중 예외 발생", e);
+            return false;
+        }
+    }
 }

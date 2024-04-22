@@ -79,7 +79,7 @@ public class UserService {
             if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
                 log.info("same Password");
                 return originalUser;
-            }else if (originalUser == null) {
+            } else if (originalUser == null) {
                 log.info("wrong email");
 
                 // 로그인 실패 시, 실패 이유 전달을 위한 메세지 작성
@@ -87,18 +87,18 @@ public class UserService {
                 user.setNickname("wrong userId");
 
                 return user;
-            }else if(!encoder.matches(password, originalUser.getPassword())) {
+            } else if(!encoder.matches(password, originalUser.getPassword())) {
                 log.info("wrong password");
 
                 UserEntity user = new UserEntity();
                 user.setNickname("wrong password");
 
                 return user;
-            }else{
+            } else{
                 log.info("signin error");
                 return null;
             }
-        }catch (Exception e){
+        } catch (Exception e){
             log.error("UserService.getByCredentials 메소드 중 예외 발생", e);
             return null;
         }

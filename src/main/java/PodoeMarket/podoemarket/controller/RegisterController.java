@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,8 @@ public class RegisterController {
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
-            return ResponseEntity.badRequest().body(false);
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 }
