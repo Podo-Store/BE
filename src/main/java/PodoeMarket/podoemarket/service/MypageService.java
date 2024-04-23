@@ -15,42 +15,21 @@ import java.util.UUID;
 @Service
 public class MypageService {
     private final UserRepository userRepo;
-    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
-        final String phoneNumber = userEntity.getPhoneNumber();
         final String email = userEntity.getEmail();
+        final String name = userEntity.getName();
 
         final UserEntity user = userRepo.findById(id);
 
         log.info("update user: {}", user);
 
-        if(userEntity == null) {
-            throw new RuntimeException("Invalid arguments");
-        }
-
-        if(userRepo.existsByNickname(nickname)) {
-            throw new RuntimeException("Nickname is already exist");
-        }
-
-        if(nickname == null || nickname.trim().isEmpty()) {
-            throw new RuntimeException("Nickname is invalid arguments");
-        }
-
-        if(email == null || email.trim().isEmpty()) {
-            throw new RuntimeException("Email is invalid arguments");
-        }
-
-        if(userRepo.existsByEmail(email)) {
-            throw new RuntimeException("Email is already exist");
-        }
-
-        user.setPassword(pwdEncoder.encode(password));
+        user.setPassword(password);
         user.setNickname(nickname);
-        user.setPhoneNumber(phoneNumber);
         user.setEmail(email);
+        user.setName(name);
 
         return userRepo.save(user);
     }
@@ -67,5 +46,11 @@ public class MypageService {
             log.error("MypageService.checkUser 메소드 중 예외 발생", e);
             return false;
         }
+    }
+
+    public UserEntity originalUser(UUID id) {
+        final UserEntity originalUser = userRepo.findById(id);
+
+        return originalUser;
     }
 }

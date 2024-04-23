@@ -33,6 +33,82 @@ public class UserController {
     private final RedisUtil redisUtil;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
+    @GetMapping("/checkuserId")
+    public ResponseEntity<?> duplicateUserId(@RequestParam String userId) {
+        try {
+            log.info("check userId duplication");
+
+            if(userService.checkUserId(userId)) {
+                return ResponseEntity.badRequest().body(false);
+            } else{
+                return ResponseEntity.ok().body(true);
+            }
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/checknickname")
+    public ResponseEntity<?> duplicateNickname(@RequestParam String nickname){
+        try {
+            log.info("check nickname duplication");
+
+            if(userService.checkNickname(nickname)) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("닉네임 중복")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            } else{
+                return ResponseEntity.ok().body(true);
+            }
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping ("/mailSend")
+    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
+        try {
+            String email = emailDTO.getEmail();
+
+            log.info("이메일 인증 요청이 들어옴");
+            log.info("이메일 인증 이메일 :" + email);
+
+            if(userService.checkEmail(email)) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 중복")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            return ResponseEntity.ok().body(mailService.joinEmail(email));
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/mailauthCheck")
+    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
+        try{
+            log.info("Start mailauthCheck");
+
+            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
+
+            if(Checked) {
+                return ResponseEntity.ok().body(true);
+            } else
+                throw new NullPointerException("Null Exception");
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO dto) {
         try{
@@ -69,87 +145,6 @@ public class UserController {
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/checkuserId")
-    public ResponseEntity<?> duplicateUserId(@RequestParam String userId) {
-        try {
-            log.info("check userId duplication");
-
-            boolean isexists = userService.checkUserId(userId);
-
-            if(isexists) {
-                return ResponseEntity.badRequest().body(false);
-            } else{
-                return ResponseEntity.ok().body(true);
-            }
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/checknickname")
-    public ResponseEntity<?> duplicateNickname(@RequestParam String nickname){
-        try {
-            log.info("check nickname duplication");
-
-            boolean isexists = userService.checkNickname(nickname);
-
-            if(isexists) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("닉네임 중복")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            } else{
-                return ResponseEntity.ok().body(true);
-            }
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
-        try {
-            String email = emailDTO.getEmail();
-
-            log.info("이메일 인증 요청이 들어옴");
-            log.info("이메일 인증 이메일 :" + email);
-
-            boolean isexists = userService.checkEmail(email);
-
-            if(isexists) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 중복")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            return ResponseEntity.ok().body(mailService.joinEmail(email));
-        }catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-    @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
-        try{
-            log.info("Start mailauthCheck");
-
-            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
-
-            if(Checked) {
-                return ResponseEntity.ok().body(true);
-            } else
-                throw new NullPointerException("Null Exception");
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
