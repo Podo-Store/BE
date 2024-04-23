@@ -19,16 +19,20 @@ public class MypageService {
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
-        final String email = userEntity.getEmail();
         final String name = userEntity.getName();
 
         final UserEntity user = userRepo.findById(id);
 
         log.info("update user: {}", user);
 
+        if(!user.getNickname().equals(nickname)){
+            if(userRepo.existsByNickname(nickname)){
+                throw new RuntimeException("Nickname is already exists");
+            }
+        }
+
         user.setPassword(password);
         user.setNickname(nickname);
-        user.setEmail(email);
         user.setName(name);
 
         return userRepo.save(user);
