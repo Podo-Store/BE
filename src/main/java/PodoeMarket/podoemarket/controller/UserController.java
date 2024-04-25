@@ -36,13 +36,25 @@ public class UserController {
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
         try {
-            log.info("check userId duplication");
+            log.info("check userId");
 
             if(userService.checkUserId(dto.getUserId())) {
-                return ResponseEntity.badRequest().body(false);
-            } else{
-                return ResponseEntity.ok().body(true);
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이미 존재하는 아이디")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
             }
+            
+            if(!ValidUser.isValidUserId(dto.getUserId())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("아이디 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+            
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
