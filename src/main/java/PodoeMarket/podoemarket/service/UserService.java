@@ -7,11 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class UserService {
-    private final UserRepository repo;
+    private final UserRepository userRepo;
 
     public UserEntity create(final UserEntity userEntity) {
         final String userId = userEntity.getUserId();
@@ -30,7 +32,7 @@ public class UserService {
             throw new RuntimeException("UserId is invalid arguments");
         }
 
-        if(repo.existsByUserId(userId)) {
+        if(userRepo.existsByUserId(userId)) {
             log.warn("userId already exists {}", userId);
             throw new RuntimeException("UserId already exists");
         }
@@ -40,7 +42,7 @@ public class UserService {
             throw new RuntimeException("Email is invalid arguments");
         }
 
-        if(repo.existsByEmail(email)) {
+        if(userRepo.existsByEmail(email)) {
             log.warn("email already exists {}", email);
             throw new RuntimeException("Email already exists");
         }
@@ -56,7 +58,7 @@ public class UserService {
             throw new RuntimeException("Nickname is invalid arguments");
         }
 
-        if(repo.existsByNickname(nickname)) {
+        if(userRepo.existsByNickname(nickname)) {
             log.warn("nickname already exists {}", nickname);
             throw new RuntimeException("Nickname already exists");
         }
@@ -66,14 +68,14 @@ public class UserService {
             throw new RuntimeException("Name is invalid arguments");
         }
 
-        return repo.save(userEntity);
+        return userRepo.save(userEntity);
     }
 
     public UserEntity getByCredentials(final String userId, final String password, final PasswordEncoder encoder){
         log.info("find user by userId");
 
         try {
-            final UserEntity originalUser = repo.findByUserId(userId);
+            final UserEntity originalUser = userRepo.findByUserId(userId);
             log.info("original User: {}", originalUser);
 
             if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
@@ -105,22 +107,30 @@ public class UserService {
     }
 
     public Boolean checkUserId(final String userId) {
-        return repo.existsByUserId(userId);
+        return userRepo.existsByUserId(userId);
     }
 
     public Boolean checkEmail(final String email) {
-        return repo.existsByEmail(email);
+        return userRepo.existsByEmail(email);
     }
 
     public Boolean checkNickname(final String nickname) {
-        return repo.existsByNickname(nickname);
+        return userRepo.existsByNickname(nickname);
     }
 
     public UserEntity userInfoFindUserId(final String name, final String email) {
-        return repo.findByNameAndEmail(name, email);
+        return userRepo.findByNameAndEmail(name, email);
     }
 
     public Boolean userInfoFindPw(final String userId, final String email) {
-        return repo.existsByUserIdAndEmail(userId, email);
+        return userRepo.existsByUserIdAndEmail(userId, email);
+    }
+
+    public UserEntity update(UUID id, final UserEntity userEntity) {
+        final UserEntity user = userRepo.findById(id);
+
+        user.setPassword(userEntity.getPassword());
+
+        return userRepo.save(user);
     }
 }

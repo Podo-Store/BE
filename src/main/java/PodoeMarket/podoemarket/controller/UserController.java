@@ -13,8 +13,8 @@ import PodoeMarket.podoemarket.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -33,12 +33,12 @@ public class UserController {
     private final RedisUtil redisUtil;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
-    @GetMapping("/checkuserId")
-    public ResponseEntity<?> duplicateUserId(@RequestParam String userId) {
+    @PostMapping("/checkUserId")
+    public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
         try {
             log.info("check userId duplication");
 
-            if(userService.checkUserId(userId)) {
+            if(userService.checkUserId(dto.getUserId())) {
                 return ResponseEntity.badRequest().body(false);
             } else{
                 return ResponseEntity.ok().body(true);
@@ -49,12 +49,46 @@ public class UserController {
         }
     }
 
-    @GetMapping("/checknickname")
-    public ResponseEntity<?> duplicateNickname(@RequestParam String nickname){
+    @PostMapping("/checkPw")
+    public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
+        if(!ValidUser.isValidPw(dto.getPassword())){
+            ResponseDTO resDTO = ResponseDTO.builder()
+                    .error("비밀번호 유효성 검사 실패")
+                    .build();
+
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+
+        return ResponseEntity.ok().body(true);
+    }
+
+    @PostMapping("/equalPw")
+    public ResponseEntity<?> equalPassword(@RequestBody UserDTO dto) {
+        if(!dto.getPassword().equals(dto.getConfirmPassword())){
+            ResponseDTO resDTO = ResponseDTO.builder()
+                    .error("비밀번호 불일치")
+                    .build();
+
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+
+        return ResponseEntity.ok().body(true);
+    }
+
+    @PostMapping("/checkNickname")
+    public ResponseEntity<?> duplicateNickname(@RequestBody UserDTO dto){
         try {
             log.info("check nickname duplication");
 
-            if(userService.checkNickname(nickname)) {
+            if(!ValidUser.isValidNickname(dto.getNickname())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("닉네임 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(userService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
                         .build();
@@ -259,6 +293,36 @@ public class UserController {
             }
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> restPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
+        try{
+            if(!ValidUser.isValidPw(dto.getPassword())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("비밀번호 유효성 검사 실패")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(!dto.getPassword().equals(dto.getConfirmPassword())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("비밀번호가 일치하지 않음")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            UserEntity user = UserEntity.builder()
+                    .password(pwdEncoder.encode(dto.getPassword()))
+                    .build();
+
+            userService.update(userInfo.getId(), user);
+
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
