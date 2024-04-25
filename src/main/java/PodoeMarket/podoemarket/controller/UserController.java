@@ -118,20 +118,23 @@ public class UserController {
     @PostMapping ("/mailSend")
     public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         try {
-            String email = emailDTO.getEmail();
-
-            log.info("이메일 인증 요청이 들어옴");
-            log.info("이메일 인증 이메일 :" + email);
-
-            if(userService.checkEmail(email)) {
+            if(userService.checkEmail(emailDTO.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("이메일 중복")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
+            
+            if(!ValidUser.isValidEmail(emailDTO.getEmail())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 유효성 검사 실패")
+                        .build();
 
-            return ResponseEntity.ok().body(mailService.joinEmail(email));
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
         }catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

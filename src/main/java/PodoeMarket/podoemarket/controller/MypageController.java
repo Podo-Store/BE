@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -108,15 +109,22 @@ public class MypageController {
         return ResponseEntity.ok().body(true);
     }
 
+    @GetMapping("/account")
+    public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
+        try {
+            UserEntity user = mypageService.originalUser(userInfo.getId());
+
+            return ResponseEntity.ok().body(user);
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping ("/mailSend")
     public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         try {
-            String email = emailDTO.getEmail();
-
-            log.info("이메일 인증 요청이 들어옴");
-            log.info("이메일 인증 이메일 :" + email);
-
-            return ResponseEntity.ok().body(mailService.joinEmail(email));
+            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
         }catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
