@@ -118,12 +118,12 @@ public class UserService {
         return userRepo.existsByNickname(nickname);
     }
 
-    public UserEntity userInfoFindUserId(final String email) {
+    public UserEntity findUserEmail(final String email) {
         return userRepo.findByEmail(email);
     }
 
-    public Boolean userInfoFindPw(final String userId, final String email) {
-        return userRepo.existsByUserIdAndEmail(userId, email);
+    public UserEntity findUserUserId(final String userId) {
+        return userRepo.findByUserId(userId);
     }
 
     public UserEntity update(UUID id, final UserEntity userEntity) {

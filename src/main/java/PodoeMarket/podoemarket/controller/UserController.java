@@ -264,7 +264,7 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            UserEntity user = userService.userInfoFindUserId(dto.getEmail());
+            UserEntity user = userService.findUserEmail(dto.getEmail());
 
             String userId = user.getUserId();
             String date = String.valueOf(user.getDate());
@@ -283,15 +283,12 @@ public class UserController {
         }
     }
 
-    @PostMapping("/findPassword")
-    public ResponseEntity<?> findPassword(@RequestBody UserDTO dto) {
-        try{
-            log.info("Start find password");
+    @GetMapping("/confirmUserId")
+    public ResponseEntity<?> confirmUserId(@RequestParam String userId) {
+        try {
+            UserEntity user = userService.findUserUserId(userId);
 
-            Boolean user = userService.userInfoFindPw(dto.getUserId(), dto.getEmail());
-
-            // 아이디, 이메일로 존재하는 사용자인지 확인하기
-            if(!user) {
+            if(user == null) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("회원 정보 없음")
                         .build();
@@ -299,6 +296,16 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            return ResponseEntity.ok().body(user.getEmail());
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/findPassword")
+    public ResponseEntity<?> findPassword(@RequestBody UserDTO dto) {
+        try{
             // 인증번호 확인
             if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
