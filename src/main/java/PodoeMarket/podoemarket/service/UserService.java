@@ -118,8 +118,8 @@ public class UserService {
         return userRepo.existsByNickname(nickname);
     }
 
-    public UserEntity userInfoFindUserId(final String name, final String email) {
-        return userRepo.findByNameAndEmail(name, email);
+    public UserEntity userInfoFindUserId(final String email) {
+        return userRepo.findByEmail(email);
     }
 
     public Boolean userInfoFindPw(final String userId, final String email) {

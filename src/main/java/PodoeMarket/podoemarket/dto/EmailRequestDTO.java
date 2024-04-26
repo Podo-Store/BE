@@ -12,4 +12,6 @@ public class EmailRequestDTO {
     //그 뒤에 최소한 2개의 알파벳을 가진다를 검증
     @NotEmpty(message = "이메일을 입력해 주세요")
     private String email;
+
+    private boolean check;
 }

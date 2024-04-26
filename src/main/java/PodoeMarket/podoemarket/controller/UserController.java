@@ -118,20 +118,30 @@ public class UserController {
     @PostMapping ("/mailSend")
     public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         try {
-            if(userService.checkEmail(emailDTO.getEmail())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 중복")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-            
             if(!ValidUser.isValidEmail(emailDTO.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("이메일 유효성 검사 실패")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(emailDTO.isCheck()) { // 회원 가입 시, 이메일 중복 확인
+                if(userService.checkEmail(emailDTO.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("이메일 중복")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+            } else { // 아이디 찾기
+                if(!userService.checkEmail(emailDTO.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("사용자 정보 없음")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
             }
 
             return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
@@ -245,17 +255,6 @@ public class UserController {
         try{
             log.info("Start find userId");
 
-            UserEntity user = userService.userInfoFindUserId(dto.getName(), dto.getEmail());
-
-            // 이름, 이메일로 존재하는 사용자인지 확인하기
-            if(user == null) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("회원 정보 없음")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
             // 인증번호 확인
             if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -264,6 +263,8 @@ public class UserController {
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
+
+            UserEntity user = userService.userInfoFindUserId(dto.getEmail());
 
             String userId = user.getUserId();
             String date = String.valueOf(user.getDate());
