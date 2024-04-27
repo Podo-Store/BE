@@ -1,39 +1,30 @@
 package PodoeMarket.podoemarket.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "FileEntity")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FileEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String originalFileName;
+    private String name;
+
+    private String type;
+
     private String filePath;
 
-    // Getter와 Setter 메서드
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getOriginalFileName() {
-        return originalFileName;
-    }
-
-    public void setOriginalFileName(String originalFileName) {
-        this.originalFileName = originalFileName;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
+    @Builder
+    public FileEntity(String name, String type, String filePath) {
+        this.name = name;
+        this.type = type;
         this.filePath = filePath;
     }
 }
