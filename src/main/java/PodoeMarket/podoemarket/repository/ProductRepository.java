@@ -1,8 +1,10 @@
 package PodoeMarket.podoemarket.repository;
 
-import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.ScriptEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
+import java.util.Optional;
 
+public interface ProductRepository extends JpaRepository<ScriptEntity, Long> {
+    Optional<ScriptEntity> findByName(String fileName);
 }
