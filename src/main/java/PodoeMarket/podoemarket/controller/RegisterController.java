@@ -17,7 +17,7 @@ public class RegisterController {
     private final ProductService productService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> scriptRegister(@RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> scriptRegister(@RequestParam("script") MultipartFile file) {
         try{
             // 파일 저장
             productService.register(file);

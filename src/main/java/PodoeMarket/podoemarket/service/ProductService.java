@@ -19,7 +19,10 @@ public class ProductService {
 
     public String register(MultipartFile file) throws IOException {
         String filePath = file.getOriginalFilename();
-        log.info("upload file: {}", filePath);
+
+        if (!Objects.equals(file.getContentType(), "application/pdf")) {
+            throw new RuntimeException("contentType is not PDF");
+        }
 
         fileRepo.save(
                 ScriptEntity.builder()
