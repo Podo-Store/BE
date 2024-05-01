@@ -1,40 +1,24 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.entity.ScriptEntity;
-import PodoeMarket.podoemarket.repository.FileRepository;
+import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class ProductService {
-    private final FileRepository fileRepo;
+    private final ProductRepository fileRepo;
 
-    public String register(MultipartFile file) throws IOException {
-        String filePath = file.getOriginalFilename();
-
-        if (!Objects.equals(file.getContentType(), "application/pdf")) {
+    public ProductEntity register(ProductEntity script) {
+        if (!Objects.equals(script.getType(), "application/pdf")) {
             throw new RuntimeException("contentType is not PDF");
         }
 
-        fileRepo.save(
-                ScriptEntity.builder()
-                        .title(file.getOriginalFilename())
-                        .type(file.getContentType())
-                        .filePath(filePath)
-                        .build()
-        );
-
-        // 파일 경로
-        file.transferTo(new File(Objects.requireNonNull(filePath)));
-
-        return "file uploaded successfully! filePath : " + filePath;
+        return fileRepo.save(script);
     }
 }

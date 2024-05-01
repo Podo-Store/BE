@@ -28,7 +28,10 @@ public class ProductEntity {
     private String writer;
 
     @Column
-    private String file;
+    private String type;
+
+    @Column
+    private String filePath;
 
     @Column(nullable = false)
     @ColumnDefault("0")
