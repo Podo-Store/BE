@@ -7,6 +7,7 @@ import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -23,21 +26,33 @@ public class RegisterController {
     private final ProductService productService;
     private final MypageService mypageService;
 
+   @Value("${UPLOAD_LOCATION}")
+    private String uploadLoc;
+
     @PostMapping("/register")
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
         try{
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
-            String filePath = file.getOriginalFilename();
+            // 파일 저장 경로 파싱
+            String currentDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+            File uploadDir = new File(uploadLoc + File.separator + currentDate);
+
+            // 폴더가 없으면 생성
+            if (!uploadDir.exists()) {
+                log.info("폴더 생성");
+                uploadDir.mkdirs();
+            }
+
+            File dest = new File(uploadDir.getAbsolutePath() + File.separator + file.getOriginalFilename());
 
             ProductEntity script = ProductEntity.builder()
                     .writer(user.getNickname())
                     .type(file.getContentType())
-                    .filePath(filePath)
+                    .filePath(dest.getPath())
                     .build();
 
-            // 파일 경로
-            file.transferTo(new File(Objects.requireNonNull(filePath)));
+            file.transferTo(dest);
             productService.register(script);
 
             return ResponseEntity.ok().body(true);
