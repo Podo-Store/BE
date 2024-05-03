@@ -173,7 +173,6 @@ public class MypageController {
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
-                    .name(dto.getName())
                     .email(dto.getEmail())
                     .build();
 
