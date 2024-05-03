@@ -19,7 +19,6 @@ public class MypageService {
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
-        final String name = userEntity.getName();
 
         final UserEntity user = userRepo.findById(id);
 
@@ -33,7 +32,6 @@ public class MypageService {
 
         user.setPassword(password);
         user.setNickname(nickname);
-        user.setName(name);
 
         return userRepo.save(user);
     }
