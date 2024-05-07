@@ -167,13 +167,15 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            log.info("profile image type:{}", file.getContentType());
+
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-                    .filePath(file.getOriginalFilename())
+//                    .filePath(file.getOriginalFilename())
                     .build();
 
             // token 값 변경 가능성 있음
