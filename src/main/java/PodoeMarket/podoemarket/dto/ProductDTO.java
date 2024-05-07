@@ -15,7 +15,6 @@ import java.util.UUID;
 public class ProductDTO {
     private UUID id;
     private String title;
-    private String file;
     private int category;
     private int genre;
     private boolean checked;

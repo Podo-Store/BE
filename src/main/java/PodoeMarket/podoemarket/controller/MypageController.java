@@ -6,25 +6,22 @@ import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.repository.UserRepository;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -37,6 +34,9 @@ public class MypageController {
     private final UserService userService;
     private final RedisUtil redisUtil;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+
+    @Value("${PROFILE_LOCATION}")
+    private String profileLoc;
 
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
@@ -149,10 +149,8 @@ public class MypageController {
     }
 
     @PostMapping("/account")
-    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
+    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto, @RequestParam("image")MultipartFile file) {
         try{
-            log.info("start account update");
-
             if(!ValidUser.isValidUser(dto)) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("유효성 검사 실패")
@@ -174,6 +172,8 @@ public class MypageController {
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
+                    .type(file.getContentType())
+                    .filePath(file.getOriginalFilename())
                     .build();
 
             // token 값 변경 가능성 있음
