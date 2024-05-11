@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -167,7 +168,14 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            log.info("profile image type:{}", file.getContentType());
+            File uploadDir = new File(profileLoc);
+
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            String filePath = dto.getUserId() + "_" + file.getOriginalFilename();
+            File dest = new File(profileLoc + File.separator + filePath);
 
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
@@ -175,9 +183,10 @@ public class MypageController {
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-                    .filePath(file.getOriginalFilename())
+                    .filePath(dest.getPath())
                     .build();
 
+            file.transferTo(dest);
             // token 값 변경 가능성 있음
             mypageService.update(userInfo.getId(), user);
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제

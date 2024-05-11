@@ -39,7 +39,6 @@ public class RegisterController {
 
             // 폴더가 없으면 생성
             if (!uploadDir.exists()) {
-                log.info("폴더 생성");
                 uploadDir.mkdirs();
             }
 
