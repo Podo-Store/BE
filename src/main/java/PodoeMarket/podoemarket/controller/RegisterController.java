@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Controller
@@ -40,7 +39,6 @@ public class RegisterController {
 
             // 폴더가 없으면 생성
             if (!uploadDir.exists()) {
-                log.info("폴더 생성");
                 uploadDir.mkdirs();
             }
 

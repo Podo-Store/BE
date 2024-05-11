@@ -22,6 +22,12 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column
+    private String type;
+
+    @Column
+    private String filePath;
+
     @Column(unique = true, nullable = false)
     private String userId;
 

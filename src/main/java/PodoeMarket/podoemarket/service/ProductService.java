@@ -14,11 +14,11 @@ import java.util.Objects;
 public class ProductService {
     private final ProductRepository fileRepo;
 
-    public ProductEntity register(ProductEntity script) {
-        if (!Objects.equals(script.getType(), "application/pdf")) {
+    public ProductEntity register(ProductEntity scriptEntity) {
+        if (!Objects.equals(scriptEntity.getType(), "application/pdf")) {
             throw new RuntimeException("contentType is not PDF");
         }
 
-        return fileRepo.save(script);
+        return fileRepo.save(scriptEntity);
     }
 }
