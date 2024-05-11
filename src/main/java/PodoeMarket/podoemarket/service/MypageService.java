@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -19,10 +20,10 @@ public class MypageService {
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
+        final String type = userEntity.getType();
+        final String filepath = userEntity.getFilePath();
 
         final UserEntity user = userRepo.findById(id);
-
-        log.info("update user: {}", user);
 
         if(!user.getNickname().equals(nickname)){
             if(userRepo.existsByNickname(nickname)){
@@ -30,8 +31,17 @@ public class MypageService {
             }
         }
 
+
+        if(userEntity.getType() != null && userEntity.getFilePath() != null) {
+            if(!Objects.equals(type, "image/jpeg") && !Objects.equals(type, "image/png")) {
+                throw new RuntimeException("file type is wrong");
+            }
+        }
+
         user.setPassword(password);
         user.setNickname(nickname);
+        user.setType(type);
+        user.setFilePath(filepath);
 
         return userRepo.save(user);
     }

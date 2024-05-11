@@ -134,7 +134,7 @@ public class UserController {
 
                     return ResponseEntity.badRequest().body(resDTO);
                 }
-            } else { // 아이디 찾기
+            } else { // 아이디 찾기 - check 값이 0
                 if(!userService.checkEmail(emailDTO.getEmail())) {
                     ResponseDTO resDTO = ResponseDTO.builder()
                             .error("사용자 정보 없음")

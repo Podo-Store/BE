@@ -149,7 +149,7 @@ public class MypageController {
     }
 
     @PostMapping("/account")
-    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto, @RequestParam("image")MultipartFile file) {
+    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
         try{
             if(!ValidUser.isValidUser(dto)) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -175,7 +175,7 @@ public class MypageController {
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-//                    .filePath(file.getOriginalFilename())
+                    .filePath(file.getOriginalFilename())
                     .build();
 
             // token 값 변경 가능성 있음
