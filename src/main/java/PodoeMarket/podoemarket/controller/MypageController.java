@@ -58,6 +58,18 @@ public class MypageController {
         }
     }
 
+    @GetMapping("/account")
+    public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
+        try {
+            UserEntity user = mypageService.originalUser(userInfo.getId());
+
+            return ResponseEntity.ok().body(user);
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/checkPw")
     public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
         if(!ValidUser.isValidPw(dto.getPassword())){
@@ -110,18 +122,6 @@ public class MypageController {
         return ResponseEntity.ok().body(true);
     }
 
-    @GetMapping("/account")
-    public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
-        try {
-            UserEntity user = mypageService.originalUser(userInfo.getId());
-
-            return ResponseEntity.ok().body(user);
-        }catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     @PostMapping ("/mailSend")
     public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         try {
@@ -149,7 +149,7 @@ public class MypageController {
         }
     }
 
-    @PostMapping("/account")
+    @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
         try{
             if(!ValidUser.isValidUser(dto)) {
