@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -79,6 +80,7 @@ public class UserEntity {
     private List<ProductReviewEntity> product_review = new ArrayList<>();
 
     // user : with_script = 1 : N
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<WishScriptEntity> wish_script = new ArrayList<>();
 

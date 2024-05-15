@@ -1,5 +1,7 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -51,6 +53,7 @@ public class WishScriptEntity {
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
     // user : with_script = 1 : N
+    @JsonBackReference
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name="user_id", nullable = false)
     private UserEntity user;

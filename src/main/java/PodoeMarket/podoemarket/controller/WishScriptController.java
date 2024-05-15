@@ -22,15 +22,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WishScriptController {
     private final WishScriptService wishScriptService;
 
-//    @GetMapping
-//    public ResponseEntity<?> wishScriptlist() {
-//        try {
-//
-//        } catch (Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
+    @GetMapping
+    public ResponseEntity<?> wishScriptlist() {
+        try {
+            return ResponseEntity.ok().body(wishScriptService.getAllEntities());
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 
     @PostMapping("/script")
     public ResponseEntity<?> requestScript(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RequestDTO dto) {
