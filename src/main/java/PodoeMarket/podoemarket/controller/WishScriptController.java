@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.dto.RequestDTO;
+import PodoeMarket.podoemarket.dto.WishScriptDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Controller
 @Slf4j
@@ -23,9 +25,11 @@ public class WishScriptController {
     private final WishScriptService wishScriptService;
 
     @GetMapping
-    public ResponseEntity<?> wishScriptlist() {
+    public ResponseEntity<?> wishScriptlist(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(wishScriptService.getAllEntities());
+
+
+            return ResponseEntity.ok().body(wishScriptService.getAllEntities(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -33,7 +37,7 @@ public class WishScriptController {
     }
 
     @PostMapping("/script")
-    public ResponseEntity<?> requestScript(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RequestDTO dto) {
+    public ResponseEntity<?> requestScript(@AuthenticationPrincipal UserEntity userInfo, @RequestBody WishScriptDTO dto) {
         try{
             if(dto.getContent() == null || dto.getContent().isBlank()) {
                 ResponseDTO resDTO = ResponseDTO.builder()
