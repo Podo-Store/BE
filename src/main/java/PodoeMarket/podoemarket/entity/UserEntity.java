@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -80,7 +81,6 @@ public class UserEntity {
     private List<ProductReviewEntity> product_review = new ArrayList<>();
 
     // user : with_script = 1 : N
-    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<WishScriptEntity> wish_script = new ArrayList<>();
 

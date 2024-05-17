@@ -53,8 +53,7 @@ public class WishScriptEntity {
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
     // user : with_script = 1 : N
-    @JsonBackReference
-    @ManyToOne(targetEntity = UserEntity.class)
+    @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
     private UserEntity user;
 
