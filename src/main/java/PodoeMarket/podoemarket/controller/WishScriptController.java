@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.dto.WishScriptDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
+import PodoeMarket.podoemarket.entity.WishScriptLikeEntity;
 import PodoeMarket.podoemarket.service.WishScriptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,6 @@ public class WishScriptController {
     @GetMapping
     public ResponseEntity<?> wishScriptlist(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-
-
             return ResponseEntity.ok().body(wishScriptService.getAllEntities(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
@@ -55,9 +54,36 @@ public class WishScriptController {
                     .user(userInfo)
                     .build();
 
-            wishScriptService.create(req);
+            wishScriptService.scriptCreate(req);
 
             return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/like")
+    public ResponseEntity<?> like(@AuthenticationPrincipal UserEntity userInfo, @RequestBody WishScriptDTO dto) {
+        try{
+            boolean islike = wishScriptService.isLike(userInfo.getId(), dto.getId());
+
+            if (islike) { // 좋아요 취소
+                wishScriptService.delete(userInfo.getId(), dto.getId());
+
+                return ResponseEntity.ok().body("like delete");
+            } else { // 좋아요 생성
+                WishScriptEntity wishScript = wishScriptService.script(dto.getId());
+
+                WishScriptLikeEntity like = WishScriptLikeEntity.builder()
+                        .user(userInfo)
+                        .wish_script(wishScript)
+                        .build();
+
+                wishScriptService.likeCreate(like);
+
+                return ResponseEntity.ok().body("like success");
+            }
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

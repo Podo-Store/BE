@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.service;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.WishScriptDTO;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
+import PodoeMarket.podoemarket.entity.WishScriptLikeEntity;
 import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import PodoeMarket.podoemarket.repository.WishScriptRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class WishScriptService {
     private final WishScriptRepository wishScriptRepo;
     private final WishScriptLikeRepository wishScriptLikeRepo;
 
-    public WishScriptEntity create(final WishScriptEntity wishScriptEntity) {
+    public WishScriptEntity scriptCreate(final WishScriptEntity wishScriptEntity) {
         final String content = wishScriptEntity.getContent();
 
         if(wishScriptEntity == null) {
@@ -40,5 +41,23 @@ public class WishScriptService {
         return wishScripts.stream()
                 .map(wishScript -> EntityToDTOConverter.converToWishScriptDTO(wishScript, userId, wishScriptLikeRepo))
                 .collect(Collectors.toList());
+    }
+
+    public Boolean isLike(UUID userId, UUID wishScriptId) {
+        return wishScriptLikeRepo.existsByUserIdAndWishScriptId(userId, wishScriptId);
+    }
+
+    public void delete(UUID userId, UUID wishScriptId) {
+        WishScriptLikeEntity deleteInfo = wishScriptLikeRepo.findByUserIdAndWishScriptId(userId, wishScriptId);
+
+        wishScriptLikeRepo.deleteById(deleteInfo.getId());
+    }
+
+    public WishScriptLikeEntity likeCreate(final WishScriptLikeEntity wishScriptLikeEntity) {
+        return wishScriptLikeRepo.save(wishScriptLikeEntity);
+    }
+
+    public WishScriptEntity script(UUID wishScriptId) {
+        return wishScriptRepo.findById(wishScriptId);
     }
 }
