@@ -39,7 +39,15 @@ public class WishScriptService {
         List<WishScriptEntity> wishScripts = wishScriptRepo.findAll();
 
         return wishScripts.stream()
-                .map(wishScript -> EntityToDTOConverter.converToWishScriptDTO(wishScript, userId, wishScriptLikeRepo))
+                .map(wishScript -> EntityToDTOConverter.converToWishScriptDTOWithToken(wishScript, userId, wishScriptLikeRepo))
+                .collect(Collectors.toList());
+    }
+
+    public List<WishScriptDTO> getAllEntities() {
+        List<WishScriptEntity> wishScripts = wishScriptRepo.findAll();
+
+        return wishScripts.stream()
+                .map(wishScript -> EntityToDTOConverter.converToWishScriptDTO(wishScript, wishScriptLikeRepo))
                 .collect(Collectors.toList());
     }
 
