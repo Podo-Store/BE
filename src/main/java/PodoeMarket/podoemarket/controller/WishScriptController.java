@@ -28,7 +28,11 @@ public class WishScriptController {
     @GetMapping
     public ResponseEntity<?> wishScriptlist(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(wishScriptService.getAllEntities(userInfo.getId()));
+            if (userInfo == null) { // 로그인 중이 아닐 때
+                return ResponseEntity.ok().body(wishScriptService.getAllEntities());
+            } else { // 로그인 중일 때
+                return ResponseEntity.ok().body(wishScriptService.getAllEntities(userInfo.getId()));
+            }
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

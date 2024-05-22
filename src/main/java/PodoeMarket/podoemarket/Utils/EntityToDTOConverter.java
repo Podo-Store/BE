@@ -12,7 +12,25 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-    public static WishScriptDTO converToWishScriptDTO(WishScriptEntity entity, UUID id, WishScriptLikeRepository repo){
+    public static WishScriptDTO converToWishScriptDTO(WishScriptEntity entity, WishScriptLikeRepository repo){
+        WishScriptDTO wishScriptDTO = new WishScriptDTO();
+
+        wishScriptDTO.setId(entity.getId());
+        wishScriptDTO.setContent(entity.getContent());
+        wishScriptDTO.setGenre(entity.getGenre());
+        wishScriptDTO.setCharacterNumber(entity.getCharacterNumber());
+        wishScriptDTO.setRuntime(entity.getRuntime());
+        wishScriptDTO.setDate(entity.getDate());
+
+        wishScriptDTO.setNickname(entity.getUser().getNickname());
+        wishScriptDTO.setProfileFilePath(entity.getUser().getFilePath());
+        wishScriptDTO.setLike(false);
+        wishScriptDTO.setLikeCount(repo.countByWishScriptId(entity.getId()));
+
+        return wishScriptDTO;
+    }
+
+    public static WishScriptDTO converToWishScriptDTOWithToken(WishScriptEntity entity, UUID id, WishScriptLikeRepository repo){
         WishScriptDTO wishScriptDTO = new WishScriptDTO();
 
         wishScriptDTO.setId(entity.getId());
