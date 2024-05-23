@@ -21,7 +21,7 @@ public class WishScriptService {
     private final WishScriptRepository wishScriptRepo;
     private final WishScriptLikeRepository wishScriptLikeRepo;
 
-    public WishScriptEntity scriptCreate(final WishScriptEntity wishScriptEntity) {
+    public void scriptCreate(final WishScriptEntity wishScriptEntity) {
         final String content = wishScriptEntity.getContent();
 
         if(wishScriptEntity == null) {
@@ -32,7 +32,7 @@ public class WishScriptService {
             throw new RuntimeException("content is invalid arguments");
         }
 
-        return wishScriptRepo.save(wishScriptEntity);
+        wishScriptRepo.save(wishScriptEntity);
     }
 
     public List<WishScriptDTO> getAllEntities(UUID userId) {
@@ -61,8 +61,8 @@ public class WishScriptService {
         wishScriptLikeRepo.deleteById(deleteInfo.getId());
     }
 
-    public WishScriptLikeEntity likeCreate(final WishScriptLikeEntity wishScriptLikeEntity) {
-        return wishScriptLikeRepo.save(wishScriptLikeEntity);
+    public void likeCreate(final WishScriptLikeEntity wishScriptLikeEntity) {
+        wishScriptLikeRepo.save(wishScriptLikeEntity);
     }
 
     public WishScriptEntity script(UUID wishScriptId) {
