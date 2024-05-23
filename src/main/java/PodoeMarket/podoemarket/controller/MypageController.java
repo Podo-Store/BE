@@ -197,4 +197,8 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+//    @GetMapping("/script")
+//    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
+//    }
 }
