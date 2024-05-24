@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.entity.ProductInfoEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,4 +66,8 @@ public class MypageService {
 
         return originalUser;
     }
+
+//    public ProductInfoEntity product(UUID id) {
+//
+//    }
 }
