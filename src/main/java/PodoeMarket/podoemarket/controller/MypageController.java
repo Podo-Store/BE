@@ -199,14 +199,14 @@ public class MypageController {
         }
     }
 
-//    @GetMapping("/script")
-//    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
-//        try{
-//            mypageService
-//
-//        } catch(Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
+    @GetMapping("/script")
+    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
+        try{
+            mypageService
+
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

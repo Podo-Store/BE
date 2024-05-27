@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.entity.ProductInfoEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.ProductInfoRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Service
 public class MypageService {
     private final UserRepository userRepo;
+    private final ProductInfoRepository productInfoRepo;
 
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -67,7 +69,9 @@ public class MypageService {
         return originalUser;
     }
 
-//    public ProductInfoEntity product(UUID id) {
-//
-//    }
+    public ProductInfoEntity product(UUID id) {
+        final UserEntity product = userRepo.findById(id);
+        
+        // 사용자의 id로 조회한 사용자가 product info만 전달하도록 조회 필요
+    }
 }
