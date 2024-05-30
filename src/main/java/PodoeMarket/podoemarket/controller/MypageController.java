@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
+import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
@@ -202,8 +203,10 @@ public class MypageController {
     @GetMapping("/script")
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            mypageService
+            ProductEntity product = mypageService.product(userInfo.getNickname());
+            log.info(String.valueOf(userInfo));
 
+            return ResponseEntity.ok().body(product);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
