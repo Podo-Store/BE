@@ -215,7 +215,7 @@ public class UserController {
             log.info("Start signin");
 
             UserEntity user = userService.getByCredentials(dto.getUserId(), dto.getPassword(), pwdEncoder);
-            log.info("user: {}", user);
+//            log.info("user: {}", user);
 
             if(user.getId() != null) {
                 final String accessToken = tokenProvider.createAccessToken(user);

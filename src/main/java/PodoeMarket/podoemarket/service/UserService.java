@@ -70,7 +70,7 @@ public class UserService {
 
         try {
             final UserEntity originalUser = userRepo.findByUserId(userId);
-            log.info("original User: {}", originalUser);
+//            log.info("original User: {}", originalUser);
 
             if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
                 log.info("same Password");

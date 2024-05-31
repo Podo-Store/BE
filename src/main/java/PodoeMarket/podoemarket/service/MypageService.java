@@ -1,11 +1,11 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.entity.ProductInfoEntity;
+import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +17,7 @@ import java.util.UUID;
 @Service
 public class MypageService {
     private final UserRepository userRepo;
+    private final ProductRepository productRepo;
 
     public UserEntity update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -67,7 +68,9 @@ public class MypageService {
         return originalUser;
     }
 
-//    public ProductInfoEntity product(UUID id) {
-//
-//    }
+    public ProductEntity product(String nickname) {
+        final ProductEntity product = productRepo.findByWriter(nickname);
+
+        return product;
+    }
 }

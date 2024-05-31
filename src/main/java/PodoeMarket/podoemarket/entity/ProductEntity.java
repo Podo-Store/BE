@@ -49,6 +49,22 @@ public class ProductEntity {
     private int runtime;
     // 1 : 30분 이내, 2 : 1시간, 3 : 1시간 30분, 4 : 2시간 이상
 
+    @Column(nullable = false)
+    private int price;
+
+    @Column(nullable = false)
+    private boolean performance;
+
+    @Column
+    private int performancePrice;
+
+    @Column(nullable = false)
+    private String content;
+
+    @Column(nullable = false)
+    private int status;
+    // 0 : 판매 중, 1 : 판매 중단
+
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -64,9 +80,18 @@ public class ProductEntity {
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
-    // product : product_info = 1 : 1
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = false)
-    private ProductInfoEntity product_info;
+    // user : product = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
+
+    // product : basket = 1 : N
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BasketEntity> basket = new ArrayList<>();
+
+    // product : favorite = 1 : N
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductLikeEntity> product_like = new ArrayList<>();
 
     // product : product_review = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)

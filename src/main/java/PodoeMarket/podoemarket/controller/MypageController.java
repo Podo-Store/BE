@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
+import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
@@ -199,14 +200,25 @@ public class MypageController {
         }
     }
 
-//    @GetMapping("/script")
-//    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
-//        try{
-//            mypageService
+    @GetMapping("/script")
+    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
+        try{
+            ProductEntity product = mypageService.product(userInfo.getNickname());
+//            log.info("product: {}", product);
+
+            if(!product.isChecked()) {
+                return ResponseEntity.ok().body("심사 중");
+            }
+
+            return ResponseEntity.ok().body(product);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+//    @PostMapping("/script")
+//    public ResponseEntity<?> scriptDetail(@RequestBody ) {
 //
-//        } catch(Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
 //    }
 }

@@ -1,7 +1,5 @@
 package PodoeMarket.podoemarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -56,9 +54,9 @@ public class UserEntity {
     @PreUpdate
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
-    // user : product_info = 1 : N
+    // user : product = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductInfoEntity> product = new ArrayList<>();
+    private List<ProductEntity> product = new ArrayList<>();
 
     // user : basket = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
