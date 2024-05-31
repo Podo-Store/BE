@@ -41,6 +41,9 @@ dependencies {
 	// 어노테이션 형태로 제약 조건을 달아 쉽게 검증할 수 있도록 하는 API
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// 파일 이름 처리
+	implementation 'commons-io:commons-io:2.11.0'
 }
 
 tasks.named('test') {

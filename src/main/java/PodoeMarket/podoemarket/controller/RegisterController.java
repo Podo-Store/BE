@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -45,9 +46,11 @@ public class RegisterController {
             File dest = new File(uploadDir.getAbsolutePath() + File.separator + file.getOriginalFilename());
 
             ProductEntity script = ProductEntity.builder()
+                    .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
                     .writer(user.getNickname())
                     .type(file.getContentType())
                     .filePath(dest.getPath())
+                    .user(userInfo)
                     .build();
 
             file.transferTo(dest);

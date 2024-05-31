@@ -21,16 +21,16 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column
+    @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(nullable = false)
     private String writer;
 
-    @Column
+    @Column(nullable = false)
     private String type;
 
-    @Column
+    @Column(nullable = false)
     private String filePath;
 
     @Column(nullable = false)
@@ -47,23 +47,26 @@ public class ProductEntity {
     @Column(nullable = false)
     @ColumnDefault("0")
     private int runtime;
-    // 1 : 30분 이내, 2 : 1시간, 3 : 1시간 30분, 4 : 2시간 이상
+    // 0 : 입력 전, 1 : 30분 이내, 2 : 1시간, 3 : 1시간 30분, 4 : 2시간 이상
 
     @Column(nullable = false)
+    @ColumnDefault("0")
     private int price;
 
     @Column(nullable = false)
+    @ColumnDefault("0")
     private boolean performance;
 
     @Column
+    @ColumnDefault("0")
     private int performancePrice;
 
-    @Column(nullable = false)
+    @Column
     private String content;
 
     @Column(nullable = false)
-    private int status;
-    // 0 : 판매 중, 1 : 판매 중단
+    @ColumnDefault("False")
+    private boolean status;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)

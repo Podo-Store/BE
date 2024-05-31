@@ -207,7 +207,7 @@ public class MypageController {
 //            log.info("product: {}", product);
 
             if(!product.isChecked()) {
-                return ResponseEntity.ok().body("심사 중");
+                return ResponseEntity.ok().body("심사 중"); // 전부를 내보낼 수 없음
             }
 
             return ResponseEntity.ok().body(product);
