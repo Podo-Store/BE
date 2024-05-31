@@ -204,7 +204,11 @@ public class MypageController {
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
             ProductEntity product = mypageService.product(userInfo.getNickname());
-            log.info(String.valueOf(userInfo));
+//            log.info("product: {}", product);
+
+            if(!product.isChecked()) {
+                return ResponseEntity.ok().body("심사 중");
+            }
 
             return ResponseEntity.ok().body(product);
         } catch(Exception e) {
@@ -212,4 +216,9 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+//    @PostMapping("/script")
+//    public ResponseEntity<?> scriptDetail(@RequestBody ) {
+//
+//    }
 }

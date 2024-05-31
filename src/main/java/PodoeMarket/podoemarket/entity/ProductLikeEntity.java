@@ -27,8 +27,8 @@ public class ProductLikeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // product_info : product_like = 1 : N
-    @ManyToOne(targetEntity = ProductInfoEntity.class)
+    // product : product_like = 1 : N
+    @ManyToOne(targetEntity = ProductEntity.class)
     @JoinColumn(name = "product_id", nullable = false)
-    private ProductInfoEntity product;
+    private ProductEntity product;
 }
