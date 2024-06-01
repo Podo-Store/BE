@@ -1,7 +1,10 @@
 package PodoeMarket.podoemarket.Utils;
 
+import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.WishScriptDTO;
+import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
+import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +51,9 @@ public class EntityToDTOConverter {
         wishScriptDTO.setLikeCount(repo.countByWishScriptId(entity.getId()));
 
         return wishScriptDTO;
+    }
+
+    public static ProductDTO converToProductDTO(ProductEntity entity, String nickname, ProductRepository repo) {
+        ProductDTO productDTO = new ProductDTO();
     }
 }

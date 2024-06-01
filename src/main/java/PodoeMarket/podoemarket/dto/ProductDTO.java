@@ -15,8 +15,16 @@ import java.util.UUID;
 public class ProductDTO {
     private UUID id;
     private String title;
-    private int category;
+    private String writer;
+    private String filePath;
     private int genre;
+    private int characterNumber;
+    private int runtime;
+    private int price;
+    private boolean performance;
+    private int performancePrice;
+    private String content;
+    private boolean status;
     private boolean checked;
     private LocalDate date;
 }

@@ -1,5 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -68,9 +71,10 @@ public class MypageService {
         return originalUser;
     }
 
-    public ProductEntity product(String nickname) {
-        final ProductEntity product = productRepo.findByWriter(nickname);
-
-        return product;
-    }
+//    public List<ProductDTO> getAllProducts(String nickname) {
+//        List<ProductEntity> products = productRepo.findAll();
+//
+//        return products.stream()
+//                .map(products -> EntityToDTOConverter)
+//    }
 }
