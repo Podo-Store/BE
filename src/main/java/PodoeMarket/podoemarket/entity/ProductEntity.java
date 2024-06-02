@@ -50,11 +50,15 @@ public class ProductEntity {
     // 0 : 입력 전, 1 : 30분 이내, 2 : 1시간, 3 : 1시간 30분, 4 : 2시간 이상
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private int price;
+    @ColumnDefault("False")
+    private boolean script;
 
     @Column(nullable = false)
     @ColumnDefault("0")
+    private int scriptPrice;
+
+    @Column(nullable = false)
+    @ColumnDefault("False")
     private boolean performance;
 
     @Column
@@ -63,10 +67,6 @@ public class ProductEntity {
 
     @Column
     private String content;
-
-    @Column(nullable = false)
-    @ColumnDefault("False")
-    private boolean status;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
