@@ -18,6 +18,7 @@ public class ProductDTO {
     private String title;
     private String writer;
     private String filePath;
+    private String imagePath;
     private int genre;
     private int characterNumber;
     private int runtime;
@@ -25,6 +26,7 @@ public class ProductDTO {
     private int scriptPrice;
     private boolean performance;
     private int performancePrice;
+    private String story;
     private String content;
     private boolean checked;
     private LocalDate date;

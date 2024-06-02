@@ -1,10 +1,8 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidUser;
-import PodoeMarket.podoemarket.dto.EmailCheckDTO;
-import PodoeMarket.podoemarket.dto.EmailRequestDTO;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
-import PodoeMarket.podoemarket.dto.UserDTO;
+import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
@@ -25,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
@@ -210,8 +209,29 @@ public class MypageController {
         }
     }
 
-//    @PostMapping("/script")
-//    public ResponseEntity<?> scriptDetail(@RequestBody ) {
-//
-//    }
+    @GetMapping("/scriptDetail")
+    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID id) {
+        try{
+            ProductEntity product = mypageService.product(id);
+            ProductDTO productInfo = EntityToDTOConverter.converToSingleProductDTO(product);
+
+            return ResponseEntity.ok().body(productInfo);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/scriptDetail")
+    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
+        try{
+            // 대표 이미지 설정
+
+
+
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

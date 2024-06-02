@@ -48,7 +48,7 @@ public class RegisterController {
             ProductEntity script = ProductEntity.builder()
                     .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
                     .writer(user.getNickname())
-                    .type(file.getContentType())
+                    .fileType(file.getContentType())
                     .filePath(dest.getPath())
                     .user(userInfo)
                     .build();

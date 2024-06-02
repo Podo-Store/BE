@@ -28,10 +28,16 @@ public class ProductEntity {
     private String writer;
 
     @Column(nullable = false)
-    private String type;
+    private String fileType;
 
     @Column(nullable = false)
     private String filePath;
+
+    @Column(nullable = false)
+    private String imageType;
+
+    @Column(nullable = false)
+    private String imagePath;
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -67,6 +73,9 @@ public class ProductEntity {
 
     @Column
     private String content;
+
+    @Column
+    private String story;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)

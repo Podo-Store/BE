@@ -66,7 +66,6 @@ public class MypageService {
     }
 
     public UserEntity originalUser(UUID id) {
-
         return userRepo.findById(id);
     }
 
@@ -76,5 +75,9 @@ public class MypageService {
         return products.stream()
                 .map(product -> EntityToDTOConverter.converToProductDTO(product, productLikeRepo))
                 .collect(Collectors.toList());
+    }
+
+    public ProductEntity product(UUID id) {
+        return productRepo.findById(id);
     }
 }

@@ -57,7 +57,7 @@ public class EntityToDTOConverter {
 
         productDTO.setId(entity.getId());
         productDTO.setTitle(entity.getTitle());
-        // 작품 이미지 삽입 필요
+        productDTO.setImagePath(entity.getImagePath());
         productDTO.setScript(entity.isScript());
         productDTO.setScriptPrice(entity.getScriptPrice());
         productDTO.setPerformance(entity.isPerformance());
@@ -67,6 +67,22 @@ public class EntityToDTOConverter {
 
          productDTO.setLikeCount(repo.countById(entity.getId())); // 좋아요 개수
         // 순위 추가
+
+        return productDTO;
+    }
+
+    public static ProductDTO converToSingleProductDTO(ProductEntity entity) {
+        ProductDTO productDTO = new ProductDTO();
+
+        productDTO.setId(entity.getId());
+        productDTO.setTitle(entity.getTitle());
+        productDTO.setImagePath(entity.getImagePath());
+        productDTO.setContent(entity.getStory());
+        productDTO.setScript(entity.isScript());
+        productDTO.setScriptPrice(entity.getScriptPrice());
+        productDTO.setPerformance(entity.isPerformance());
+        productDTO.setPerformancePrice(entity.getPerformancePrice());
+        productDTO.setContent(entity.getContent());
 
         return productDTO;
     }
