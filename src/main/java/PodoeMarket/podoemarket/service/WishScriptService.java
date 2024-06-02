@@ -35,7 +35,7 @@ public class WishScriptService {
         wishScriptRepo.save(wishScriptEntity);
     }
 
-    public List<WishScriptDTO> getAllEntities(UUID userId) {
+    public List<WishScriptDTO> getAllScripts(UUID userId) {
         List<WishScriptEntity> wishScripts = wishScriptRepo.findAll();
 
         return wishScripts.stream()
@@ -43,7 +43,7 @@ public class WishScriptService {
                 .collect(Collectors.toList());
     }
 
-    public List<WishScriptDTO> getAllEntities() {
+    public List<WishScriptDTO> getAllScripts() {
         List<WishScriptEntity> wishScripts = wishScriptRepo.findAll();
 
         return wishScripts.stream()

@@ -1,7 +1,10 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -18,8 +23,9 @@ import java.util.UUID;
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
+    private final ProductLikeRepository productLikeRepo;
 
-    public UserEntity update(UUID id, final UserEntity userEntity) {
+    public void update(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
         final String type = userEntity.getType();
@@ -45,17 +51,14 @@ public class MypageService {
         user.setType(type);
         user.setFilePath(filepath);
 
-        return userRepo.save(user);
+        userRepo.save(user);
     }
 
     public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {
         try{
             final UserEntity originalUser = userRepo.findById(id);
 
-            if(originalUser != null && encoder.matches(password, originalUser.getPassword()))
-                return true;
-            else
-                return false;
+            return originalUser != null && encoder.matches(password, originalUser.getPassword());
         } catch (Exception e){
             log.error("MypageService.checkUser 메소드 중 예외 발생", e);
             return false;
@@ -63,14 +66,18 @@ public class MypageService {
     }
 
     public UserEntity originalUser(UUID id) {
-        final UserEntity originalUser = userRepo.findById(id);
-
-        return originalUser;
+        return userRepo.findById(id);
     }
 
-    public ProductEntity product(String nickname) {
-        final ProductEntity product = productRepo.findByWriter(nickname);
+    public List<ProductDTO> getAllProducts(String nickname) {
+        List<ProductEntity> products = productRepo.findAllByWriter(nickname);
 
-        return product;
+        return products.stream()
+                .map(product -> EntityToDTOConverter.converToProductDTO(product, productLikeRepo))
+                .collect(Collectors.toList());
+    }
+
+    public ProductEntity product(UUID id) {
+        return productRepo.findById(id);
     }
 }
