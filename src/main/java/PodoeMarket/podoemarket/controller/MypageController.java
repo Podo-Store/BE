@@ -189,7 +189,7 @@ public class MypageController {
 
             file.transferTo(dest);
             // token 값 변경 가능성 있음
-            mypageService.update(userInfo.getId(), user);
+            mypageService.userUpdate(userInfo.getId(), user);
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
@@ -227,8 +227,21 @@ public class MypageController {
         try{
             // 대표 이미지 설정
 
+            ProductEntity product = ProductEntity.builder()
+                    .genre(dto.getGenre())
+                    .characterNumber(dto.getCharacterNumber())
+                    .runtime(dto.getRuntime())
+                    .title(dto.getTitle())
+                    .story(dto.getStory())
+                    .script(dto.isScript())
+                    .performance(dto.isPerformance())
+                    .scriptPrice(dto.getScriptPrice())
+                    .performancePrice(dto.getPerformancePrice())
+                    .content(dto.getContent())
+                    .build();
 
-
+            mypageService.productUpdate(dto.getId(), product);
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
