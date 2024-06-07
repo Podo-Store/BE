@@ -25,7 +25,7 @@ public class MypageService {
     private final ProductRepository productRepo;
     private final ProductLikeRepository productLikeRepo;
 
-    public void update(UUID id, final UserEntity userEntity) {
+    public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
         final String type = userEntity.getType();
@@ -79,5 +79,23 @@ public class MypageService {
 
     public ProductEntity product(UUID id) {
         return productRepo.findById(id);
+    }
+
+    public void productUpdate(UUID id, final ProductEntity productEntity) {
+        final ProductEntity product = productRepo.findById(id);
+
+        // 사진 추가
+        product.setGenre(productEntity.getGenre());
+        product.setCharacterNumber(productEntity.getCharacterNumber());
+        product.setRuntime(productEntity.getRuntime());
+        product.setTitle(productEntity.getTitle());
+        product.setStory(productEntity.getStory());
+        product.setScript(productEntity.isScript());
+        product.setPerformance(productEntity.isPerformance());
+        product.setScriptPrice(productEntity.getScriptPrice());
+        product.setPerformancePrice(productEntity.getPerformancePrice());
+        product.setContent(productEntity.getContent());
+
+        productRepo.save(product);
     }
 }
