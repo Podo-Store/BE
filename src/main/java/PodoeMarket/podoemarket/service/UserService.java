@@ -73,21 +73,16 @@ public class UserService {
 //            log.info("original User: {}", originalUser);
 
             if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
-                log.info("same Password");
                 return originalUser;
             } else if (originalUser == null) {
-                log.info("wrong email");
-
                 // 로그인 실패 시, 실패 이유 전달을 위한 메세지 작성
                 UserEntity user = new UserEntity();
-                user.setNickname("wrong userId");
+                user.setNickname("잘못된 아이디");
 
                 return user;
             } else if(!encoder.matches(password, originalUser.getPassword())) {
-                log.info("wrong password");
-
                 UserEntity user = new UserEntity();
-                user.setNickname("wrong password");
+                user.setNickname("잘못된 비밀번호");
 
                 return user;
             } else{

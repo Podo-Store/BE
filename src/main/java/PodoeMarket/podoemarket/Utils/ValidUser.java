@@ -84,7 +84,7 @@ public class ValidUser {
     }
 
     public static boolean isValidNickname(String nickname) {
-        String regx_nick = "^[0-9a-zA-Zㄱ-ㅎ가-힣 ]{0,8}$"; // 한글, 영어, 숫자, (-8)
+        String regx_nick = "^[0-9a-zA-Zㄱ-ㅎ가-힣 ]{3,8}$"; // 한글, 영어, 숫자, (-8)
 
         if(nickname == null || nickname.isBlank()) {
             log.warn("nickname is null or empty");

@@ -20,6 +20,7 @@ public class UserDTO {
     private String nickname;
     private boolean auth;
     private String authNum;
+    private boolean check;
     private String accessToken; // jwt 저장공간
     private String refreshToken; // jwt 저장공간
 }

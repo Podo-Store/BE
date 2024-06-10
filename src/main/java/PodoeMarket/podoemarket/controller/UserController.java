@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Controller
@@ -36,25 +37,39 @@ public class UserController {
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
         try {
-            log.info("check userId");
+            if(dto.isCheck()) {
+                log.info("check userId");
 
-            if(userService.checkUserId(dto.getUserId())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이미 존재하는 아이디")
-                        .build();
+                if(userService.checkUserId(dto.getUserId())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("이미 존재하는 아이디")
+                            .build();
 
-                return ResponseEntity.badRequest().body(resDTO);
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+
+                if(!ValidUser.isValidUserId(dto.getUserId())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("아이디 유효성 검사 실패")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+
+                return ResponseEntity.ok().body(true);
+            } else {
+                log.info("check userId");
+
+                if(!userService.checkUserId(dto.getUserId())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("존재하지 않는 아이디")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+
+                return ResponseEntity.ok().body(true);
             }
-            
-            if(!ValidUser.isValidUserId(dto.getUserId())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("아이디 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-            
-            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -63,28 +78,38 @@ public class UserController {
 
     @PostMapping("/checkPw")
     public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
-        if(!ValidUser.isValidPw(dto.getPassword())){
-            ResponseDTO resDTO = ResponseDTO.builder()
-                    .error("비밀번호 유효성 검사 실패")
-                    .build();
+        try{
+            if(!ValidUser.isValidPw(dto.getPassword())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("비밀번호 유효성 검사 실패")
+                        .build();
 
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
-
-        return ResponseEntity.ok().body(true);
     }
 
     @PostMapping("/equalPw")
     public ResponseEntity<?> equalPassword(@RequestBody UserDTO dto) {
-        if(!dto.getPassword().equals(dto.getConfirmPassword())){
-            ResponseDTO resDTO = ResponseDTO.builder()
-                    .error("비밀번호 불일치")
-                    .build();
+        try{
+            if(!dto.getPassword().equals(dto.getConfirmPassword())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("비밀번호 불일치")
+                        .build();
 
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
-
-        return ResponseEntity.ok().body(true);
     }
 
     @PostMapping("/checkNickname")
@@ -158,10 +183,10 @@ public class UserController {
 
             boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
 
-            if(Checked) {
+            if(Checked)
                 return ResponseEntity.ok().body(true);
-            } else
-                throw new NullPointerException("Null Exception");
+            else
+                return ResponseEntity.badRequest().body(false);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -275,26 +300,6 @@ public class UserController {
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(resDTO);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/confirmUserId")
-    public ResponseEntity<?> confirmUserId(@RequestParam String userId) {
-        try {
-            UserEntity user = userService.findUserUserId(userId);
-
-            if(user == null) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("회원 정보 없음")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            return ResponseEntity.ok().body(user.getEmail());
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
