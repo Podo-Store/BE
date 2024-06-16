@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidUser;
+import PodoeMarket.podoemarket.config.jwt.JwtProperties;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
@@ -10,9 +11,13 @@ import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +38,8 @@ public class UserController {
     private final MailSendService mailService;
     private final RedisUtil redisUtil;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
@@ -287,7 +294,7 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            UserEntity user = userService.findUserEmail(dto.getEmail());
+            UserEntity user = userService.getByUserEmail(dto.getEmail());
 
             String userId = user.getUserId();
             String date = String.valueOf(user.getDate());
@@ -355,4 +362,65 @@ public class UserController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    // accessToken 재발급
+    @PostMapping("/newToken")
+    public ResponseEntity<?> createNewToken(HttpServletRequest request){
+        try {
+            String token = request.getHeader("Authorization").substring(7);
+            log.info("create new accessToken from : {}", token);
+
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtProperties.getSecretKey())
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            UUID id = UUID.fromString(claims.getSubject());
+            log.info("id : {}", id);
+
+            UserEntity user = userService.getById(id);
+            String accessToken = tokenProvider.createAccessToken(user);
+            final UserDTO resUserDTO = UserDTO.builder()
+                    .userId(user.getUserId())
+                    .nickname(user.getNickname())
+                    .accessToken(accessToken)
+                    .build();
+
+            return ResponseEntity.ok().body(resUserDTO);
+        }catch (Exception e){
+            log.error("/auth/newToken 실행 중 예외 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newToken fail");
+        }
+    }
+
+    // refreshToken 재발급
+    @PostMapping("/newRefreshToken")
+    public ResponseEntity<?> createNewRefreshToken(HttpServletRequest request){
+        try {
+            String token = request.getHeader("Authorization").substring(7);
+            log.info("create new refresh Token from : {}", token);
+
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtProperties.getSecretKey())
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            UUID id = UUID.fromString(claims.getSubject());
+            log.info("id : {}", id);
+
+            UserEntity user = userService.getById(id);
+            String refreshToken = tokenProvider.createRefreshToken(user);
+            final UserDTO resUserDTO = UserDTO.builder()
+                    .userId(user.getUserId())
+                    .nickname(user.getNickname())
+                    .refreshToken(refreshToken)
+                    .build();
+
+            return ResponseEntity.ok().body(resUserDTO);
+        }catch (Exception e){
+            log.error("/auth/newrefreshToken 실행 중 예외 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newRefreshToken fail");
+        }
+    }
+
 }

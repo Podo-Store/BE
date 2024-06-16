@@ -107,12 +107,12 @@ public class UserService {
         return userRepo.existsByNickname(nickname);
     }
 
-    public UserEntity findUserEmail(final String email) {
+    public UserEntity getByUserEmail(final String email) {
         return userRepo.findByEmail(email);
     }
 
-    public UserEntity findUserUserId(final String userId) {
-        return userRepo.findByUserId(userId);
+    public UserEntity getById(final UUID id) {
+        return userRepo.findById(id);
     }
 
     public UserEntity update(UUID id, final UserEntity userEntity) {
