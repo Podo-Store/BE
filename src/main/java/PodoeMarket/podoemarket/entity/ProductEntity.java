@@ -33,10 +33,10 @@ public class ProductEntity {
     @Column(nullable = false)
     private String filePath;
 
-    @Column(nullable = false)
+    @Column
     private String imageType;
 
-    @Column(nullable = false)
+    @Column
     private String imagePath;
 
     @Column(nullable = false)

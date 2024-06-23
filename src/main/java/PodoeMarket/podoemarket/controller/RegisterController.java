@@ -5,6 +5,8 @@ import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.ProductService;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,10 @@ import java.time.format.DateTimeFormatter;
 public class RegisterController {
     private final ProductService productService;
     private final MypageService mypageService;
+    private final AmazonS3 amazonS3;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
    @Value("${UPLOAD_LOCATION}")
     private String uploadLoc;
@@ -62,4 +68,36 @@ public class RegisterController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @PostMapping("/register2")
+    public ResponseEntity<?> scriptRegister2(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
+        try{
+            UserEntity user = mypageService.originalUser(userInfo.getId());
+
+            String originalFilename = file.getOriginalFilename();
+
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            metadata.setContentType(file.getContentType());
+
+            amazonS3.putObject(bucket, originalFilename, file.getInputStream(), metadata);
+
+            ProductEntity script = ProductEntity.builder()
+                    .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
+                    .writer(user.getNickname())
+                    .fileType(file.getContentType())
+                    .filePath(amazonS3.getUrl(bucket, originalFilename).toString())
+                    .user(userInfo)
+                    .build();
+
+            productService.register(script);
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }
+
+
