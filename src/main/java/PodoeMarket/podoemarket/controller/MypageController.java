@@ -9,6 +9,8 @@ import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,10 @@ public class MypageController {
     private final MailSendService mailService;
     private final UserService userService;
     private final RedisUtil redisUtil;
+    private final AmazonS3 amazonS3;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
@@ -150,6 +156,55 @@ public class MypageController {
         }
     }
 
+//    @PostMapping("/update")
+//    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
+//        try{
+//            if(!ValidUser.isValidUser(dto)) {
+//                ResponseDTO resDTO = ResponseDTO.builder()
+//                        .error("유효성 검사 실패")
+//                        .build();
+//
+//                return ResponseEntity.badRequest().body(resDTO);
+//            }
+//
+//            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+//                ResponseDTO resDTO = ResponseDTO.builder()
+//                        .error("이메일 인증 실패")
+//                        .build();
+//
+//                return ResponseEntity.badRequest().body(resDTO);
+//            }
+//
+//            File uploadDir = new File(profileLoc);
+//
+//            if (!uploadDir.exists()) {
+//                uploadDir.mkdirs();
+//            }
+//
+//            String filePath = dto.getUserId() + "_" + file.getOriginalFilename();
+//            File dest = new File(profileLoc + File.separator + filePath);
+//
+//            UserEntity user = UserEntity.builder()
+//                    .userId(dto.getUserId())
+//                    .password(pwdEncoder.encode(dto.getPassword()))
+//                    .nickname(dto.getNickname())
+//                    .email(dto.getEmail())
+//                    .type(file.getContentType())
+//                    .filePath(dest.getPath())
+//                    .build();
+//
+//            file.transferTo(dest);
+//            // token 값 변경 가능성 있음
+//            mypageService.userUpdate(userInfo.getId(), user);
+//            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+//
+//            return ResponseEntity.ok().body(true);
+//        } catch(Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+//    }
+
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
         try{
@@ -161,22 +216,22 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 인증 실패")
-                        .build();
+//            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+//                ResponseDTO resDTO = ResponseDTO.builder()
+//                        .error("이메일 인증 실패")
+//                        .build();
+//
+//                return ResponseEntity.badRequest().body(resDTO);
+//            }
 
-                return ResponseEntity.badRequest().body(resDTO);
-            }
+            String originalFilename = file.getOriginalFilename();
 
-            File uploadDir = new File(profileLoc);
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            metadata.setContentType(file.getContentType());
 
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
+            amazonS3.putObject(bucket, originalFilename, file.getInputStream(), metadata);
 
-            String filePath = dto.getUserId() + "_" + file.getOriginalFilename();
-            File dest = new File(profileLoc + File.separator + filePath);
 
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
@@ -184,13 +239,12 @@ public class MypageController {
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-                    .filePath(dest.getPath())
+                    .filePath(amazonS3.getUrl(bucket, originalFilename).toString())
                     .build();
 
-            file.transferTo(dest);
             // token 값 변경 가능성 있음
             mypageService.userUpdate(userInfo.getId(), user);
-            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+//            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

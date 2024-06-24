@@ -32,45 +32,48 @@ public class RegisterController {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-   @Value("${UPLOAD_LOCATION}")
-    private String uploadLoc;
+    @Value("${cloud.aws.s3.folder.folderName2}")
+    private String bucketFolder;
+
+//   @Value("${UPLOAD_LOCATION}")
+//    private String uploadLoc;
+
+//    @PostMapping("/register")
+//    public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
+//        try{
+//            UserEntity user = mypageService.originalUser(userInfo.getId());
+//
+//            // 파일 저장 경로 파싱
+//            String currentDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+//            File uploadDir = new File(uploadLoc + File.separator + currentDate);
+//
+//            // 폴더가 없으면 생성
+//            if (!uploadDir.exists()) {
+//                uploadDir.mkdirs();
+//            }
+//
+//            File dest = new File(uploadDir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+//
+//            ProductEntity script = ProductEntity.builder()
+//                    .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
+//                    .writer(user.getNickname())
+//                    .fileType(file.getContentType())
+//                    .filePath(dest.getPath())
+//                    .user(userInfo)
+//                    .build();
+//
+//            file.transferTo(dest);
+//            productService.register(script);
+//
+//            return ResponseEntity.ok().body(true);
+//        } catch(Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+//    }
 
     @PostMapping("/register")
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
-        try{
-            UserEntity user = mypageService.originalUser(userInfo.getId());
-
-            // 파일 저장 경로 파싱
-            String currentDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
-            File uploadDir = new File(uploadLoc + File.separator + currentDate);
-
-            // 폴더가 없으면 생성
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-
-            File dest = new File(uploadDir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-
-            ProductEntity script = ProductEntity.builder()
-                    .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
-                    .writer(user.getNickname())
-                    .fileType(file.getContentType())
-                    .filePath(dest.getPath())
-                    .user(userInfo)
-                    .build();
-
-            file.transferTo(dest);
-            productService.register(script);
-
-            return ResponseEntity.ok().body(true);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @PostMapping("/register2")
-    public ResponseEntity<?> scriptRegister2(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
         try{
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
