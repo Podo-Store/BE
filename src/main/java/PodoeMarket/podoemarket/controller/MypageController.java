@@ -36,15 +36,8 @@ public class MypageController {
     private final MailSendService mailService;
     private final UserService userService;
     private final RedisUtil redisUtil;
-    private final AmazonS3 amazonS3;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
-
-    @Value("${PROFILE_LOCATION}")
-    private String profileLoc;
 
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
@@ -156,55 +149,6 @@ public class MypageController {
         }
     }
 
-//    @PostMapping("/update")
-//    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
-//        try{
-//            if(!ValidUser.isValidUser(dto)) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("유효성 검사 실패")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
-//
-//            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("이메일 인증 실패")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
-//
-//            File uploadDir = new File(profileLoc);
-//
-//            if (!uploadDir.exists()) {
-//                uploadDir.mkdirs();
-//            }
-//
-//            String filePath = dto.getUserId() + "_" + file.getOriginalFilename();
-//            File dest = new File(profileLoc + File.separator + filePath);
-//
-//            UserEntity user = UserEntity.builder()
-//                    .userId(dto.getUserId())
-//                    .password(pwdEncoder.encode(dto.getPassword()))
-//                    .nickname(dto.getNickname())
-//                    .email(dto.getEmail())
-//                    .type(file.getContentType())
-//                    .filePath(dest.getPath())
-//                    .build();
-//
-//            file.transferTo(dest);
-//            // token 값 변경 가능성 있음
-//            mypageService.userUpdate(userInfo.getId(), user);
-//            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
-//
-//            return ResponseEntity.ok().body(true);
-//        } catch(Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
-
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
         try{
@@ -216,22 +160,15 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-//            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("이메일 인증 실패")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
+            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
 
-            String originalFilename = file.getOriginalFilename();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.getSize());
-            metadata.setContentType(file.getContentType());
-
-            amazonS3.putObject(bucket, originalFilename, file.getInputStream(), metadata);
-
+            String filePath = mypageService.uploadUserImage(file);
 
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
@@ -239,12 +176,12 @@ public class MypageController {
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-                    .filePath(amazonS3.getUrl(bucket, originalFilename).toString())
+                    .filePath(filePath)
                     .build();
 
             // token 값 변경 가능성 있음
             mypageService.userUpdate(userInfo.getId(), user);
-//            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -280,8 +217,11 @@ public class MypageController {
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
         try{
             // 대표 이미지 설정
+            String filePath = mypageService.uploadScriptImage(file);
 
             ProductEntity product = ProductEntity.builder()
+                    .imagePath(filePath)
+                    .imageType(file.getContentType())
                     .genre(dto.getGenre())
                     .characterNumber(dto.getCharacterNumber())
                     .runtime(dto.getRuntime())

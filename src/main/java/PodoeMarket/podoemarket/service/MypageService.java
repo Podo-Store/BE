@@ -7,11 +7,16 @@ import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -24,6 +29,16 @@ public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final AmazonS3 amazonS3;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
+    @Value("${cloud.aws.s3.folder.folderName1}")
+    private String userImageBucketFolder;
+
+    @Value("${cloud.aws.s3.folder.folderName3}")
+    private String scriptImageBucketFolder;
 
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -39,19 +54,28 @@ public class MypageService {
             }
         }
 
-
-        if(userEntity.getType() != null && userEntity.getFilePath() != null) {
-            if(!Objects.equals(type, "image/jpeg") && !Objects.equals(type, "image/png")) {
-                throw new RuntimeException("file type is wrong");
-            }
-        }
-
         user.setPassword(password);
         user.setNickname(nickname);
         user.setType(type);
         user.setFilePath(filepath);
 
         userRepo.save(user);
+    }
+
+    public String uploadUserImage(MultipartFile file) throws IOException {
+        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
+            throw new RuntimeException("file type is wrong");
+        }
+
+        String filePath = userImageBucketFolder + file.getOriginalFilename();
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
+
+        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
+
+        return filePath;
     }
 
     public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {
@@ -97,5 +121,21 @@ public class MypageService {
         product.setContent(productEntity.getContent());
 
         productRepo.save(product);
+    }
+
+    public String uploadScriptImage(MultipartFile file) throws IOException {
+        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
+            throw new RuntimeException("file type is wrong");
+        }
+
+        String filePath = scriptImageBucketFolder + file.getOriginalFilename();
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
+
+        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
+
+        return filePath;
     }
 }
