@@ -57,6 +57,8 @@ public class EntityToDTOConverter {
 
         productDTO.setId(entity.getId());
         productDTO.setTitle(entity.getTitle());
+        productDTO.setWriter(entity.getWriter());
+        productDTO.setFilePath(entity.getFilePath());
         productDTO.setImagePath(entity.getImagePath());
         productDTO.setScript(entity.isScript());
         productDTO.setScriptPrice(entity.getScriptPrice());
@@ -76,6 +78,8 @@ public class EntityToDTOConverter {
 
         productDTO.setId(entity.getId());
         productDTO.setTitle(entity.getTitle());
+        productDTO.setWriter(entity.getWriter());
+        productDTO.setFilePath(entity.getFilePath());
         productDTO.setImagePath(entity.getImagePath());
         productDTO.setContent(entity.getStory());
         productDTO.setScript(entity.isScript());

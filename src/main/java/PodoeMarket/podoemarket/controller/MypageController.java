@@ -216,7 +216,6 @@ public class MypageController {
     @PostMapping("/scriptDetail")
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
         try{
-            // 대표 이미지 설정
             String filePath = mypageService.uploadScriptImage(file);
 
             ProductEntity product = ProductEntity.builder()

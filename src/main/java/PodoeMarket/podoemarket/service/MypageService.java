@@ -75,7 +75,7 @@ public class MypageService {
 
         amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
 
-        return filePath;
+        return amazonS3.getUrl(bucket, filePath).toString();
     }
 
     public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {
@@ -108,7 +108,8 @@ public class MypageService {
     public void productUpdate(UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
-        // 사진 추가
+        product.setImagePath(productEntity.getImagePath());
+        product.setImageType(productEntity.getImageType());
         product.setGenre(productEntity.getGenre());
         product.setCharacterNumber(productEntity.getCharacterNumber());
         product.setRuntime(productEntity.getRuntime());
@@ -136,6 +137,6 @@ public class MypageService {
 
         amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
 
-        return filePath;
+        return amazonS3.getUrl(bucket, filePath).toString();
     }
 }

@@ -22,9 +22,6 @@ public class RegisterController {
     private final ProductService productService;
     private final MypageService mypageService;
 
-    @Value("${cloud.aws.s3.folder.folderName2}")
-    private String bucketFolder;
-
     @PostMapping("/register")
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
         try{

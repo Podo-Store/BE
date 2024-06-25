@@ -43,7 +43,7 @@ public class ProductService {
 
         amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
 
-        return filePath;
+        return amazonS3.getUrl(bucket, filePath).toString();
     }
 
 }
