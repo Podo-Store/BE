@@ -33,10 +33,10 @@ public class ProductEntity {
     @Column(nullable = false)
     private String filePath;
 
-    @Column(nullable = false)
+    @Column
     private String imageType;
 
-    @Column(nullable = false)
+    @Column
     private String imagePath;
 
     @Column(nullable = false)
@@ -57,7 +57,7 @@ public class ProductEntity {
 
     @Column(nullable = false)
     @ColumnDefault("False")
-    private boolean script;
+    private boolean script; // 대본권 판매 여부
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -65,7 +65,7 @@ public class ProductEntity {
 
     @Column(nullable = false)
     @ColumnDefault("False")
-    private boolean performance;
+    private boolean performance; // 공연권 판매 여부
 
     @Column
     @ColumnDefault("0")

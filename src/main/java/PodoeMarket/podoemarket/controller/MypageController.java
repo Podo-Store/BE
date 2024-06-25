@@ -9,6 +9,8 @@ import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,9 +38,6 @@ public class MypageController {
     private final RedisUtil redisUtil;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
-
-    @Value("${PROFILE_LOCATION}")
-    private String profileLoc;
 
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
@@ -169,14 +168,7 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            File uploadDir = new File(profileLoc);
-
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-
-            String filePath = dto.getUserId() + "_" + file.getOriginalFilename();
-            File dest = new File(profileLoc + File.separator + filePath);
+            String filePath = mypageService.uploadUserImage(file);
 
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
@@ -184,10 +176,9 @@ public class MypageController {
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
                     .type(file.getContentType())
-                    .filePath(dest.getPath())
+                    .filePath(filePath)
                     .build();
 
-            file.transferTo(dest);
             // token 값 변경 가능성 있음
             mypageService.userUpdate(userInfo.getId(), user);
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
@@ -225,9 +216,11 @@ public class MypageController {
     @PostMapping("/scriptDetail")
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
         try{
-            // 대표 이미지 설정
+            String filePath = mypageService.uploadScriptImage(file);
 
             ProductEntity product = ProductEntity.builder()
+                    .imagePath(filePath)
+                    .imageType(file.getContentType())
                     .genre(dto.getGenre())
                     .characterNumber(dto.getCharacterNumber())
                     .runtime(dto.getRuntime())
