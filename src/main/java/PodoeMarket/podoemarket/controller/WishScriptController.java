@@ -68,11 +68,11 @@ public class WishScriptController {
     }
 
     @PostMapping("/like")
-    public ResponseEntity<?> like(@AuthenticationPrincipal UserEntity userInfo, @RequestBody WishScriptDTO dto) {
+    public ResponseEntity<?> wishScriptLike(@AuthenticationPrincipal UserEntity userInfo, @RequestBody WishScriptDTO dto) {
         try{
-            boolean islike = wishScriptService.isLike(userInfo.getId(), dto.getId());
+            boolean isLike = wishScriptService.isLike(userInfo.getId(), dto.getId());
 
-            if (islike) { // 좋아요 취소
+            if (isLike) { // 좋아요 취소
                 wishScriptService.delete(userInfo.getId(), dto.getId());
 
                 return ResponseEntity.ok().body("like delete");

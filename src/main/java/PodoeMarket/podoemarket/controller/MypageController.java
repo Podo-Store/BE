@@ -200,19 +200,6 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/scriptDetail")
-    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID id) {
-        try{
-            ProductEntity product = mypageService.product(id);
-            ProductDTO productInfo = EntityToDTOConverter.converToSingleProductDTO(product);
-
-            return ResponseEntity.ok().body(productInfo);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     @PostMapping("/scriptDetail")
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
         try{

@@ -101,10 +101,6 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public ProductEntity product(UUID id) {
-        return productRepo.findById(id);
-    }
-
     public void productUpdate(UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
