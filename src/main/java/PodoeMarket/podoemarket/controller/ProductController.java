@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.ProductService;
@@ -42,8 +43,21 @@ public class ProductController {
         try {
             boolean isLike = productService.isLike(userInfo.getId(), dto.getId());
 
-            if (isLike) {
+            if (isLike) { // 좋아요 취소
+                productService.delete(userInfo.getId(), dto.getId());
 
+                return ResponseEntity.ok().body("like delete");
+            } else { // 좋아요 생성
+                ProductEntity product = productService.product(dto.getId());
+
+                ProductLikeEntity like = ProductLikeEntity.builder()
+                        .user(userInfo)
+                        .product(product)
+                        .build();
+
+                productService.likeCreate(like);
+
+                return ResponseEntity.ok().body("like success");
             }
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();

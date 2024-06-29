@@ -28,6 +28,10 @@ public class ProductService {
     public void delete(UUID userId, UUID productId) {
         ProductLikeEntity deleteInfo = productLikeRepo.findByUserIdAndProductId(userId,productId);
 
+        productLikeRepo.deleteById(deleteInfo.getId());
+    }
 
+    public void likeCreate(final ProductLikeEntity productLikeEntity) {
+        productLikeRepo.save(productLikeEntity);
     }
 }

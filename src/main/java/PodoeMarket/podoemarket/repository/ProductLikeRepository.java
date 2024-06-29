@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.repository;
 
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.entity.WishScriptLikeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -13,4 +12,6 @@ public interface ProductLikeRepository extends JpaRepository<ProductLikeEntity, 
 
     @Query("SELECT wsl FROM ProductLikeEntity wsl WHERE wsl.user.id = :userId AND wsl.product.id = :productId")
     ProductLikeEntity findByUserIdAndProductId(UUID userId, UUID productId);
+
+    void deleteById(UUID id);
 }
