@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class ProductService {
         return productRepo.existsByUserIdAndProductId(userId, productId);
     }
 
+    @Transactional
     public void delete(UUID userId, UUID productId) {
         ProductLikeEntity deleteInfo = productLikeRepo.findByUserIdAndProductId(userId,productId);
 
