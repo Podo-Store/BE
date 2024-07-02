@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.UUID;
 
 public interface ProductLikeRepository extends JpaRepository<ProductLikeEntity, Long> {
-    BigInteger countById(UUID id);
+    BigInteger countByProductId(UUID id);
 
     @Query("SELECT wsl FROM ProductLikeEntity wsl WHERE wsl.user.id = :userId AND wsl.product.id = :productId")
     ProductLikeEntity findByUserIdAndProductId(UUID userId, UUID productId);

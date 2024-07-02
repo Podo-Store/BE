@@ -7,10 +7,12 @@ import PodoeMarket.podoemarket.entity.WishScriptEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
@@ -67,7 +69,7 @@ public class EntityToDTOConverter {
         productDTO.setDate(entity.getDate());
         productDTO.setChecked(entity.isChecked());
 
-         productDTO.setLikeCount(repo.countById(entity.getId())); // 좋아요 개수
+        productDTO.setLikeCount(repo.countByProductId(entity.getId())); // 좋아요 개수
         // 순위 추가
 
         return productDTO;
