@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.controller;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
@@ -42,7 +43,7 @@ public class ProductController {
             boolean isLike = productService.isLike(userInfo.getId(), dto.getId());
 
             if (isLike) { // 좋아요 취소
-                productService.delete(userInfo.getId(), dto.getId());
+                productService.likeDelete(userInfo.getId(), dto.getId());
 
                 return ResponseEntity.ok().body("like delete");
             } else { // 좋아요 생성
@@ -56,6 +57,33 @@ public class ProductController {
                 productService.likeCreate(like);
 
                 return ResponseEntity.ok().body("like success");
+            }
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/basket")
+    public ResponseEntity<?> productBasket(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProductDTO dto) {
+        try {
+            boolean isBasket = productService.isBasket(userInfo.getId(), dto.getId());
+
+            if(isBasket) { // 장바구니 담기 취소
+                productService.basketDelete(userInfo.getId(), dto.getId());
+
+                return ResponseEntity.ok().body("basket delete");
+            } else { // 장바구니 담기
+                ProductEntity product = productService.product(dto.getId());
+
+                BasketEntity basket = BasketEntity.builder()
+                        .user(userInfo)
+                        .product(product)
+                        .build();
+
+                productService.basketCreate(basket);
+
+                return ResponseEntity.ok().body("basket success");
             }
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();

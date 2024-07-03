@@ -237,4 +237,9 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+//    @GetMapping("/basket")
+//    public ResponseEntity<?> basketList(@AuthenticationPrincipal UserEntity userInfo) {
+//
+//    }
 }

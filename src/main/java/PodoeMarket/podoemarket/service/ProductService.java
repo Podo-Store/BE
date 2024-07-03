@@ -2,8 +2,10 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
+import PodoeMarket.podoemarket.repository.BasketRepository;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class ProductService {
     private final ProductRepository productRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final BasketRepository basketRepo;
 
     public ProductEntity product(UUID id) {
         return productRepo.findById(id);
@@ -29,7 +32,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void delete(UUID userId, UUID productId) {
+    public void likeDelete(UUID userId, UUID productId) {
         ProductLikeEntity deleteInfo = productLikeRepo.findByUserIdAndProductId(userId,productId);
 
         productLikeRepo.deleteById(deleteInfo.getId());
@@ -43,5 +46,20 @@ public class ProductService {
         ProductEntity script = product(productId);
 
         return EntityToDTOConverter.converToSingleProductDTO(script, productLikeRepo, userId);
+    }
+
+    public Boolean isBasket(UUID userId, UUID productId) {
+        return basketRepo.existsByUserIdAndProductId(userId, productId);
+    }
+
+    @Transactional
+    public void basketDelete(UUID userId, UUID productId) {
+        BasketEntity deleteInfo = basketRepo.findByUserIdAndProductId(userId, productId);
+
+        basketRepo.deleteById(deleteInfo.getId());
+    }
+
+    public void basketCreate(final BasketEntity BasketEntity) {
+        basketRepo.save(BasketEntity);
     }
 }
