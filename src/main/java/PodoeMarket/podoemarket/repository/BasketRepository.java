@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BasketRepository extends JpaRepository<BasketEntity, Long> {
@@ -16,4 +17,5 @@ public interface BasketRepository extends JpaRepository<BasketEntity, Long> {
 
     void deleteById(UUID id);
 
+    List<BasketEntity> findAllByUserId(UUID id);
 }

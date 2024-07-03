@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
@@ -13,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -61,5 +64,13 @@ public class ProductService {
 
     public void basketCreate(final BasketEntity BasketEntity) {
         basketRepo.save(BasketEntity);
+    }
+
+    public List<ProductListDTO> getAllBasketProducts(UUID id) {
+        List<BasketEntity> products = basketRepo.findAllByUserId(id);
+
+        return products.stream()
+                .map(EntityToDTOConverter::converToBasketList)
+                .collect(Collectors.toList());
     }
 }

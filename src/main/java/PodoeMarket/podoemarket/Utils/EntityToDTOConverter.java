@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.Utils;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.dto.WishScriptDTO;
+import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
@@ -119,6 +120,23 @@ public class EntityToDTOConverter {
 
         productListDTO.setLikeCount(repo.countByProductId(entity.getProduct().getId())); // 좋아요 개수
         productListDTO.setLike(repo.existsByUserIdAndProductId(id, entity.getProduct().getId()));
+
+        return productListDTO;
+    }
+
+    public static ProductListDTO converToBasketList(BasketEntity entity) {
+        ProductListDTO productListDTO = new ProductListDTO();
+
+        productListDTO.setId(entity.getProduct().getId());
+        productListDTO.setTitle(entity.getProduct().getTitle());
+        productListDTO.setWriter(entity.getProduct().getWriter());
+        productListDTO.setImagePath(entity.getProduct().getImagePath());
+        productListDTO.setScript(entity.getProduct().isScript());
+        productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
+        productListDTO.setPerformance(entity.getProduct().isPerformance());
+        productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
+        productListDTO.setDate(entity.getProduct().getDate());
+        productListDTO.setChecked(entity.getProduct().isChecked());
 
         return productListDTO;
     }

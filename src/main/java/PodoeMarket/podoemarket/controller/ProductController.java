@@ -64,6 +64,16 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/basket")
+    public ResponseEntity<?> basketList(@AuthenticationPrincipal UserEntity userInfo) {
+        try{
+            return ResponseEntity.ok().body(productService.getAllBasketProducts(userInfo.getId()));
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/basket")
     public ResponseEntity<?> productBasket(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProductDTO dto) {
         try {
