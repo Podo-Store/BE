@@ -1,5 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
@@ -35,5 +37,11 @@ public class ProductService {
 
     public void likeCreate(final ProductLikeEntity productLikeEntity) {
         productLikeRepo.save(productLikeEntity);
+    }
+
+    public ProductDTO productDetail(UUID productId, UUID userId) {
+        ProductEntity script = product(productId);
+
+        return EntityToDTOConverter.converToSingleProductDTO(script, productLikeRepo, userId);
     }
 }

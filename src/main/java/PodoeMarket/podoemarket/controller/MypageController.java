@@ -199,8 +199,6 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
-    
-    // scriptDetail GET 요청 생성해야 함
 
     @PostMapping("/scriptDetail")
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
