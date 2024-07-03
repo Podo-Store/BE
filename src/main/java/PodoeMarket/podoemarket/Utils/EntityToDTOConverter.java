@@ -76,7 +76,7 @@ public class EntityToDTOConverter {
         return productListDTO;
     }
 
-    public static ProductDTO converToSingleProductDTO(ProductEntity entity) {
+    public static ProductDTO converToSingleProductDTO(ProductEntity entity, ProductLikeRepository repo, UUID userId) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
@@ -90,6 +90,15 @@ public class EntityToDTOConverter {
         productDTO.setPerformance(entity.isPerformance());
         productDTO.setPerformancePrice(entity.getPerformancePrice());
         productDTO.setContent(entity.getContent());
+        productDTO.setDate(entity.getDate());
+        productDTO.setStory(entity.getStory());
+        productDTO.setGenre(entity.getGenre());
+        productDTO.setCharacterNumber(entity.getCharacterNumber());
+        productDTO.setRuntime(entity.getRuntime());
+        productDTO.setChecked(entity.isChecked());
+
+//        productDTO.setLikeCount(repo.countByProductId(entity.getId())); // 좋아요 개수
+        productDTO.setLike(repo.existsByUserIdAndProductId(userId, entity.getId()));
 
         return productDTO;
     }

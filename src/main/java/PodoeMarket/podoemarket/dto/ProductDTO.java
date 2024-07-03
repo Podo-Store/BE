@@ -32,4 +32,5 @@ public class ProductDTO {
     private LocalDate date;
 
     private BigInteger likeCount;
+    private boolean isLike;
 }

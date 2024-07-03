@@ -22,14 +22,12 @@ import java.util.UUID;
 @Slf4j
 @RequestMapping("/product")
 public class ProductController {
-    private final MypageService mypageService;
     private final ProductService productService;
 
     @GetMapping("/scriptDetail")
-    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID id) {
+    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
         try{
-            ProductEntity product = productService.product(id);
-            ProductDTO productInfo = EntityToDTOConverter.converToSingleProductDTO(product);
+            ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
