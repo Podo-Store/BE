@@ -1,8 +1,9 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -93,16 +94,12 @@ public class MypageService {
         return userRepo.findById(id);
     }
 
-    public List<ProductDTO> getAllProducts(String nickname) {
+    public List<ProductListDTO> getAllMyProducts(String nickname) {
         List<ProductEntity> products = productRepo.findAllByWriter(nickname);
 
         return products.stream()
-                .map(product -> EntityToDTOConverter.converToProductDTO(product, productLikeRepo))
+                .map(product -> EntityToDTOConverter.converToProductList(product, productLikeRepo))
                 .collect(Collectors.toList());
-    }
-
-    public ProductEntity product(UUID id) {
-        return productRepo.findById(id);
     }
 
     public void productUpdate(UUID id, final ProductEntity productEntity) {
@@ -138,5 +135,13 @@ public class MypageService {
         amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
+    }
+
+    public List<ProductListDTO> getAllLikeProducts(UUID id) {
+        List<ProductLikeEntity> products = productLikeRepo.findAllByUserId(id);
+
+        return products.stream()
+                .map(product -> EntityToDTOConverter.converToProductLikeList(product, productLikeRepo, id))
+                .collect(Collectors.toList());
     }
 }

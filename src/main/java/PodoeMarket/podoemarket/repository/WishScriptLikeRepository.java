@@ -15,4 +15,6 @@ public interface WishScriptLikeRepository extends JpaRepository<WishScriptLikeEn
 
     @Query("SELECT wsl FROM WishScriptLikeEntity wsl WHERE wsl.user.id = :userId AND wsl.wish_script.id = :wishScriptId")
     WishScriptLikeEntity findByUserIdAndWishScriptId(UUID userId, UUID wishScriptId);
+
+    void deleteById(UUID id);
 }

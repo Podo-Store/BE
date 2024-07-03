@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ public class ProductLikeEntity {
     // user : product_like = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private UserEntity user;
 
     // product : product_like = 1 : N

@@ -1,16 +1,20 @@
 package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.dto.WishScriptDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.WishScriptEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
@@ -52,25 +56,24 @@ public class EntityToDTOConverter {
         return wishScriptDTO;
     }
 
-    public static ProductDTO converToProductDTO(ProductEntity entity, ProductLikeRepository repo) {
-        ProductDTO productDTO = new ProductDTO();
+    public static ProductListDTO converToProductList(ProductEntity entity, ProductLikeRepository repo) {
+        ProductListDTO productListDTO = new ProductListDTO();
 
-        productDTO.setId(entity.getId());
-        productDTO.setTitle(entity.getTitle());
-        productDTO.setWriter(entity.getWriter());
-        productDTO.setFilePath(entity.getFilePath());
-        productDTO.setImagePath(entity.getImagePath());
-        productDTO.setScript(entity.isScript());
-        productDTO.setScriptPrice(entity.getScriptPrice());
-        productDTO.setPerformance(entity.isPerformance());
-        productDTO.setPerformancePrice(entity.getPerformancePrice());
-        productDTO.setDate(entity.getDate());
-        productDTO.setChecked(entity.isChecked());
+        productListDTO.setId(entity.getId());
+        productListDTO.setTitle(entity.getTitle());
+        productListDTO.setWriter(entity.getWriter());
+        productListDTO.setImagePath(entity.getImagePath());
+        productListDTO.setScript(entity.isScript());
+        productListDTO.setScriptPrice(entity.getScriptPrice());
+        productListDTO.setPerformance(entity.isPerformance());
+        productListDTO.setPerformancePrice(entity.getPerformancePrice());
+        productListDTO.setDate(entity.getDate());
+        productListDTO.setChecked(entity.isChecked());
 
-         productDTO.setLikeCount(repo.countById(entity.getId())); // 좋아요 개수
+        productListDTO.setLikeCount(repo.countByProductId(entity.getId())); // 좋아요 개수
         // 순위 추가
 
-        return productDTO;
+        return productListDTO;
     }
 
     public static ProductDTO converToSingleProductDTO(ProductEntity entity) {
@@ -89,5 +92,25 @@ public class EntityToDTOConverter {
         productDTO.setContent(entity.getContent());
 
         return productDTO;
+    }
+
+    public static ProductListDTO converToProductLikeList(ProductLikeEntity entity, ProductLikeRepository repo, UUID id) {
+        ProductListDTO productListDTO = new ProductListDTO();
+
+        productListDTO.setId(entity.getProduct().getId());
+        productListDTO.setTitle(entity.getProduct().getTitle());
+        productListDTO.setWriter(entity.getProduct().getWriter());
+        productListDTO.setImagePath(entity.getProduct().getImagePath());
+        productListDTO.setScript(entity.getProduct().isScript());
+        productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
+        productListDTO.setPerformance(entity.getProduct().isPerformance());
+        productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
+        productListDTO.setDate(entity.getProduct().getDate());
+        productListDTO.setChecked(entity.getProduct().isChecked());
+
+        productListDTO.setLikeCount(repo.countByProductId(entity.getProduct().getId())); // 좋아요 개수
+        productListDTO.setLike(repo.existsByUserIdAndProductId(id, entity.getProduct().getId()));
+
+        return productListDTO;
     }
 }
