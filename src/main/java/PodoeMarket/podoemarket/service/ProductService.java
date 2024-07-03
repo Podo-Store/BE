@@ -23,7 +23,7 @@ public class ProductService {
     }
 
     public Boolean isLike(UUID userId, UUID productId) {
-        return productRepo.existsByUserIdAndProductId(userId, productId);
+        return productLikeRepo.existsByUserIdAndProductId(userId, productId);
     }
 
     @Transactional

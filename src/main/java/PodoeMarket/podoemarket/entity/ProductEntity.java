@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -95,17 +96,21 @@ public class ProductEntity {
     // user : product = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private UserEntity user;
 
     // product : basket = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<BasketEntity> basket = new ArrayList<>();
 
     // product : favorite = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ProductLikeEntity> product_like = new ArrayList<>();
 
     // product : product_review = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<ProductReviewEntity> product_review = new ArrayList<>();
 }

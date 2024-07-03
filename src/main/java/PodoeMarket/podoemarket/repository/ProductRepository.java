@@ -13,6 +13,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findAllByWriter(String writer);
     ProductEntity findById(UUID id);
 
-    @Query("SELECT CASE WHEN COUNT(wsl) > 0 THEN true ELSE false END FROM ProductLikeEntity wsl WHERE wsl.user.id = :userId AND wsl.product.id = :productId")
-    boolean existsByUserIdAndProductId(UUID userId, UUID productId);
+//    @Query("SELECT CASE WHEN COUNT(wsl) > 0 THEN true ELSE false END FROM ProductLikeEntity wsl WHERE wsl.user.id = :userId AND wsl.product.id = :productId")
+//    boolean existsByUserIdAndProductId(UUID userId, UUID productId);
 }

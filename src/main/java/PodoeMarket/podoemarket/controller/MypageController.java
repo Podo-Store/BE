@@ -193,12 +193,14 @@ public class MypageController {
     @GetMapping("/script")
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            return ResponseEntity.ok().body(mypageService.getAllProducts(userInfo.getNickname()));
+            return ResponseEntity.ok().body(mypageService.getAllMyProducts(userInfo.getNickname()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+    
+    // scriptDetail GET 요청 생성해야 함
 
     @PostMapping("/scriptDetail")
     public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
@@ -222,6 +224,16 @@ public class MypageController {
 
             mypageService.productUpdate(dto.getId(), product);
             return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/like")
+    public ResponseEntity<?> likeList(@AuthenticationPrincipal UserEntity userInfo){
+        try{
+            return ResponseEntity.ok().body(mypageService.getAllLikeProducts(userInfo.getId()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
