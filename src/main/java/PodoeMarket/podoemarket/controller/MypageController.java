@@ -242,7 +242,7 @@ public class MypageController {
     @GetMapping("/qna")
     public ResponseEntity<?> qnaList(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            // 임시 질문 리스트
+            // 페이지네이션 필요
             return ResponseEntity.ok().body(mypageService.getAllQnA(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
@@ -261,6 +261,17 @@ public class MypageController {
             mypageService.writeQuestion(question);
 
             return ResponseEntity.ok().body("question register");
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/myQnA")
+    public ResponseEntity<?> myQnAList(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            // 페이지네이션 필요
+            return ResponseEntity.ok().body(mypageService.getAllQnA(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

@@ -2,11 +2,9 @@ package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.dto.QnADTO;
 import PodoeMarket.podoemarket.dto.WishScriptDTO;
-import PodoeMarket.podoemarket.entity.BasketEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.entity.WishScriptEntity;
+import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -139,5 +137,15 @@ public class EntityToDTOConverter {
         productListDTO.setChecked(entity.getProduct().isChecked());
 
         return productListDTO;
+    }
+
+    public static QnADTO converToQnAList(QnAEntity entity) {
+        QnADTO qnaDTO = new QnADTO();
+
+        qnaDTO.setId(entity.getId());
+        qnaDTO.setQuestion(entity.getQuestion());
+        qnaDTO.setDate(entity.getDate());
+
+        return qnaDTO;
     }
 }
