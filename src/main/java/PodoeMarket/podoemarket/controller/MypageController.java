@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidUser;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.QnAEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
@@ -233,6 +234,34 @@ public class MypageController {
         try{
             return ResponseEntity.ok().body(mypageService.getAllLikeProducts(userInfo.getId()));
         } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/qna")
+    public ResponseEntity<?> qnaList(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            // 임시 질문 리스트
+            return ResponseEntity.ok().body(mypageService.getAllQnA(userInfo.getId()));
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/question")
+    public ResponseEntity<?> writeQuestion(@AuthenticationPrincipal UserEntity userInfo, @RequestBody QnADTO dto) {
+        try {
+            QnAEntity question = QnAEntity.builder()
+                    .user(userInfo)
+                    .question(dto.getQuestion())
+                    .build();
+
+            mypageService.writeQuestion(question);
+
+            return ResponseEntity.ok().body("question register");
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }

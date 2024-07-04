@@ -8,19 +8,22 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
-@Table(name = "question")
+@Table(name = "qna")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class QEntity {
+public class QnAEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(nullable = false)
-    private String content;
+    private String question;
+
+    @Column
+    private String answer;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -31,7 +34,6 @@ public class QEntity {
     }
     @PreUpdate
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
-
 
     // user : question = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)

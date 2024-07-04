@@ -2,11 +2,14 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.dto.QnADTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
+import PodoeMarket.podoemarket.entity.QnAEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
+import PodoeMarket.podoemarket.repository.QnARepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -30,6 +33,7 @@ public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final QnARepository qnaRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -143,5 +147,15 @@ public class MypageService {
         return products.stream()
                 .map(product -> EntityToDTOConverter.converToProductLikeList(product, productLikeRepo, id))
                 .collect(Collectors.toList());
+    }
+
+    public List<QnAEntity> getAllQnA(UUID id) {
+        List<QnAEntity> lists = qnaRepo.findAllByUserId(id);
+
+        return lists;
+    }
+
+    public void writeQuestion(final QnAEntity qnaEntity) {
+        qnaRepo.save(qnaEntity);
     }
 }
