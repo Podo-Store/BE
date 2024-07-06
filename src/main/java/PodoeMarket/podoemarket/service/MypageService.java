@@ -160,4 +160,12 @@ public class MypageService {
     public void writeQuestion(final QnAEntity qnaEntity) {
         qnaRepo.save(qnaEntity);
     }
+
+    public List<QnADTO> getSearchQnA(UUID id, String keyword) {
+        List<QnAEntity> searchList = qnaRepo.findAllByUserIdAndQuestionContaining(id, keyword);
+
+        return searchList.stream()
+                .map(EntityToDTOConverter::converToQnAList)
+                .collect(Collectors.toList());
+    }
 }

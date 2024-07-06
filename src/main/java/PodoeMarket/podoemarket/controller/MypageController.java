@@ -277,4 +277,14 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> qnaSearch(@RequestParam(value = "keyword", required = false) String keyword, @AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            return ResponseEntity.ok().body(mypageService.getSearchQnA(userInfo.getId(), keyword));
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface QnARepository extends JpaRepository<QnAEntity, Long> {
     List<QnAEntity> findAllByUserId(UUID id);
+
+    List<QnAEntity> findAllByUserIdAndQuestionContaining(UUID id, String title);
 }
