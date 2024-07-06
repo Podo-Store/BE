@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface QnARepository extends JpaRepository<QnAEntity, Long> {
-    List<QnAEntity> findAllByUserId(UUID id);
+    List<QnAEntity> findAllByUserIdAndStatus(UUID id, boolean status);
 
-    List<QnAEntity> findAllByUserIdAndQuestionContaining(UUID id, String title);
+    List<QnAEntity> findAllByUserIdAndStatusAndQuestionContaining(UUID id, boolean status, String title);
 }

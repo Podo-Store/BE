@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -24,6 +25,10 @@ public class QnAEntity {
 
     @Column
     private String answer;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private boolean status; // 자주하는 질문
 
     @Column(nullable = false)
     private LocalDate date;

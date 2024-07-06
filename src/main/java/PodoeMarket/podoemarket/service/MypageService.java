@@ -150,7 +150,7 @@ public class MypageService {
     }
 
     public List<QnADTO> getAllQnA(UUID id) {
-        List<QnAEntity> lists = qnaRepo.findAllByUserId(id);
+        List<QnAEntity> lists = qnaRepo.findAllByUserIdAndStatus(id, false);
 
         return lists.stream()
                 .map(EntityToDTOConverter::converToQnAList)
@@ -162,7 +162,7 @@ public class MypageService {
     }
 
     public List<QnADTO> getSearchQnA(UUID id, String keyword) {
-        List<QnAEntity> searchList = qnaRepo.findAllByUserIdAndQuestionContaining(id, keyword);
+        List<QnAEntity> searchList = qnaRepo.findAllByUserIdAndStatusAndQuestionContaining(id, false, keyword);
 
         return searchList.stream()
                 .map(EntityToDTOConverter::converToQnAList)
