@@ -149,7 +149,15 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public List<QnADTO> getAllQnA(UUID id) {
+    public List<QnADTO> getAllOftenQnA() {
+        List<QnAEntity> lists = qnaRepo.findAllByStatus(true);
+
+        return lists.stream()
+                .map(EntityToDTOConverter::converToQnAList)
+                .collect(Collectors.toList());
+    }
+
+    public List<QnADTO> getAllMyQnA(UUID id) {
         List<QnAEntity> lists = qnaRepo.findAllByUserIdAndStatus(id, false);
 
         return lists.stream()

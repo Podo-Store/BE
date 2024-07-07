@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -240,10 +241,15 @@ public class MypageController {
     }
 
     @GetMapping("/qna")
-    public ResponseEntity<?> qnaList(@AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> getTotalQnA(@AuthenticationPrincipal UserEntity userInfo) {
         try {
             // 페이지네이션 필요
-            return ResponseEntity.ok().body(mypageService.getAllQnA(userInfo.getId()));
+            List<QnADTO> oftenQnA = mypageService.getAllOftenQnA();
+            List<QnADTO> myQnA = mypageService.getAllMyQnA(userInfo.getId());
+
+            QnAResponseDTO res = new QnAResponseDTO(oftenQnA, myQnA);
+
+            return ResponseEntity.ok().body(res);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -271,7 +277,7 @@ public class MypageController {
     public ResponseEntity<?> myQnAList(@AuthenticationPrincipal UserEntity userInfo) {
         try {
             // 페이지네이션 필요
-            return ResponseEntity.ok().body(mypageService.getAllQnA(userInfo.getId()));
+            return ResponseEntity.ok().body(mypageService.getAllMyQnA(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
