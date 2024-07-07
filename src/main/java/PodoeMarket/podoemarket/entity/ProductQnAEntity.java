@@ -24,6 +24,9 @@ public class ProductQnAEntity {
     @Column
     private String answer;
 
+    @Column
+    private int grade; // 평점
+
     @Column(nullable = false)
     private LocalDate date;
 

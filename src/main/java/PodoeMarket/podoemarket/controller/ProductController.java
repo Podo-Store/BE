@@ -1,13 +1,11 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +26,12 @@ public class ProductController {
     @GetMapping("/scriptDetail")
     public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
         try{
+            // 작품 상세 정보
             ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
+
+            // 리뷰
+            
+            // 문의
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
