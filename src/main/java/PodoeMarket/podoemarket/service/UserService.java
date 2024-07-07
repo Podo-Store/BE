@@ -15,7 +15,7 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepo;
 
-    public UserEntity create(final UserEntity userEntity) {
+    public void create(final UserEntity userEntity) {
         final String userId = userEntity.getUserId();
         final String email = userEntity.getEmail();
         final String password = userEntity.getPassword();
@@ -62,7 +62,7 @@ public class UserService {
             throw new RuntimeException("Nickname already exists");
         }
 
-        return userRepo.save(userEntity);
+        userRepo.save(userEntity);
     }
 
     public UserEntity getByCredentials(final String userId, final String password, final PasswordEncoder encoder){

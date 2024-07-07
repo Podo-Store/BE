@@ -67,11 +67,11 @@ public class UserEntity {
 
     // user : question = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<QEntity> question = new ArrayList<>();
+    private List<QnAEntity> question = new ArrayList<>();
 
-    // user : product_q = 1 : N
+    // user : product_qna = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<ProductQEntity> product_q = new ArrayList<>();
+    private List<ProductQnAEntity> product_q = new ArrayList<>();
 
     // user : product_review = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -84,5 +84,4 @@ public class UserEntity {
     // user : wish_script_like = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WishScriptLikeEntity> wish_script_like = new ArrayList<>();
-
 }

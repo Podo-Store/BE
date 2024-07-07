@@ -2,36 +2,46 @@ package PodoeMarket.podoemarket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
-@Table(name = "product_a")
+@Table(name = "qna")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductAEntity {
+@Getter
+public class QnAEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(nullable = false)
+    private String question;
+
     @Column
-    private String content;
+    private String answer;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private boolean status; // 자주하는 질문
 
     @Column(nullable = false)
     private LocalDate date;
 
-    @PrePersist // entity가 영속화되기 직전에 실행
+    @PrePersist
     protected void onCreate() {
         date = LocalDate.now(ZoneId.of("Asia/Seoul"));
     }
-    @PreUpdate // db에 entity가 업데이트되기 직전에 실행
+    @PreUpdate
     protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
 
-    // product_q : product_a = 1 : 1
-    @OneToOne
-    private ProductQEntity product_q;
+    // user : question = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }

@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidUser;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.QnAEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -233,6 +235,81 @@ public class MypageController {
         try{
             return ResponseEntity.ok().body(mypageService.getAllLikeProducts(userInfo.getId()));
         } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/qna")
+    public ResponseEntity<?> getTotalQnA(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            // 페이지네이션 필요
+            List<QnADTO> oftenQnA = mypageService.getAllOftenQnA();
+            List<QnADTO> myQnA = mypageService.getAllMyQnA(userInfo.getId());
+
+            QnAResponseDTO res = new QnAResponseDTO(oftenQnA, myQnA);
+
+            return ResponseEntity.ok().body(res);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/question")
+    public ResponseEntity<?> writeQuestion(@AuthenticationPrincipal UserEntity userInfo, @RequestBody QnADTO dto) {
+        try {
+            QnAEntity question = QnAEntity.builder()
+                    .user(userInfo)
+                    .question(dto.getQuestion())
+                    .build();
+
+            mypageService.writeQuestion(question);
+
+            return ResponseEntity.ok().body("question register");
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/oftenQnA")
+    public ResponseEntity<?> getOftenQnA() {
+        try {
+            // 페이지네이션 필요
+            return ResponseEntity.ok().body(mypageService.getAllOftenQnA());
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> oftenQnASearch(@RequestParam(value = "keyword", required = false) String keyword) {
+        try {
+            return ResponseEntity.ok().body(mypageService.getSearchOftenQnA(keyword));
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/myQnA")
+    public ResponseEntity<?> getmyQnA(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            // 페이지네이션 필요
+            return ResponseEntity.ok().body(mypageService.getAllMyQnA(userInfo.getId()));
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/mySearch")
+    public ResponseEntity<?> myQnASearch(@RequestParam(value = "keyword", required = false) String keyword, @AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            return ResponseEntity.ok().body(mypageService.getSearchMyQnA(userInfo.getId(), keyword));
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
