@@ -273,8 +273,19 @@ public class MypageController {
         }
     }
 
+    @GetMapping("/oftenQnA")
+    public ResponseEntity<?> getOftenQnA() {
+        try {
+            // 페이지네이션 필요
+            return ResponseEntity.ok().body(mypageService.getAllOftenQnA());
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @GetMapping("/myQnA")
-    public ResponseEntity<?> myQnAList(@AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> getmyQnA(@AuthenticationPrincipal UserEntity userInfo) {
         try {
             // 페이지네이션 필요
             return ResponseEntity.ok().body(mypageService.getAllMyQnA(userInfo.getId()));
