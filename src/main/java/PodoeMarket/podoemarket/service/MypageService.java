@@ -169,7 +169,15 @@ public class MypageService {
         qnaRepo.save(qnaEntity);
     }
 
-    public List<QnADTO> getSearchQnA(UUID id, String keyword) {
+    public List<QnADTO> getSearchOftenQnA(String keyword) {
+        List<QnAEntity> searchList = qnaRepo.findAllByStatusAndQuestionContaining(true, keyword);
+
+        return searchList.stream()
+                .map(EntityToDTOConverter::converToQnAList)
+                .collect(Collectors.toList());
+    }
+
+    public List<QnADTO> getSearchMyQnA(UUID id, String keyword) {
         List<QnAEntity> searchList = qnaRepo.findAllByUserIdAndStatusAndQuestionContaining(id, false, keyword);
 
         return searchList.stream()

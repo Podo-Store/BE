@@ -11,5 +11,7 @@ public interface QnARepository extends JpaRepository<QnAEntity, Long> {
 
     List<QnAEntity> findAllByUserIdAndStatus(UUID id, boolean status);
 
-    List<QnAEntity> findAllByUserIdAndStatusAndQuestionContaining(UUID id, boolean status, String title);
+    List<QnAEntity> findAllByStatusAndQuestionContaining(boolean status, String keyword);
+
+    List<QnAEntity> findAllByUserIdAndStatusAndQuestionContaining(UUID id, boolean status, String keyword);
 }

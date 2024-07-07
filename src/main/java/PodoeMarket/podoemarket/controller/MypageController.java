@@ -284,6 +284,16 @@ public class MypageController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> oftenQnASearch(@RequestParam(value = "keyword", required = false) String keyword) {
+        try {
+            return ResponseEntity.ok().body(mypageService.getSearchOftenQnA(keyword));
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @GetMapping("/myQnA")
     public ResponseEntity<?> getmyQnA(@AuthenticationPrincipal UserEntity userInfo) {
         try {
@@ -295,10 +305,10 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<?> qnaSearch(@RequestParam(value = "keyword", required = false) String keyword, @AuthenticationPrincipal UserEntity userInfo) {
+    @GetMapping("/mySearch")
+    public ResponseEntity<?> myQnASearch(@RequestParam(value = "keyword", required = false) String keyword, @AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(mypageService.getSearchQnA(userInfo.getId(), keyword));
+            return ResponseEntity.ok().body(mypageService.getSearchMyQnA(userInfo.getId(), keyword));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
