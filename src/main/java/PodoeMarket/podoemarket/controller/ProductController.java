@@ -1,11 +1,10 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.dto.ProductDTO;
+import PodoeMarket.podoemarket.dto.ProductQnADTO;
+import PodoeMarket.podoemarket.dto.QnADTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
-import PodoeMarket.podoemarket.entity.BasketEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,6 +97,28 @@ public class ProductController {
 
                 return ResponseEntity.ok().body("basket success");
             }
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/question")
+    public ResponseEntity<?> writeQuestion(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProductQnADTO dto) {
+        try {
+            ProductEntity product = productService.product(dto.getProductId());
+
+            ProductQnAEntity question = ProductQnAEntity.builder()
+                    .user(userInfo)
+                    .title(dto.getTitle())
+                    .question(dto.getQuestion())
+                    .date(dto.getDate())
+                    .product(product)
+                    .build();
+
+            productService.writeQuestion(question, userInfo.getId());
+
+            return ResponseEntity.ok().body("question register");
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

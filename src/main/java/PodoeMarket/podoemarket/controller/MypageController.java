@@ -262,6 +262,7 @@ public class MypageController {
             QnAEntity question = QnAEntity.builder()
                     .user(userInfo)
                     .question(dto.getQuestion())
+                    .date(dto.getDate())
                     .build();
 
             mypageService.writeQuestion(question);

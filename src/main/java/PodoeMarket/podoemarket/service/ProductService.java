@@ -6,8 +6,10 @@ import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.entity.BasketEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.ProductLikeEntity;
+import PodoeMarket.podoemarket.entity.ProductQnAEntity;
 import PodoeMarket.podoemarket.repository.BasketRepository;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
+import PodoeMarket.podoemarket.repository.ProductQnARepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class ProductService {
     private final ProductRepository productRepo;
     private final ProductLikeRepository productLikeRepo;
     private final BasketRepository basketRepo;
+    private final ProductQnARepository productQnARepo;
 
     public ProductEntity product(UUID id) {
         return productRepo.findById(id);
@@ -72,5 +75,13 @@ public class ProductService {
         return products.stream()
                 .map(EntityToDTOConverter::converToBasketList)
                 .collect(Collectors.toList());
+    }
+
+    public void writeQuestion(final ProductQnAEntity productQnAEntity, final UUID userId) {
+        if(productQnAEntity.getUser().getId() == userId) {
+            throw new RuntimeException("user is owner");
+        }
+
+        productQnARepo.save(productQnAEntity);
     }
 }
