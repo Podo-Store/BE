@@ -116,7 +116,7 @@ public class ProductController {
                     .product(product)
                     .build();
 
-            productService.writeQuestion(question);
+            productService.writeQuestion(question, userInfo.getId());
 
             return ResponseEntity.ok().body("question register");
         } catch (Exception e) {

@@ -77,7 +77,11 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public void writeQuestion(final ProductQnAEntity productQnAEntity) {
+    public void writeQuestion(final ProductQnAEntity productQnAEntity, final UUID userId) {
+        if(productQnAEntity.getUser().getId() == userId) {
+            throw new RuntimeException("user is owner");
+        }
+
         productQnARepo.save(productQnAEntity);
     }
 }
