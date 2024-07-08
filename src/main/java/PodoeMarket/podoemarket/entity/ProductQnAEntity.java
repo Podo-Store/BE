@@ -19,13 +19,13 @@ public class ProductQnAEntity {
     private UUID id;
 
     @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String question;
 
     @Column
     private String answer;
-
-    @Column
-    private int grade; // 평점
 
     @Column(nullable = false)
     private LocalDate date;
