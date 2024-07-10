@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailDTO {
-    private List<ProductDTO> product;
-    private List<QnADTO> qna;
+    private ProductDTO product;
+    private List<ProductQnADTO> qna;
     // 리뷰 추가해야함
 }

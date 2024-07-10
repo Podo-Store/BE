@@ -3,10 +3,8 @@ package PodoeMarket.podoemarket.service;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
-import PodoeMarket.podoemarket.entity.BasketEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.entity.ProductQnAEntity;
+import PodoeMarket.podoemarket.dto.ProductQnADTO;
+import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.BasketRepository;
 import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductQnARepository;
@@ -85,5 +83,11 @@ public class ProductService {
         productQnARepo.save(productQnAEntity);
     }
 
-    public List<>
+    public List<ProductQnADTO> getProductQnA(UUID id) {
+        List<ProductQnAEntity> lists = productQnARepo.findAllByProductId(id);
+
+        return lists.stream()
+                .map(EntityToDTOConverter::converToProductQnAList)
+                .collect(Collectors.toList());
+    }
 }

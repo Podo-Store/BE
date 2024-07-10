@@ -1,9 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.dto.ProductDTO;
-import PodoeMarket.podoemarket.dto.ProductQnADTO;
-import PodoeMarket.podoemarket.dto.QnADTO;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -31,9 +29,11 @@ public class ProductController {
             // 리뷰
             
             // 문의
+            List<ProductQnADTO> productQnA = productService.getProductQnA(productId);
 
+            ProductDetailDTO res = new ProductDetailDTO(productInfo, productQnA);
 
-            return ResponseEntity.ok().body(productInfo);
+            return ResponseEntity.ok().body(res);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -117,7 +117,7 @@ public class ProductController {
                     .product(product)
                     .build();
 
-            productService.writeQuestion(question, userInfo.getId());
+            productService.writeQuestion(question, product.getUser().getId());
 
             return ResponseEntity.ok().body("question register");
         } catch (Exception e) {

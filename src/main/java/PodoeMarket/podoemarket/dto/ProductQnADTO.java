@@ -19,4 +19,6 @@ public class ProductQnADTO {
     private String answer;
     private LocalDate date;
     private UUID productId;
+
+    private String userNickname;
 }
