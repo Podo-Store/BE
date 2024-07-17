@@ -24,7 +24,6 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-//	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
@@ -41,6 +40,7 @@ dependencies {
 	// 어노테이션 형태로 제약 조건을 달아 쉽게 검증할 수 있도록 하는 API
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//	implementation 'io.lettuce.core:lettuce-core'
 
 	// 파일 이름 처리
 	implementation 'commons-io:commons-io:2.11.0'
