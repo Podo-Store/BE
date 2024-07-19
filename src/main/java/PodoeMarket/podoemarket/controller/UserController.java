@@ -55,14 +55,6 @@ public class UserController {
                     return ResponseEntity.badRequest().body(resDTO);
                 }
 
-                if(!ValidUser.isValidUserId(dto.getUserId())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("아이디 유효성 검사 실패")
-                            .build();
-
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-
                 return ResponseEntity.ok().body(true);
             } else {
                 log.info("check userId");
@@ -77,24 +69,6 @@ public class UserController {
 
                 return ResponseEntity.ok().body(true);
             }
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @PostMapping("/checkPw")
-    public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
-        try{
-            if(!ValidUser.isValidPw(dto.getPassword())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("비밀번호 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -123,14 +97,6 @@ public class UserController {
     public ResponseEntity<?> duplicateNickname(@RequestBody UserDTO dto){
         try {
             log.info("check nickname duplication");
-
-            if(!ValidUser.isValidNickname(dto.getNickname())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("닉네임 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
 
             if(userService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
