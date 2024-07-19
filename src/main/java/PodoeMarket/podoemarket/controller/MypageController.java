@@ -65,7 +65,17 @@ public class MypageController {
         try {
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
-            return ResponseEntity.ok().body(user);
+            UserDTO info = UserDTO.builder()
+                    .id(user.getId())
+                    .userId(user.getUserId())
+                    .email(user.getEmail())
+                    .password(user.getPassword())
+                    .nickname(user.getNickname())
+                    .type(user.getType())
+                    .filePath(user.getFilePath())
+                    .build();
+
+            return ResponseEntity.ok().body(info);
         }catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

@@ -44,7 +44,7 @@ public class UserController {
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
         try {
-            if(dto.isCheck()) {
+            if(dto.isCheck()) { // True : 회원가입, False : 비밀번호 찾기
                 log.info("check userId");
 
                 if(userService.checkUserId(dto.getUserId())) {
