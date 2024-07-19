@@ -50,21 +50,6 @@ public class ValidUser {
         }
     }
 
-    public static boolean isValidUserId(String userId) {
-        String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
-
-        if(userId == null || userId.isBlank()){ //userId가 null이거나 빈 값일 때
-            log.warn("userId is null or empty");
-            return false;
-        }else if(!Pattern.matches(regx_userId, userId)) {
-            log.warn("userId is not fit in the rule");
-            return false;
-        }else {
-            log.info("userId valid checked");
-            return true;
-        }
-    }
-
     public static boolean isValidPw(String password) {
         String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@$!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
 
