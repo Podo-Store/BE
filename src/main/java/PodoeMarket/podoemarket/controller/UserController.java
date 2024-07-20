@@ -113,58 +113,58 @@ public class UserController {
         }
     }
 
-//    @PostMapping ("/mailSend")
-//    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
-//        try {
-//            if(!ValidUser.isValidEmail(emailDTO.getEmail())) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("이메일 유효성 검사 실패")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
-//
-//            if(emailDTO.isCheck()) { // 회원 가입 시, 이메일 중복 확인
-//                if(userService.checkEmail(emailDTO.getEmail())) {
-//                    ResponseDTO resDTO = ResponseDTO.builder()
-//                            .error("이메일 중복")
-//                            .build();
-//
-//                    return ResponseEntity.badRequest().body(resDTO);
-//                }
-//            } else { // 아이디 찾기 - check 값이 0
-//                if(!userService.checkEmail(emailDTO.getEmail())) {
-//                    ResponseDTO resDTO = ResponseDTO.builder()
-//                            .error("사용자 정보 없음")
-//                            .build();
-//
-//                    return ResponseEntity.badRequest().body(resDTO);
-//                }
-//            }
-//
-//            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
-//        }catch(Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
-//
-//    @PostMapping("/mailauthCheck")
-//    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
-//        try{
-//            log.info("Start mailauthCheck");
-//
-//            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
-//
-//            if(Checked)
-//                return ResponseEntity.ok().body(true);
-//            else
-//                return ResponseEntity.badRequest().body(false);
-//        } catch(Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
+    @PostMapping ("/mailSend")
+    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
+        try {
+            if(!ValidUser.isValidEmail(emailDTO.getEmail())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(emailDTO.isCheck()) { // 회원 가입 시, 이메일 중복 확인
+                if(userService.checkEmail(emailDTO.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("이메일 중복")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+            } else { // 아이디 찾기 - check 값이 0
+                if(!userService.checkEmail(emailDTO.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("사용자 정보 없음")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+            }
+
+            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/mailauthCheck")
+    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
+        try{
+            log.info("Start mailauthCheck");
+
+            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
+
+            if(Checked)
+                return ResponseEntity.ok().body(true);
+            else
+                return ResponseEntity.badRequest().body(false);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO dto) {
@@ -181,13 +181,13 @@ public class UserController {
             }
 
             // 인증번호 확인
-//            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("이메일 인증 실패")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
+            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 인증 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
@@ -198,7 +198,7 @@ public class UserController {
                     .build();
 
             userService.create(user);
-//            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
