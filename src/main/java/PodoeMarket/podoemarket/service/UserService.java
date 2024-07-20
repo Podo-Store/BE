@@ -122,4 +122,8 @@ public class UserService {
 
         return userRepo.save(user);
     }
+
+    public UserEntity getByUserId(final String userId) {
+        return userRepo.findByUserId(userId);
+    }
 }

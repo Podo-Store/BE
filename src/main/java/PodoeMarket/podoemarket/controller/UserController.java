@@ -291,8 +291,31 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            UserEntity user = userService.getByUserEmail(dto.getEmail());
+
+            if (userService.getByUserId(dto.getUserId()) != user) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("아이디와 이메일의 정보가 일치하지 않습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            final String accessToken = tokenProvider.createAccessToken(user);
+            final String refreshToken = tokenProvider.createRefreshToken(user);
+
+            final UserDTO resUserDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .userId(user.getUserId())
+                    .email(user.getEmail())
+                    .password(user.getPassword())
+                    .nickname(user.getNickname())
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
-            return ResponseEntity.ok().body(true);
+            return ResponseEntity.ok().body(resUserDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
