@@ -22,16 +22,16 @@ public class RegisterController {
     private final MypageService mypageService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile file) {
+    public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile[] files) {
         try{
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
-            String filePath = registerService.uploadScript(file);
+            String filePath = registerService.uploadScript(files);
 
             ProductEntity script = ProductEntity.builder()
-                    .title(FilenameUtils.getBaseName(file.getOriginalFilename()))
+                    .title(FilenameUtils.getBaseName(files[0].getOriginalFilename()))
                     .writer(user.getNickname())
-                    .fileType(file.getContentType())
+                    .fileType(files[0].getContentType())
                     .filePath(filePath)
                     .user(userInfo)
                     .build();
