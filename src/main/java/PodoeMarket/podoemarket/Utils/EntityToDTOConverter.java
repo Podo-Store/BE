@@ -2,8 +2,6 @@ package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.repository.ProductLikeRepository;
-import PodoeMarket.podoemarket.repository.WishScriptLikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,44 +12,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-    public static WishScriptDTO converToWishScriptDTO(WishScriptEntity entity, WishScriptLikeRepository repo){
-        WishScriptDTO wishScriptDTO = new WishScriptDTO();
-
-        wishScriptDTO.setId(entity.getId());
-        wishScriptDTO.setContent(entity.getContent());
-        wishScriptDTO.setGenre(entity.getGenre());
-        wishScriptDTO.setCharacterNumber(entity.getCharacterNumber());
-        wishScriptDTO.setRuntime(entity.getRuntime());
-        wishScriptDTO.setDate(entity.getDate());
-
-        wishScriptDTO.setNickname(entity.getUser().getNickname());
-        wishScriptDTO.setProfileFilePath(entity.getUser().getFilePath());
-        wishScriptDTO.setLike(false);
-        wishScriptDTO.setLikeCount(repo.countByWishScriptId(entity.getId()));
-
-        return wishScriptDTO;
-    }
-
-    public static WishScriptDTO converToWishScriptDTOWithToken(WishScriptEntity entity, UUID id, WishScriptLikeRepository repo){
-        WishScriptDTO wishScriptDTO = new WishScriptDTO();
-
-        wishScriptDTO.setId(entity.getId());
-        wishScriptDTO.setContent(entity.getContent());
-        wishScriptDTO.setGenre(entity.getGenre());
-        wishScriptDTO.setCharacterNumber(entity.getCharacterNumber());
-        wishScriptDTO.setRuntime(entity.getRuntime());
-        wishScriptDTO.setDate(entity.getDate());
-
-        if (entity.getUser() != null) {
-            wishScriptDTO.setNickname(entity.getUser().getNickname());
-            wishScriptDTO.setProfileFilePath(entity.getUser().getFilePath());
-            wishScriptDTO.setLike(repo.existsByUserIdAndWishScriptId(id, entity.getId()));
-        }
-        wishScriptDTO.setLikeCount(repo.countByWishScriptId(entity.getId()));
-
-        return wishScriptDTO;
-    }
-
     public static ProductListDTO converToProductList(ProductEntity entity, ProductLikeRepository repo) {
         ProductListDTO productListDTO = new ProductListDTO();
 
@@ -99,26 +59,6 @@ public class EntityToDTOConverter {
         return productDTO;
     }
 
-    public static ProductListDTO converToProductLikeList(ProductLikeEntity entity, ProductLikeRepository repo, UUID id) {
-        ProductListDTO productListDTO = new ProductListDTO();
-
-        productListDTO.setId(entity.getProduct().getId());
-        productListDTO.setTitle(entity.getProduct().getTitle());
-        productListDTO.setWriter(entity.getProduct().getWriter());
-        productListDTO.setImagePath(entity.getProduct().getImagePath());
-        productListDTO.setScript(entity.getProduct().isScript());
-        productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
-        productListDTO.setPerformance(entity.getProduct().isPerformance());
-        productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
-        productListDTO.setDate(entity.getProduct().getDate());
-        productListDTO.setChecked(entity.getProduct().isChecked());
-
-        productListDTO.setLikeCount(repo.countByProductId(entity.getProduct().getId())); // 좋아요 개수
-        productListDTO.setLike(repo.existsByUserIdAndProductId(id, entity.getProduct().getId()));
-
-        return productListDTO;
-    }
-
     public static ProductListDTO converToBasketList(BasketEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
@@ -134,29 +74,5 @@ public class EntityToDTOConverter {
         productListDTO.setChecked(entity.getProduct().isChecked());
 
         return productListDTO;
-    }
-
-    public static QnADTO converToQnAList(QnAEntity entity) {
-        QnADTO qnaDTO = new QnADTO();
-
-        qnaDTO.setId(entity.getId());
-        qnaDTO.setQuestion(entity.getQuestion());
-        qnaDTO.setDate(entity.getDate());
-
-        return qnaDTO;
-    }
-
-    public static ProductQnADTO converToProductQnAList(ProductQnAEntity entity) {
-        ProductQnADTO productQnADTO = new ProductQnADTO();
-
-        productQnADTO.setId(entity.getId());
-        productQnADTO.setTitle(entity.getTitle());
-        productQnADTO.setQuestion(entity.getQuestion());
-        productQnADTO.setAnswer(entity.getAnswer());
-        productQnADTO.setDate(entity.getDate());
-
-        productQnADTO.setUserNickname(entity.getUser().getNickname());
-
-        return productQnADTO;
     }
 }

@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.repository;
 
 import PodoeMarket.podoemarket.entity.BasketEntity;
-import PodoeMarket.podoemarket.entity.ProductLikeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

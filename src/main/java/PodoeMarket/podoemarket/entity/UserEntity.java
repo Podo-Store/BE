@@ -60,28 +60,4 @@ public class UserEntity {
     // user : basket = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BasketEntity> basket = new ArrayList<>();
-
-    // user : product_like = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductLikeEntity> product_like = new ArrayList<>();
-
-    // user : question = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<QnAEntity> question = new ArrayList<>();
-
-    // user : product_qna = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<ProductQnAEntity> product_q = new ArrayList<>();
-
-    // user : product_review = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<ProductReviewEntity> product_review = new ArrayList<>();
-
-    // user : with_script = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<WishScriptEntity> wish_script = new ArrayList<>();
-
-    // user : wish_script_like = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WishScriptLikeEntity> wish_script_like = new ArrayList<>();
 }

@@ -2,14 +2,9 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
-import PodoeMarket.podoemarket.dto.QnADTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.entity.QnAEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
-import PodoeMarket.podoemarket.repository.QnARepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -32,8 +27,6 @@ import java.util.stream.Collectors;
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
-    private final ProductLikeRepository productLikeRepo;
-    private final QnARepository qnaRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -139,49 +132,5 @@ public class MypageService {
         amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
-    }
-
-    public List<ProductListDTO> getAllLikeProducts(UUID id) {
-        List<ProductLikeEntity> products = productLikeRepo.findAllByUserId(id);
-
-        return products.stream()
-                .map(product -> EntityToDTOConverter.converToProductLikeList(product, productLikeRepo, id))
-                .collect(Collectors.toList());
-    }
-
-    public List<QnADTO> getAllOftenQnA() {
-        List<QnAEntity> lists = qnaRepo.findAllByStatus(true);
-
-        return lists.stream()
-                .map(EntityToDTOConverter::converToQnAList)
-                .collect(Collectors.toList());
-    }
-
-    public List<QnADTO> getAllMyQnA(UUID id) {
-        List<QnAEntity> lists = qnaRepo.findAllByUserIdAndStatus(id, false);
-
-        return lists.stream()
-                .map(EntityToDTOConverter::converToQnAList)
-                .collect(Collectors.toList());
-    }
-
-    public void writeQuestion(final QnAEntity qnaEntity) {
-        qnaRepo.save(qnaEntity);
-    }
-
-    public List<QnADTO> getSearchOftenQnA(String keyword) {
-        List<QnAEntity> searchList = qnaRepo.findAllByStatusAndQuestionContaining(true, keyword);
-
-        return searchList.stream()
-                .map(EntityToDTOConverter::converToQnAList)
-                .collect(Collectors.toList());
-    }
-
-    public List<QnADTO> getSearchMyQnA(UUID id, String keyword) {
-        List<QnAEntity> searchList = qnaRepo.findAllByUserIdAndStatusAndQuestionContaining(id, false, keyword);
-
-        return searchList.stream()
-                .map(EntityToDTOConverter::converToQnAList)
-                .collect(Collectors.toList());
     }
 }

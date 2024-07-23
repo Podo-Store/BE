@@ -103,18 +103,4 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<BasketEntity> basket = new ArrayList<>();
-
-    // product : favorite = 1 : N
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<ProductLikeEntity> product_like = new ArrayList<>();
-
-    // product : product_review = 1 : N
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<ProductReviewEntity> product_review = new ArrayList<>();
-
-    // product : product_qna = 1 : N
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductQnAEntity> product_qna = new ArrayList<>();
 }
