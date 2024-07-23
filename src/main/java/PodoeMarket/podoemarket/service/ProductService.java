@@ -29,7 +29,7 @@ public class ProductService {
     public ProductDTO productDetail(UUID productId, UUID userId) {
         ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.converToSingleProductDTO(script, productLikeRepo, userId);
+        return EntityToDTOConverter.converToSingleProductDTO(script, userId);
     }
 
     public Boolean isBasket(UUID userId, UUID productId) {

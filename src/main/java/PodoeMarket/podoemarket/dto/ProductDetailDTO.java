@@ -13,6 +13,4 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductDetailDTO {
     private ProductDTO product;
-    private List<ProductQnADTO> qna;
-    // 리뷰 추가해야함
 }

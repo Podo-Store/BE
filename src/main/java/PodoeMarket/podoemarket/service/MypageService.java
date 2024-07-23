@@ -95,7 +95,7 @@ public class MypageService {
         List<ProductEntity> products = productRepo.findAllByWriter(nickname);
 
         return products.stream()
-                .map(product -> EntityToDTOConverter.converToProductList(product, productLikeRepo))
+                .map(EntityToDTOConverter::converToProductList)
                 .collect(Collectors.toList());
     }
 

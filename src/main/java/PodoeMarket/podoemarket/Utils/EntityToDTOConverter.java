@@ -12,7 +12,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-    public static ProductListDTO converToProductList(ProductEntity entity, ProductLikeRepository repo) {
+    public static ProductListDTO converToProductList(ProductEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
         productListDTO.setId(entity.getId());
@@ -26,13 +26,10 @@ public class EntityToDTOConverter {
         productListDTO.setDate(entity.getDate());
         productListDTO.setChecked(entity.isChecked());
 
-        productListDTO.setLikeCount(repo.countByProductId(entity.getId())); // 좋아요 개수
-        // 순위 추가
-
         return productListDTO;
     }
 
-    public static ProductDTO converToSingleProductDTO(ProductEntity entity, ProductLikeRepository repo, UUID userId) {
+    public static ProductDTO converToSingleProductDTO(ProductEntity entity, UUID userId) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
@@ -52,9 +49,6 @@ public class EntityToDTOConverter {
         productDTO.setCharacterNumber(entity.getCharacterNumber());
         productDTO.setRuntime(entity.getRuntime());
         productDTO.setChecked(entity.isChecked());
-
-//        productDTO.setLikeCount(repo.countByProductId(entity.getId())); // 좋아요 개수
-        productDTO.setLike(repo.existsByUserIdAndProductId(userId, entity.getId()));
 
         return productDTO;
     }

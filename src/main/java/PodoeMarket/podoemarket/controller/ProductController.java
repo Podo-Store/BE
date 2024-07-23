@@ -26,7 +26,7 @@ public class ProductController {
             // 작품 상세 정보
             ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
 
-            ProductDetailDTO res = new ProductDetailDTO(productInfo, productQnA);
+            ProductDetailDTO res = new ProductDetailDTO(productInfo);
 
             return ResponseEntity.ok().body(res);
         } catch(Exception e) {
