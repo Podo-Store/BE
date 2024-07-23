@@ -32,17 +32,12 @@ public class MypageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Value("${cloud.aws.s3.folder.folderName1}")
-    private String userImageBucketFolder;
-
-    @Value("${cloud.aws.s3.folder.folderName3}")
+    @Value("${cloud.aws.s3.folder.folderName2}")
     private String scriptImageBucketFolder;
 
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
-        final String type = userEntity.getType();
-        final String filepath = userEntity.getFilePath();
 
         final UserEntity user = userRepo.findById(id);
 
@@ -54,26 +49,8 @@ public class MypageService {
 
         user.setPassword(password);
         user.setNickname(nickname);
-        user.setType(type);
-        user.setFilePath(filepath);
 
         userRepo.save(user);
-    }
-
-    public String uploadUserImage(MultipartFile file) throws IOException {
-        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
-            throw new RuntimeException("file type is wrong");
-        }
-
-        String filePath = userImageBucketFolder + file.getOriginalFilename();
-
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
-
-        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
-
-        return amazonS3.getUrl(bucket, filePath).toString();
     }
 
     public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {

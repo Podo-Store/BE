@@ -23,6 +23,4 @@ public class UserDTO {
     private boolean check; // 회원가입, 비밀번호 찾기 구분
     private String accessToken; // jwt 저장공간
     private String refreshToken; // jwt 저장공간
-    private String type;
-    private String filePath;
 }

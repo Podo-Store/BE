@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -61,11 +60,9 @@ public class MypageController {
             UserDTO info = UserDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
-                    .email(user.getEmail())
                     .password(user.getPassword())
                     .nickname(user.getNickname())
-                    .type(user.getType())
-                    .filePath(user.getFilePath())
+                    .email(user.getEmail())
                     .build();
 
             return ResponseEntity.ok().body(info);
@@ -102,19 +99,9 @@ public class MypageController {
     }
 
     @PostMapping("/checkNickname")
-    public ResponseEntity<?> checkNickname(@RequestBody UserDTO dto) {
-        UserEntity originalUser = mypageService.originalUser(dto.getId());
-
+    public ResponseEntity<?> checkNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
         // 기존의 닉네임과 다를 경우
-        if(!Objects.equals(originalUser.getNickname(), dto.getNickname())) {
-            if(!ValidUser.isValidNickname(dto.getNickname())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("닉네임 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
+        if(!Objects.equals(userInfo.getNickname(), dto.getNickname())) {
             if(userService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
@@ -155,7 +142,7 @@ public class MypageController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto, @RequestParam("image")MultipartFile file) {
+    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto) {
         try{
             if(!ValidUser.isValidUser(dto)) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -173,15 +160,11 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String filePath = mypageService.uploadUserImage(file);
-
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
-                    .type(file.getContentType())
-                    .filePath(filePath)
                     .build();
 
             // token 값 변경 가능성 있음
