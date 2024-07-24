@@ -80,8 +80,8 @@ public class MypageService {
         return userRepo.findById(id);
     }
 
-    public List<ProductListDTO> getAllMyProducts(String nickname) {
-        List<ProductEntity> products = productRepo.findAllByWriter(nickname);
+    public List<ProductListDTO> getAllMyProducts(UUID id) {
+        List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         return products.stream()
                 .map(EntityToDTOConverter::converToProductList)
