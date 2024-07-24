@@ -24,7 +24,4 @@ public class ProductListDTO {
     private int performancePrice;
     private boolean checked;
     private LocalDate date;
-
-    private BigInteger likeCount;
-    private boolean isLike;
 }
