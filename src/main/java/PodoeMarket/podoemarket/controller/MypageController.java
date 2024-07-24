@@ -142,13 +142,26 @@ public class MypageController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, UserDTO dto) {
+    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
         try{
-            if(!ValidUser.isValidUser(dto)) {
+            if(!ValidUser.isValidPw(dto.getPassword())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("유효성 검사 실패")
+                        .error("비밀번호 유효성 검사 실패")
                         .build();
 
+                return ResponseEntity.badRequest().body(resDTO);
+            } else if(!ValidUser.isValidNickname(dto.getNickname())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("닉네임 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(!dto.getPassword().equals(dto.getConfirmPassword())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("비밀번호가 일치하지 않음")
+                        .build();
                 return ResponseEntity.badRequest().body(resDTO);
             }
 

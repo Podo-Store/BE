@@ -1,7 +1,9 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.Utils.ValidUser;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -11,6 +13,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,9 +44,18 @@ public class MypageService {
 
         final UserEntity user = userRepo.findById(id);
 
+        // 비밀번호
+        if(password == null) {
+            throw new RuntimeException("password가 올바르지 않음");        }
+
+        // 닉네임
+        if(nickname == null || nickname.isBlank()) {
+            throw new RuntimeException("nickname이 올바르지 않음");
+        }
+
         if(!user.getNickname().equals(nickname)){
             if(userRepo.existsByNickname(nickname)){
-                throw new RuntimeException("Nickname is already exists");
+                throw new RuntimeException("이미 존재하는 닉네임");
             }
         }
 

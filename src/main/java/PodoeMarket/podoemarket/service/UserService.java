@@ -23,54 +23,47 @@ public class UserService {
 
         // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
         if(userEntity == null) {
-            throw new RuntimeException("Invalid arguments");
+            throw new RuntimeException("항목들이 올바르지 않음");
         }
 
         // 아이디
         if(userId == null || userId.isBlank()) {
-            throw new RuntimeException("UserId is invalid arguments");
+            throw new RuntimeException("userId가 올바르지 않음");
         }
 
         if(userRepo.existsByUserId(userId)) {
-            log.warn("userId already exists {}", userId);
-            throw new RuntimeException("UserId already exists");
+            throw new RuntimeException("이미 존재하는 UserId");
         }
 
         // 이메일
         if(email == null || email.isBlank()) {
-            throw new RuntimeException("Email is invalid arguments");
+            throw new RuntimeException("email이 올바르지 않음");
         }
 
         if(userRepo.existsByEmail(email)) {
-            log.warn("email already exists {}", email);
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("이미 존재하는 email");
         }
 
         // 비밀번호
         if(password == null) {
-            log.info(password);
-            throw new RuntimeException("Password is invalid arguments");
+            throw new RuntimeException("password가 올바르지 않음");
         }
 
         // 닉네임
         if(nickname == null || nickname.isBlank()) {
-            throw new RuntimeException("Nickname is invalid arguments");
+            throw new RuntimeException("nickname이 올바르지 않음");
         }
 
         if(userRepo.existsByNickname(nickname)) {
-            log.warn("nickname already exists {}", nickname);
-            throw new RuntimeException("Nickname already exists");
+            throw new RuntimeException("이미 존재하는 nickname");
         }
 
         userRepo.save(userEntity);
     }
 
     public UserEntity getByCredentials(final String userId, final String password, final PasswordEncoder encoder){
-        log.info("find user by userId");
-
         try {
             final UserEntity originalUser = userRepo.findByUserId(userId);
-//            log.info("original User: {}", originalUser);
 
             if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
                 return originalUser;
