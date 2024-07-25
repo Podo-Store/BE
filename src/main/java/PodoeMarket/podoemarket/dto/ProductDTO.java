@@ -19,18 +19,11 @@ public class ProductDTO {
     private String writer;
     private String filePath;
     private String imagePath;
-    private int genre;
-    private int characterNumber;
-    private int runtime;
     private boolean script;
     private int scriptPrice;
     private boolean performance;
     private int performancePrice;
-    private String story;
     private String content;
     private boolean checked;
     private LocalDate date;
-
-    private BigInteger likeCount;
-    private boolean isLike;
 }
