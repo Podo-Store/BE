@@ -23,7 +23,7 @@ public class ProductDTO {
     private int scriptPrice;
     private boolean performance;
     private int performancePrice;
-    private String content;
+    private String descriptionPath;
     private boolean checked;
     private LocalDate date;
 }

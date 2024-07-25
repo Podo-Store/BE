@@ -202,22 +202,24 @@ public class MypageController {
     }
 
     @PostMapping("/scriptDetail")
-    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile[] files) {
         try{
-            String filePath = mypageService.uploadScriptImage(file);
-
-            ProductEntity product = ProductEntity.builder()
-                    .imagePath(filePath)
-                    .imageType(file.getContentType())
-                    .title(dto.getTitle())
-                    .script(dto.isScript())
-                    .performance(dto.isPerformance())
-                    .scriptPrice(dto.getScriptPrice())
-                    .performancePrice(dto.getPerformancePrice())
-                    .content(dto.getContent())
-                    .build();
-
-            mypageService.productUpdate(dto.getId(), product);
+            log.info("files 확인:{}", (Object) files);
+//            String filePath = mypageService.uploadScriptImage(file);
+//
+//            ProductEntity product = ProductEntity.builder()
+//                    .imagePath(filePath)
+//                    .imageType(file.getContentType())
+//                    .title(dto.getTitle())
+//                    .script(dto.isScript())
+//                    .performance(dto.isPerformance())
+//                    .scriptPrice(dto.getScriptPrice())
+//                    .performancePrice(dto.getPerformancePrice())
+////                    .contentPath(dto.getContentPath())
+//                    // contentType
+//                    .build();
+//
+//            mypageService.productUpdate(dto.getId(), product);
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();

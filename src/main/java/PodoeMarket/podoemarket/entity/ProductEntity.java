@@ -57,7 +57,10 @@ public class ProductEntity {
     private int performancePrice;
 
     @Column
-    private String content;
+    private String descriptionType;
+
+    @Column
+    private String descriptionPath;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
