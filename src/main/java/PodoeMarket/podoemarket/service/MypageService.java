@@ -93,11 +93,7 @@ public class MypageService {
 
         product.setImagePath(productEntity.getImagePath());
         product.setImageType(productEntity.getImageType());
-        product.setGenre(productEntity.getGenre());
-        product.setCharacterNumber(productEntity.getCharacterNumber());
-        product.setRuntime(productEntity.getRuntime());
         product.setTitle(productEntity.getTitle());
-        product.setStory(productEntity.getStory());
         product.setScript(productEntity.isScript());
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());

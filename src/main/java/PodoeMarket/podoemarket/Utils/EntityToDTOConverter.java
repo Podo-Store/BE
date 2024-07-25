@@ -37,17 +37,12 @@ public class EntityToDTOConverter {
         productDTO.setWriter(entity.getWriter());
         productDTO.setFilePath(entity.getFilePath());
         productDTO.setImagePath(entity.getImagePath());
-        productDTO.setContent(entity.getStory());
         productDTO.setScript(entity.isScript());
         productDTO.setScriptPrice(entity.getScriptPrice());
         productDTO.setPerformance(entity.isPerformance());
         productDTO.setPerformancePrice(entity.getPerformancePrice());
         productDTO.setContent(entity.getContent());
         productDTO.setDate(entity.getDate());
-        productDTO.setStory(entity.getStory());
-        productDTO.setGenre(entity.getGenre());
-        productDTO.setCharacterNumber(entity.getCharacterNumber());
-        productDTO.setRuntime(entity.getRuntime());
         productDTO.setChecked(entity.isChecked());
 
         return productDTO;
