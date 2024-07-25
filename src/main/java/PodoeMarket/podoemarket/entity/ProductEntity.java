@@ -41,22 +41,6 @@ public class ProductEntity {
     private String imagePath;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private int genre;
-    // (1부터 10까지 순서대로)
-    // 로맨스, 스릴러, 코미디, 드라마, 모험, 미스터리, SF, 공포, 판타지, 시대극
-
-    @Column(nullable = false)
-    @ColumnDefault("0")
-    private int characterNumber;
-    // 1,2,3,4,5,6,7인 이상
-
-    @Column(nullable = false)
-    @ColumnDefault("0")
-    private int runtime;
-    // 0 : 입력 전, 1 : 30분 이내, 2 : 1시간, 3 : 1시간 30분, 4 : 2시간 이상
-
-    @Column(nullable = false)
     @ColumnDefault("False")
     private boolean script; // 대본권 판매 여부
 
@@ -74,9 +58,6 @@ public class ProductEntity {
 
     @Column
     private String content;
-
-    @Column
-    private String story;
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
