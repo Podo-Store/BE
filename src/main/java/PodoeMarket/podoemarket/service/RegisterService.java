@@ -25,7 +25,7 @@ public class RegisterService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Value("${cloud.aws.s3.folder.folderName2}")
+    @Value("${cloud.aws.s3.folder.folderName1}")
     private String bucketFolder;
 
     public void register(ProductEntity scriptEntity) {

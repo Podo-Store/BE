@@ -202,24 +202,24 @@ public class MypageController {
     }
 
     @PostMapping("/scriptDetail")
-    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile[] files) {
+    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("scriptImage") MultipartFile file1, @RequestParam("description") MultipartFile file2) {
         try{
-            log.info("files 확인:{}", (Object) files);
-//            String filePath = mypageService.uploadScriptImage(file);
-//
-//            ProductEntity product = ProductEntity.builder()
-//                    .imagePath(filePath)
-//                    .imageType(file.getContentType())
-//                    .title(dto.getTitle())
-//                    .script(dto.isScript())
-//                    .performance(dto.isPerformance())
-//                    .scriptPrice(dto.getScriptPrice())
-//                    .performancePrice(dto.getPerformancePrice())
-////                    .contentPath(dto.getContentPath())
-//                    // contentType
-//                    .build();
-//
-//            mypageService.productUpdate(dto.getId(), product);
+            String scriptImageFilePath = mypageService.uploadScriptImage(file1);
+            String descriptionFilePath = mypageService.uploadDescription(file2);
+
+            ProductEntity product = ProductEntity.builder()
+                    .imagePath(scriptImageFilePath)
+                    .imageType(file1.getContentType())
+                    .title(dto.getTitle())
+                    .script(dto.isScript())
+                    .performance(dto.isPerformance())
+                    .scriptPrice(dto.getScriptPrice())
+                    .performancePrice(dto.getPerformancePrice())
+                    .descriptionPath(descriptionFilePath)
+                    .descriptionType(file2.getContentType())
+                    .build();
+
+            mypageService.productUpdate(dto.getId(), product);
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
