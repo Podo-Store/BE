@@ -202,19 +202,21 @@ public class MypageController {
     }
 
     @PostMapping("/scriptDetail")
-    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("scriptImage") MultipartFile file1, @RequestParam("description") MultipartFile file2) {
         try{
-            String filePath = mypageService.uploadScriptImage(file);
+            String scriptImageFilePath = mypageService.uploadScriptImage(file1);
+            String descriptionFilePath = mypageService.uploadDescription(file2);
 
             ProductEntity product = ProductEntity.builder()
-                    .imagePath(filePath)
-                    .imageType(file.getContentType())
+                    .imagePath(scriptImageFilePath)
+                    .imageType(file1.getContentType())
                     .title(dto.getTitle())
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
                     .scriptPrice(dto.getScriptPrice())
                     .performancePrice(dto.getPerformancePrice())
-                    .content(dto.getContent())
+                    .descriptionPath(descriptionFilePath)
+                    .descriptionType(file2.getContentType())
                     .build();
 
             mypageService.productUpdate(dto.getId(), product);

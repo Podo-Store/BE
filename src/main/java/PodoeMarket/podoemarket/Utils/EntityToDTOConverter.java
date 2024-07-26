@@ -41,7 +41,7 @@ public class EntityToDTOConverter {
         productDTO.setScriptPrice(entity.getScriptPrice());
         productDTO.setPerformance(entity.isPerformance());
         productDTO.setPerformancePrice(entity.getPerformancePrice());
-        productDTO.setContent(entity.getContent());
+        productDTO.setDescriptionPath(entity.getDescriptionPath());
         productDTO.setDate(entity.getDate());
         productDTO.setChecked(entity.isChecked());
 

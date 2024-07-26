@@ -38,6 +38,9 @@ public class MypageService {
     @Value("${cloud.aws.s3.folder.folderName2}")
     private String scriptImageBucketFolder;
 
+    @Value("${cloud.aws.s3.folder.folderName3}")
+    private String descriptionBucketFolder;
+
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
@@ -98,17 +101,33 @@ public class MypageService {
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
-        product.setContent(productEntity.getContent());
+//        product.setContent(productEntity.getContent());
 
         productRepo.save(product);
     }
 
     public String uploadScriptImage(MultipartFile file) throws IOException {
-        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
+        if(!Objects.equals(file.getContentType(), "application/pdf") && !Objects.equals(file.getContentType(), "application/pdf")) {
             throw new RuntimeException("file type is wrong");
         }
 
         String filePath = scriptImageBucketFolder + file.getOriginalFilename();
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
+
+        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
+
+        return amazonS3.getUrl(bucket, filePath).toString();
+    }
+
+    public String uploadDescription(MultipartFile file) throws IOException {
+        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
+            throw new RuntimeException("file type is wrong");
+        }
+
+        String filePath = descriptionBucketFolder + file.getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
