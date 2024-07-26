@@ -113,7 +113,7 @@ public class MypageService {
         }
 
         if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg")) {
-            throw new RuntimeException("ScriptImage file type is wrong");
+            throw new RuntimeException("ScriptImage file type is not jpg");
         }
 
         String filePath = scriptImageBucketFolder + files[0].getOriginalFilename();
@@ -136,7 +136,7 @@ public class MypageService {
         }
 
         if(!Objects.equals(files[0].getContentType(), "application/pdf") && !Objects.equals(files[0].getContentType(), "application/pdf")) {
-            throw new RuntimeException("Description file type is wrong");
+            throw new RuntimeException("Description file type is not PDF");
         }
 
         String filePath = descriptionBucketFolder + files[0].getOriginalFilename();
