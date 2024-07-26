@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
@@ -8,7 +7,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
