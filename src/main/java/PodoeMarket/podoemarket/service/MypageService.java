@@ -106,7 +106,7 @@ public class MypageService {
 
     public String uploadScriptImage(MultipartFile[] file) throws IOException {
         if(!Objects.equals(file[0].getContentType(), "image/jpeg") && !Objects.equals(file[0].getContentType(), "image/jpeg")) {
-            throw new RuntimeException("file type is wrong");
+            throw new RuntimeException("ScriptImage file type is wrong");
         }
 
         String filePath = scriptImageBucketFolder + file[0].getOriginalFilename();
@@ -122,7 +122,7 @@ public class MypageService {
 
     public String uploadDescription(MultipartFile[] file) throws IOException {
         if(!Objects.equals(file[0].getContentType(), "application/pdf") && !Objects.equals(file[0].getContentType(), "application/pdf")) {
-            throw new RuntimeException("file type is wrong");
+            throw new RuntimeException("Description file type is wrong");
         }
 
         String filePath = descriptionBucketFolder + file[0].getOriginalFilename();
