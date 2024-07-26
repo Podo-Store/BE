@@ -23,12 +23,9 @@ public class ProductController {
     @GetMapping("/scriptDetail")
     public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
         try{
-            // 작품 상세 정보
             ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
 
-            ProductDetailDTO res = new ProductDetailDTO(productInfo);
-
-            return ResponseEntity.ok().body(res);
+            return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

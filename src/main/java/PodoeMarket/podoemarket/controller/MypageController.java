@@ -4,10 +4,7 @@ import PodoeMarket.podoemarket.Utils.ValidUser;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.service.MailSendService;
-import PodoeMarket.podoemarket.service.MypageService;
-import PodoeMarket.podoemarket.service.RedisUtil;
-import PodoeMarket.podoemarket.service.UserService;
+import PodoeMarket.podoemarket.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
@@ -29,6 +27,7 @@ public class MypageController {
     private final MypageService mypageService;
     private final MailSendService mailService;
     private final UserService userService;
+    private final ProductService productService;
     private final RedisUtil redisUtil;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
@@ -201,22 +200,34 @@ public class MypageController {
         }
     }
 
-    @PostMapping("/scriptDetail")
-    public ResponseEntity<?> scriptDetail(ProductDTO dto, @RequestParam("scriptImage") MultipartFile file1, @RequestParam("description") MultipartFile file2) {
+    @GetMapping("/detail")
+    public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
+        try{
+            ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
+
+            return ResponseEntity.ok().body(productInfo);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/detail")
+    public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam("scriptImage") MultipartFile[] file1, @RequestParam("description") MultipartFile[] file2) {
         try{
             String scriptImageFilePath = mypageService.uploadScriptImage(file1);
             String descriptionFilePath = mypageService.uploadDescription(file2);
 
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)
-                    .imageType(file1.getContentType())
+                    .imageType(file1[0].getContentType())
                     .title(dto.getTitle())
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
                     .scriptPrice(dto.getScriptPrice())
                     .performancePrice(dto.getPerformancePrice())
                     .descriptionPath(descriptionFilePath)
-                    .descriptionType(file2.getContentType())
+                    .descriptionType(file2[0].getContentType())
                     .build();
 
             mypageService.productUpdate(dto.getId(), product);
