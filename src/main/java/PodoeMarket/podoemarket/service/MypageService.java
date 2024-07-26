@@ -101,39 +101,40 @@ public class MypageService {
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
-//        product.setContent(productEntity.getContent());
+        product.setDescriptionPath(productEntity.getDescriptionPath());
+        product.setDescriptionType(productEntity.getDescriptionType());
 
         productRepo.save(product);
     }
 
-    public String uploadScriptImage(MultipartFile file) throws IOException {
-        if(!Objects.equals(file.getContentType(), "application/pdf") && !Objects.equals(file.getContentType(), "application/pdf")) {
+    public String uploadScriptImage(MultipartFile[] file) throws IOException {
+        if(!Objects.equals(file[0].getContentType(), "image/jpeg") && !Objects.equals(file[0].getContentType(), "image/jpeg")) {
             throw new RuntimeException("file type is wrong");
         }
 
-        String filePath = scriptImageBucketFolder + file.getOriginalFilename();
+        String filePath = scriptImageBucketFolder + file[0].getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file[0].getSize());
+        metadata.setContentType(file[0].getContentType());
 
-        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
+        amazonS3.putObject(bucket, filePath, file[0].getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
     }
 
-    public String uploadDescription(MultipartFile file) throws IOException {
-        if(!Objects.equals(file.getContentType(), "image/jpeg") && !Objects.equals(file.getContentType(), "image/png")) {
+    public String uploadDescription(MultipartFile[] file) throws IOException {
+        if(!Objects.equals(file[0].getContentType(), "application/pdf") && !Objects.equals(file[0].getContentType(), "application/pdf")) {
             throw new RuntimeException("file type is wrong");
         }
 
-        String filePath = descriptionBucketFolder + file.getOriginalFilename();
+        String filePath = descriptionBucketFolder + file[0].getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file[0].getSize());
+        metadata.setContentType(file[0].getContentType());
 
-        amazonS3.putObject(bucket, filePath, file.getInputStream(), metadata);
+        amazonS3.putObject(bucket, filePath, file[0].getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
     }
