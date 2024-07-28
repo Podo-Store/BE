@@ -1,11 +1,10 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.Utils.ValidUser;
+import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +24,8 @@ import java.util.UUID;
 @RequestMapping("/profile")
 public class MypageController {
     private final MypageService mypageService;
-    private final MailSendService mailService;
     private final UserService userService;
     private final ProductService productService;
-    private final RedisUtil redisUtil;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
@@ -73,7 +70,7 @@ public class MypageController {
 
     @PostMapping("/checkPw")
     public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
-        if(!ValidUser.isValidPw(dto.getPassword())){
+        if(!ValidCheck.isValidPw(dto.getPassword())){
             ResponseDTO resDTO = ResponseDTO.builder()
                     .error("비밀번호 유효성 검사 실패")
                     .build();
@@ -113,43 +110,16 @@ public class MypageController {
         return ResponseEntity.ok().body(true);
     }
 
-    @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
-        try {
-            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
-        }catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
-        try{
-            log.info("Start mailauthCheck");
-
-            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
-
-            if(Checked) {
-                return ResponseEntity.ok().body(true);
-            } else
-                throw new NullPointerException("Null Exception");
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
         try{
-            if(!ValidUser.isValidPw(dto.getPassword())) {
+            if(!ValidCheck.isValidPw(dto.getPassword())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("비밀번호 유효성 검사 실패")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
-            } else if(!ValidUser.isValidNickname(dto.getNickname())) {
+            } else if(!ValidCheck.isValidNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 유효성 검사 실패")
                         .build();
@@ -164,14 +134,6 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 인증 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
             UserEntity user = UserEntity.builder()
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
@@ -179,9 +141,7 @@ public class MypageController {
                     .email(dto.getEmail())
                     .build();
 
-            // token 값 변경 가능성 있음
             mypageService.userUpdate(userInfo.getId(), user);
-            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -215,6 +175,14 @@ public class MypageController {
     @PostMapping("/detail")
     public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam("scriptImage") MultipartFile[] file1, @RequestParam("description") MultipartFile[] file2) {
         try{
+            if(!ValidCheck.isValidTitle(dto.getTitle())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("제목 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             String scriptImageFilePath = mypageService.uploadScriptImage(file1);
             String descriptionFilePath = mypageService.uploadDescription(file2);
 

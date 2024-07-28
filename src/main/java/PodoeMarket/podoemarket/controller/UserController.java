@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.Utils.ValidUser;
+import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.config.jwt.JwtProperties;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
@@ -14,7 +14,6 @@ import PodoeMarket.podoemarket.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -113,9 +112,9 @@ public class UserController {
     }
 
     @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
+    public ResponseEntity<?> mailSend(@RequestBody @jakarta.validation.Valid EmailRequestDTO emailDTO){
         try {
-            if(!ValidUser.isValidEmail(emailDTO.getEmail())) {
+            if(!ValidCheck.isValidEmail(emailDTO.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("이메일 유효성 검사 실패")
                         .build();
@@ -149,7 +148,7 @@ public class UserController {
     }
 
     @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
+    public ResponseEntity<?> AuthCheck(@RequestBody @jakarta.validation.Valid EmailCheckDTO emailCheckDTO){
         try{
             log.info("Start mailauthCheck");
 
@@ -171,7 +170,7 @@ public class UserController {
             log.info("Start signup");
 
             // 유저 유효성 검사
-            if(!ValidUser.isValidUser(dto)){
+            if(!ValidCheck.isValidUser(dto)){
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("유효성 검사 통과 실패")
                         .build();
@@ -324,7 +323,7 @@ public class UserController {
     @PostMapping("/resetPassword")
     public ResponseEntity<?> restPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
         try{
-            if(!ValidUser.isValidPw(dto.getPassword())){
+            if(!ValidCheck.isValidPw(dto.getPassword())){
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("비밀번호 유효성 검사 실패")
                         .build();
