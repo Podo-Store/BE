@@ -22,6 +22,7 @@ public class ProductListDTO {
     private int scriptPrice;
     private boolean performance;
     private int performancePrice;
+    private int playType;
     private boolean checked;
     private LocalDate date;
 }

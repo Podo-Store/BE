@@ -61,6 +61,10 @@ public class ProductEntity {
 
     @Column
     private String descriptionPath;
+    
+    @Column
+    @ColumnDefault("0")
+    private int playType; // 0: default 1: 장편극, 2: 단편극
 
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)

@@ -23,6 +23,7 @@ public class ProductDTO {
     private boolean performance;
     private int performancePrice;
     private String descriptionPath;
+    private int playType;
     private boolean checked;
     private LocalDate date;
 }
