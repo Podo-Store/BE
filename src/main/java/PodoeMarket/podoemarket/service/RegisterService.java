@@ -33,7 +33,7 @@ public class RegisterService {
         fileRepo.save(scriptEntity);
     }
 
-    public String uploadScript(MultipartFile[] files) throws IOException {
+    public String uploadScript(MultipartFile[] files, String writer) throws IOException {
         if(files[0].isEmpty()) {
             throw new RuntimeException("선택된 파일이 없음");
         }
@@ -51,7 +51,7 @@ public class RegisterService {
         String name = files[0].getOriginalFilename();
         String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        String filePath = bucketFolder + fileName[0] + dateFormat.format(time);
+        String filePath = bucketFolder + fileName[0] +"\\"+ writer + "\\" + dateFormat.format(time);
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
