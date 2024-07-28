@@ -37,7 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/auth/**", "/product/**").permitAll() // 인증 없이 접근 가능한 경로 설정
+                        .requestMatchers("/", "/auth/**", "/scripts/**").permitAll() // 인증 없이 접근 가능한 경로 설정
                         .anyRequest().authenticated()) // 나머지 모든 요청은 인증 필요
                 .requiresChannel(channelConfigurer -> channelConfigurer
                         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
