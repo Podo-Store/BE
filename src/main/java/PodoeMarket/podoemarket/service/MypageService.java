@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -86,6 +87,17 @@ public class MypageService {
         return products.stream()
                 .map(EntityToDTOConverter::converToProductList)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateWriter(UUID id, String writer) {
+        List<ProductEntity> products = productRepo.findAllByUserId(id);
+
+        for (ProductEntity product : products) {
+            product.setWriter(writer);
+        }
+
+        productRepo.saveAll(products);
     }
 
     public void productUpdate(UUID id, final ProductEntity productEntity) {
