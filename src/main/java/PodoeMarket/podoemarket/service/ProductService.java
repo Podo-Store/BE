@@ -22,6 +22,22 @@ public class ProductService {
     private final ProductRepository productRepo;
     private final BasketRepository basketRepo;
 
+    public List<ProductListDTO> longPlayList() {
+        List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
+
+        return longPlays.stream()
+                .map(EntityToDTOConverter::converToProductList)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductListDTO> shortPlayList() {
+        List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
+
+        return shortPlays.stream()
+                .map(EntityToDTOConverter::converToProductList)
+                .collect(Collectors.toList());
+    }
+
     public ProductEntity product(UUID id) {
         return productRepo.findById(id);
     }

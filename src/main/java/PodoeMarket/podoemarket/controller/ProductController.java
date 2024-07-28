@@ -10,19 +10,22 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
 @Slf4j
-@RequestMapping("/product")
+@RequestMapping("/scripts")
 public class ProductController {
     private final ProductService productService;
 
     @GetMapping
     public ResponseEntity<?> allProducts() {
         try{
-            return ResponseEntity.ok().body(true);
+            ScriptListDTO lists = new ScriptListDTO(productService.longPlayList(), productService.shortPlayList());
+
+            return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

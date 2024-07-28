@@ -150,7 +150,7 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/script")
+    @GetMapping("/scripts")
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
             return ResponseEntity.ok().body(mypageService.getAllMyProducts(userInfo.getId()));
