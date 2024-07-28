@@ -143,6 +143,8 @@ public class MypageController {
 
             mypageService.userUpdate(userInfo.getId(), user);
 
+            mypageService.updateWriter(userInfo.getId(), dto.getNickname());
+
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
