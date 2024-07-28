@@ -19,7 +19,17 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
 
-    @GetMapping("/scriptDetail")
+    @GetMapping
+    public ResponseEntity<?> allProducts() {
+        try{
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/detail")
     public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
         try{
             ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
