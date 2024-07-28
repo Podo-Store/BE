@@ -6,11 +6,14 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class RegisterService {
         fileRepo.save(scriptEntity);
     }
 
-    public String uploadScript(MultipartFile[] files) throws IOException {
+    public String uploadScript(MultipartFile[] files, String writer) throws IOException {
         if(files[0].isEmpty()) {
             throw new RuntimeException("선택된 파일이 없음");
         }
@@ -42,7 +45,13 @@ public class RegisterService {
             throw new RuntimeException("contentType is not PDF");
         }
 
-        String filePath = bucketFolder + files[0].getOriginalFilename();
+        // 파일 이름 가공
+        SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
+        Date time = new Date();
+        String name = files[0].getOriginalFilename();
+        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        String filePath = bucketFolder + fileName[0] +"\\"+ writer + "\\" + dateFormat.format(time);
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());

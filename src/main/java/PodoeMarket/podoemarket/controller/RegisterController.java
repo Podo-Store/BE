@@ -26,7 +26,7 @@ public class RegisterController {
         try{
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
-            String filePath = registerService.uploadScript(files);
+            String filePath = registerService.uploadScript(files, userInfo.getNickname());
 
             ProductEntity script = ProductEntity.builder()
                     .title(FilenameUtils.getBaseName(files[0].getOriginalFilename()))

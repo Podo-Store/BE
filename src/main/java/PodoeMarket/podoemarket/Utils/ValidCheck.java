@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.regex.Pattern;
 
 @Slf4j
-public class ValidUser {
+public class ValidCheck {
     // 유효성 검사
     public static boolean isValidUser(UserDTO userDTO){ // 아이디, 이메일, 비밀번호, 전화번호
         String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
@@ -94,6 +94,21 @@ public class ValidUser {
             return false;
         } else {
             log.info("email valid checked");
+            return true;
+        }
+    }
+
+    public static boolean isValidTitle(String title) {
+        String regx_title = "^.{1,20}$";
+
+        if(title == null) {
+            log.warn("title is null or empty");
+            return false;
+        } else if(!Pattern.matches(regx_title, title)) {
+            log.warn("title is not fit in the rule");
+            return false;
+        } else {
+            log.info("title valid checked");
             return true;
         }
     }
