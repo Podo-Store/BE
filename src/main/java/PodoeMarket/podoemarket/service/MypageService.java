@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -116,7 +118,7 @@ public class MypageService {
         productRepo.save(product);
     }
 
-    public String uploadScriptImage(MultipartFile[] files) throws IOException {
+    public String uploadScriptImage(MultipartFile[] files, String title) throws IOException {
         if(files[0].isEmpty()) {
             throw new RuntimeException("선택된 작품 이미지가 없음");
         }
@@ -128,7 +130,13 @@ public class MypageService {
             throw new RuntimeException("ScriptImage file type is not jpg");
         }
 
-        String filePath = scriptImageBucketFolder + files[0].getOriginalFilename();
+        // 파일 이름 가공
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date time = new Date();
+        String name = files[0].getOriginalFilename();
+        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        String filePath = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
@@ -139,7 +147,7 @@ public class MypageService {
         return amazonS3.getUrl(bucket, filePath).toString();
     }
 
-    public String uploadDescription(MultipartFile[] files) throws IOException {
+    public String uploadDescription(MultipartFile[] files, String title) throws IOException {
         if(files[0].isEmpty()) {
             throw new RuntimeException("선택된 작품 설명 파일이 없음");
         }
@@ -151,7 +159,13 @@ public class MypageService {
             throw new RuntimeException("Description file type is not PDF");
         }
 
-        String filePath = descriptionBucketFolder + files[0].getOriginalFilename();
+        // 파일 이름 가공
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date time = new Date();
+        String name = files[0].getOriginalFilename();
+        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        String filePath = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());

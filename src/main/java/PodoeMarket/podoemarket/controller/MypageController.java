@@ -142,7 +142,6 @@ public class MypageController {
                     .build();
 
             mypageService.userUpdate(userInfo.getId(), user);
-
             mypageService.updateWriter(userInfo.getId(), dto.getNickname());
 
             return ResponseEntity.ok().body(true);
@@ -185,8 +184,8 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String scriptImageFilePath = mypageService.uploadScriptImage(file1);
-            String descriptionFilePath = mypageService.uploadDescription(file2);
+            String scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
+            String descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
 
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)
