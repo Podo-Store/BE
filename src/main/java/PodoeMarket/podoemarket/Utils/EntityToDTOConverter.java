@@ -48,7 +48,7 @@ public class EntityToDTOConverter {
         return productDTO;
     }
 
-    public static ProductListDTO converToBasketList(BasketEntity entity) {
+    public static ProductListDTO converToBasketList(CartEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
         productListDTO.setId(entity.getProduct().getId());

@@ -51,7 +51,7 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductEntity> product = new ArrayList<>();
 
-    // user : basket = 1 : N
+    // user : cart = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BasketEntity> basket = new ArrayList<>();
+    private List<CartEntity> cart = new ArrayList<>();
 }

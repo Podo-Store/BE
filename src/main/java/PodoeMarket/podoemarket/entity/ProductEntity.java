@@ -87,8 +87,8 @@ public class ProductEntity {
     @JsonIgnore
     private UserEntity user;
 
-    // product : basket = 1 : N
+    // product : cart = 1 : N
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<BasketEntity> basket = new ArrayList<>();
+    private List<CartEntity> cart = new ArrayList<>();
 }
