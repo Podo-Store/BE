@@ -105,6 +105,10 @@ public class MypageService {
     public void productUpdate(UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
+        if(!product.isChecked()) {
+            throw new RuntimeException("등록 심사 중인 작품");
+        }
+
         product.setImagePath(productEntity.getImagePath());
         product.setImageType(productEntity.getImageType());
         product.setTitle(productEntity.getTitle());

@@ -184,6 +184,14 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            if(!(productService.product(dto.getId())).isChecked()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("등록 심사 중인 작품")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             String scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
             String descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
 
