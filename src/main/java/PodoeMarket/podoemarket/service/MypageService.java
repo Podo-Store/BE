@@ -87,7 +87,7 @@ public class MypageService {
         List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         return products.stream()
-                .map(EntityToDTOConverter::converToProductList)
+                .map(EntityToDTOConverter::convertToProductList)
                 .collect(Collectors.toList());
     }
 
