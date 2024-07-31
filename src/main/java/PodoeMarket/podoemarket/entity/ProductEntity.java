@@ -97,4 +97,9 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<CartEntity> cart = new ArrayList<>();
+
+    // product : orderItem = 1 : N
+    @OneToMany(mappedBy = "product")
+    @JsonIgnore
+    private List<OrderItemEntity> orderItem = new ArrayList<>();
 }

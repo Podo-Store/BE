@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -31,8 +33,6 @@ public class OrdersEntity {
 //    @Column(nullable = false)
 //    private int paymentMethod;
 
-
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -45,13 +45,17 @@ public class OrdersEntity {
         createdAt = now;
         updatedAt = now;
     }
+
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
-
 
     // user : order = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private UserEntity user;
+
+    // orders : orderItem = 1 : N
+    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemEntity> orderItem = new ArrayList<>();
 }
