@@ -14,6 +14,7 @@ import PodoeMarket.podoemarket.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -114,7 +115,7 @@ public class UserController {
     }
 
     @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @jakarta.validation.Valid EmailRequestDTO emailDTO){
+    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
         try {
             if(!ValidCheck.isValidEmail(emailDTO.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -150,7 +151,7 @@ public class UserController {
     }
 
     @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> AuthCheck(@RequestBody @jakarta.validation.Valid EmailCheckDTO emailCheckDTO){
+    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
         try{
             log.info("Start mailauthCheck");
 

@@ -28,7 +28,7 @@ public class OrdersEntity {
     private int status; // 0: 결제 전, 1: 결제 완료
 
     @Column(nullable = false)
-    private int totalAmount;
+    private int totalPrice;
 
 //    @Column(nullable = false)
 //    private int paymentMethod;

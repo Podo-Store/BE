@@ -11,6 +11,7 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findAllByUserId(UUID id);
+
     ProductEntity findById(UUID id);
 
     List<ProductEntity> findAllByPlayTypeAndChecked(int playType, boolean checked); // checked는 true로 고정

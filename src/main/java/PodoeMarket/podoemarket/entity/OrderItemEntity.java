@@ -60,7 +60,7 @@ public class OrderItemEntity {
     // orders : orderItem = 1 : N
     @ManyToOne(targetEntity = OrdersEntity.class)
     @JoinColumn(name = "order_id", nullable = false)
-    private OrdersEntity orders;
+    private OrdersEntity order;
 
     // product : orderItem = 1 : N
     @ManyToOne(targetEntity = ProductEntity.class)
