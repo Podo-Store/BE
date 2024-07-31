@@ -23,7 +23,7 @@ public class ProductService {
         List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
 
         return longPlays.stream()
-                .map(EntityToDTOConverter::converToProductList)
+                .map(EntityToDTOConverter::convertToProductList)
                 .collect(Collectors.toList());
     }
 
@@ -31,7 +31,7 @@ public class ProductService {
         List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
 
         return shortPlays.stream()
-                .map(EntityToDTOConverter::converToProductList)
+                .map(EntityToDTOConverter::convertToProductList)
                 .collect(Collectors.toList());
     }
 
@@ -42,6 +42,6 @@ public class ProductService {
     public ProductDTO productDetail(UUID productId, UUID userId) {
         ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.converToSingleProductDTO(script, userId);
+        return EntityToDTOConverter.convertToSingleProductDTO(script, userId);
     }
 }

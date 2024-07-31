@@ -12,7 +12,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-    public static ProductListDTO converToProductList(ProductEntity entity) {
+    public static ProductListDTO convertToProductList(ProductEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
         productListDTO.setId(entity.getId());
@@ -29,7 +29,7 @@ public class EntityToDTOConverter {
         return productListDTO;
     }
 
-    public static ProductDTO converToSingleProductDTO(ProductEntity entity, UUID userId) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, UUID userId) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
@@ -48,7 +48,7 @@ public class EntityToDTOConverter {
         return productDTO;
     }
 
-    public static ProductListDTO converToBasketList(CartEntity entity) {
+    public static ProductListDTO convertToBasketList(CartEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
         productListDTO.setId(entity.getProduct().getId());
@@ -60,7 +60,6 @@ public class EntityToDTOConverter {
         productListDTO.setPerformance(entity.getProduct().isPerformance());
         productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
         productListDTO.setDate(entity.getProduct().getDate());
-        productListDTO.setChecked(entity.getProduct().isChecked());
 
         return productListDTO;
     }

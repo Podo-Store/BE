@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.dto.CartDTO;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.entity.CartEntity;
@@ -28,7 +29,7 @@ public class CartController {
     @GetMapping
     public ResponseEntity<?> basketList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            return ResponseEntity.ok().body(cartService.getAllBasketProducts(userInfo.getId()));
+            return ResponseEntity.ok().body(cartService.getAllCartProducts(userInfo.getId()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -36,26 +37,34 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> productBasket(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProductDTO dto) {
+    public ResponseEntity<?> productBasket(@AuthenticationPrincipal UserEntity userInfo, @RequestBody CartDTO dto) {
         try {
-            boolean isBasket = cartService.isBasket(userInfo.getId(), dto.getId());
+            CartEntity cartProduct = cartService.product(userInfo.getId(), dto.getProductId());
 
-            if(isBasket) { // 장바구니 담기 취소
-                cartService.basketDelete(userInfo.getId(), dto.getId());
-
-                return ResponseEntity.ok().body("basket delete");
-            } else { // 장바구니 담기
-                ProductEntity product = productService.product(dto.getId());
-
-                CartEntity basket = CartEntity.builder()
-                        .user(userInfo)
-                        .product(product)
-                        .build();
-
-                cartService.basketCreate(basket);
-
-                return ResponseEntity.ok().body("basket success");
+            if (cartProduct == null) {
+                log.info("info is null");
             }
+
+//            boolean isBasket = cartService.isCart(userInfo.getId(), dto.getProductId());
+//
+//            if(isBasket) { // 장바구니 담기 취소
+//                cartService.cartDelete(userInfo.getId(), dto.getProductId());
+//
+//                return ResponseEntity.ok().body("basket delete");
+//            } else { // 장바구니 담기
+//                ProductEntity product = productService.product(dto.getProductId());
+//
+//                CartEntity basket = CartEntity.builder()
+//                        .status(dto.getStatus())
+//                        .user(userInfo)
+//                        .product(product)
+//                        .build();
+//
+//                cartService.cartCreate(basket);
+//
+//                return ResponseEntity.ok().body("basket success");
+//            }
+            return ResponseEntity.ok().body(true);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

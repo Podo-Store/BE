@@ -19,26 +19,30 @@ import java.util.stream.Collectors;
 public class CartService {
     private final CartRepository cartRepo;
 
-    public Boolean isBasket(UUID userId, UUID productId) {
+    public CartEntity product(UUID userId, UUID productId) {
+        return cartRepo.findByUserIdAndProductId(userId, productId);
+    }
+
+    public Boolean isCart(UUID userId, UUID productId) {
         return cartRepo.existsByUserIdAndProductId(userId, productId);
     }
 
     @Transactional
-    public void basketDelete(UUID userId, UUID productId) {
+    public void cartDelete(UUID userId, UUID productId) {
         CartEntity deleteInfo = cartRepo.findByUserIdAndProductId(userId, productId);
 
         cartRepo.deleteById(deleteInfo.getId());
     }
 
-    public void basketCreate(final CartEntity CartEntity) {
+    public void cartCreate(final CartEntity CartEntity) {
         cartRepo.save(CartEntity);
     }
 
-    public List<ProductListDTO> getAllBasketProducts(UUID id) {
+    public List<ProductListDTO> getAllCartProducts(UUID id) {
         List<CartEntity> products = cartRepo.findAllByUserId(id);
 
         return products.stream()
-                .map(EntityToDTOConverter::converToBasketList)
+                .map(EntityToDTOConverter::convertToBasketList)
                 .collect(Collectors.toList());
     }
 }
