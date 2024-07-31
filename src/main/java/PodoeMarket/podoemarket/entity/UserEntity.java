@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,21 +37,30 @@ public class UserEntity {
     @ColumnDefault("0")
     private boolean auth;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @PrePersist
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist // entity가 영속화되기 직전에 실행
     protected void onCreate() {
-        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        createdAt = now;
+        updatedAt = now;
     }
-    @PreUpdate
-    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
+    @PreUpdate // db에 entity가 업데이트되기 직전에 실행
+    protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
     // user : product = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductEntity> product = new ArrayList<>();
 
-    // user : cart = 1 : N
+    // user : cart = 1 : 1
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CartEntity cart;
+
+    // user : order = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartEntity> cart = new ArrayList<>();
+    private List<OrdersEntity> order = new ArrayList<>();
 }

@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -24,5 +23,5 @@ public class ProductListDTO {
     private int performancePrice;
     private int playType;
     private boolean checked;
-    private LocalDate date;
+    private LocalDateTime date;
 }

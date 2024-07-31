@@ -23,7 +23,7 @@ public class EntityToDTOConverter {
         productListDTO.setScriptPrice(entity.getScriptPrice());
         productListDTO.setPerformance(entity.isPerformance());
         productListDTO.setPerformancePrice(entity.getPerformancePrice());
-        productListDTO.setDate(entity.getDate());
+        productListDTO.setDate(entity.getCreatedAt());
         productListDTO.setChecked(entity.isChecked());
 
         return productListDTO;
@@ -42,7 +42,7 @@ public class EntityToDTOConverter {
         productDTO.setPerformance(entity.isPerformance());
         productDTO.setPerformancePrice(entity.getPerformancePrice());
         productDTO.setDescriptionPath(entity.getDescriptionPath());
-        productDTO.setDate(entity.getDate());
+        productDTO.setDate(entity.getCreatedAt());
         productDTO.setChecked(entity.isChecked());
 
         return productDTO;
@@ -59,7 +59,7 @@ public class EntityToDTOConverter {
         productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
         productListDTO.setPerformance(entity.getProduct().isPerformance());
         productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
-        productListDTO.setDate(entity.getProduct().getDate());
+        productListDTO.setDate(entity.getProduct().getCreatedAt());
 
         return productListDTO;
     }

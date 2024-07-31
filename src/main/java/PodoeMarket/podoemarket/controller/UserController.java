@@ -24,6 +24,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -261,7 +263,9 @@ public class UserController {
             UserEntity user = userService.getByUserEmail(dto.getEmail());
 
             String userId = user.getUserId();
-            String date = String.valueOf(user.getDate());
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String date = user.getCreatedAt().format(formatter);
 
             List<Object> userInfo = new ArrayList<>(Arrays.asList(userId, date));
 
