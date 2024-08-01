@@ -31,17 +31,20 @@ public class OrderService {
                 throw new RuntimeException("물건이 존재하지 않음");
             }
 
+            int totalPrice = OrderItemDTO.getScriptPrice() + OrderItemDTO.getPerformancePrice();
+
             orderItem.setProduct(product);
             orderItem.setScript(OrderItemDTO.isScript());
             orderItem.setScriptPrice(OrderItemDTO.getScriptPrice());
             orderItem.setPerformance(OrderItemDTO.isPerformance());
             orderItem.setPerformancePrice(OrderItemDTO.getPerformancePrice());
-            orderItem.setTotalPrice(OrderItemDTO.getTotalPrice());
+            orderItem.setTotalPrice(totalPrice);
 
             return orderItem;
         }).toList();
 
         ordersEntity.setOrderItem(orderItems);
+        ordersEntity.setTotalPrice(orderItems.stream().mapToInt(OrderItemEntity::getTotalPrice).sum());
         orderRepo.save(ordersEntity);
     }
 }
