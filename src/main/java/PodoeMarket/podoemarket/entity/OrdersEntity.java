@@ -56,6 +56,6 @@ public class OrdersEntity {
     private UserEntity user;
 
     // orders : orderItem = 1 : N
-    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItem = new ArrayList<>();
 }

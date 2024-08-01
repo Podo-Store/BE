@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,6 +61,7 @@ public class OrderItemEntity {
     // orders : orderItem = 1 : N
     @ManyToOne(targetEntity = OrdersEntity.class)
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
     private OrdersEntity order;
 
     // product : orderItem = 1 : N

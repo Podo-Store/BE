@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.List;
 @Service
 public class OrderService {
     private final ProductRepository productRepo;
+    private final OrderRepository orderRepo;
 
     public void orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
@@ -32,13 +34,14 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setScript(OrderItemDTO.isScript());
             orderItem.setScriptPrice(OrderItemDTO.getScriptPrice());
-            orderItem.setPerformance(orderItem.isPerformance());
-            orderItem.setPerformancePrice(orderItem.getPerformancePrice());
-            orderItem.setTotalPrice(orderItem.getTotalPrice());
+            orderItem.setPerformance(OrderItemDTO.isPerformance());
+            orderItem.setPerformancePrice(OrderItemDTO.getPerformancePrice());
+            orderItem.setTotalPrice(OrderItemDTO.getTotalPrice());
 
             return orderItem;
         }).toList();
 
         ordersEntity.setOrderItem(orderItems);
+        orderRepo.save(ordersEntity);
     }
 }
