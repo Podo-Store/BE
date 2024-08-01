@@ -1,28 +1,46 @@
 package PodoeMarket.podoemarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cart")
+@Table(name = "orderItem")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartEntity {
+public class OrderItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(nullable = false)
-    private int status; // 0: 대본권, 1: 대본권 + 공연권, 2: 공연권(대본권 구매 이력이 있는 경우만 가능)
+    @ColumnDefault("False")
+    private boolean script; // 대본권 구매 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int scriptPrice;
+
+    @Column(nullable = false)
+    @ColumnDefault("False")
+    private boolean performance; // 공연권 구매 여부
+
+    @Column
+    @ColumnDefault("0")
+    private int performancePrice;
+
+    @Column(nullable = false)
+    private int totalPrice;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -40,12 +58,13 @@ public class CartEntity {
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
 
-    // user : cart = 1 : 1
-    @OneToOne(targetEntity = UserEntity.class)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    // orders : orderItem = 1 : N
+    @ManyToOne(targetEntity = OrdersEntity.class)
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
+    private OrdersEntity order;
 
-    // product : cart = 1 : N
+    // product : orderItem = 1 : N
     @ManyToOne(targetEntity = ProductEntity.class)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;

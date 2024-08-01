@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,15 +72,20 @@ public class ProductEntity {
     @ColumnDefault("0")
     private boolean checked;
 
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(nullable = false)
-    private LocalDate date;
+    private LocalDateTime updatedAt;
 
     @PrePersist // entity가 영속화되기 직전에 실행
     protected void onCreate() {
-        date = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        createdAt = now;
+        updatedAt = now;
     }
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
-    protected void onUpdate() {date= LocalDate.now(ZoneId.of("Asia/Seoul"));}
+    protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
     // user : product = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
@@ -91,4 +97,9 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<CartEntity> cart = new ArrayList<>();
+
+    // product : orderItem = 1 : N
+    @OneToMany(mappedBy = "product")
+    @JsonIgnore
+    private List<OrderItemEntity> orderItem = new ArrayList<>();
 }
