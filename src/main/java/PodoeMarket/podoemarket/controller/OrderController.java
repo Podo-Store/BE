@@ -21,13 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping
+    @PostMapping("/item")
     public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderDTO dto) {
         try {
             OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .status(dto.getStatus())
-                    .totalPrice(dto.getTotalPrice())
                     .build();
 
             orderService.orderCreate(order, dto);
