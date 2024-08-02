@@ -39,9 +39,9 @@ public class ProductService {
         return productRepo.findById(id);
     }
 
-    public ProductDTO productDetail(UUID productId, UUID userId) {
+    public ProductDTO productDetail(UUID productId) {
         ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script, userId);
+        return EntityToDTOConverter.convertToSingleProductDTO(script);
     }
 }

@@ -29,7 +29,7 @@ public class EntityToDTOConverter {
         return productListDTO;
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, UUID userId) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
