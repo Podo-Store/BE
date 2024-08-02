@@ -32,9 +32,9 @@ public class ProductController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId, userInfo.getId());
+            ProductDTO productInfo = productService.productDetail(productId);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
