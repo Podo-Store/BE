@@ -68,19 +68,6 @@ public class MypageController {
         }
     }
 
-    @PostMapping("/checkPw")
-    public ResponseEntity<?> checkPassword(@RequestBody UserDTO dto) {
-        if(!ValidCheck.isValidPw(dto.getPassword())){
-            ResponseDTO resDTO = ResponseDTO.builder()
-                    .error("비밀번호 유효성 검사 실패")
-                    .build();
-
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-
-        return ResponseEntity.ok().body(true);
-    }
-
     @PostMapping("/equalPw")
     public ResponseEntity<?> equalPassword(@RequestBody UserDTO dto) {
         if(!dto.getPassword().equals(dto.getConfirmPassword())){
