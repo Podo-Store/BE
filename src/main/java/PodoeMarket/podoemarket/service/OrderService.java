@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.dto.OrderDTO;
+import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j

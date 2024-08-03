@@ -13,6 +13,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderItemDTO {
     private UUID id;
+    private String title;
+    private String writer;
+    private String imagePath;
+    private boolean checked;
     private boolean script;
     private int scriptPrice;
     private boolean performance;
