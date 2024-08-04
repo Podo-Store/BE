@@ -47,20 +47,4 @@ public class EntityToDTOConverter {
 
         return productDTO;
     }
-
-    public static ProductListDTO convertToBasketList(CartEntity entity) {
-        ProductListDTO productListDTO = new ProductListDTO();
-
-        productListDTO.setId(entity.getProduct().getId());
-        productListDTO.setTitle(entity.getProduct().getTitle());
-        productListDTO.setWriter(entity.getProduct().getWriter());
-        productListDTO.setImagePath(entity.getProduct().getImagePath());
-        productListDTO.setScript(entity.getProduct().isScript());
-        productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
-        productListDTO.setPerformance(entity.getProduct().isPerformance());
-        productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
-        productListDTO.setDate(entity.getProduct().getCreatedAt());
-
-        return productListDTO;
-    }
 }

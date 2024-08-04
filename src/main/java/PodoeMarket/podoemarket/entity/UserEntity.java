@@ -56,10 +56,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductEntity> product = new ArrayList<>();
 
-    // user : cart = 1 : 1
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private CartEntity cart;
-
     // user : order = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersEntity> order = new ArrayList<>();
