@@ -195,8 +195,21 @@ public class MypageController {
                     .build();
 
             mypageService.productUpdate(dto.getId(), product);
+
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/orderItems")
+    public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
