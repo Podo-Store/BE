@@ -42,6 +42,7 @@ public class OrderController {
                     .title(orderProduct.getTitle())
                     .writer(orderProduct.getWriter())
                     .imagePath(orderProduct.getImagePath())
+                    .playType(orderProduct.getPlayType())
                     .script(dto.isScript())
                     .scriptPrice(orderProduct.getScriptPrice())
                     .performance(dto.isPerformance())
