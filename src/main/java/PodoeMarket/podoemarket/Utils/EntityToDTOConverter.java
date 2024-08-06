@@ -47,4 +47,8 @@ public class EntityToDTOConverter {
 
         return productDTO;
     }
+
+//    public static OrderDTO converToOrderList(OrdersEntity entity) {
+//
+//    }
 }

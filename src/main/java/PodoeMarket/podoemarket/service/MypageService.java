@@ -1,9 +1,12 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
@@ -30,6 +33,7 @@ import java.util.stream.Collectors;
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
+    private final OrderRepository orderRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -173,10 +177,18 @@ public class MypageService {
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
-        metadata.setContentType(files[0].getContentType());
+        metadata.setContentType("application/pdf");
 
         amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
+    }
+
+    public List<ProductListDTO> getAllMyOrders(UUID id) {
+        List<OrdersEntity> orders = orderRepo.findAllByUserId(id);
+
+        return orders.stream()
+                .map(EntityToDTOConverter::convertToProductList)
+                .collect(Collectors.toList());
     }
 }
