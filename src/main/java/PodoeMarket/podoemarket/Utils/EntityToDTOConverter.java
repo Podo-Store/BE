@@ -44,6 +44,7 @@ public class EntityToDTOConverter {
         productDTO.setDescriptionPath(entity.getDescriptionPath());
         productDTO.setDate(entity.getCreatedAt());
         productDTO.setChecked(entity.isChecked());
+        productDTO.setPlayType(entity.getPlayType());
 
         return productDTO;
     }
