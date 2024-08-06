@@ -35,10 +35,12 @@ public class OrderService {
                 throw new RuntimeException("물건이 존재하지 않음");
             }
 
-            OrderItemEntity item = orderItemRepo.findByProductId(OrderItemDTO.getProductId());
+            if(orderItemRepo.existsByProductId(OrderItemDTO.getProductId())) {
+                OrderItemEntity item = orderItemRepo.findByProductId(OrderItemDTO.getProductId());
 
-            if(item.isScript()) {
-                throw new RuntimeException("<" + product.getTitle() + "> 이미 구매했음");
+                if(item.isScript()) {
+                    throw new RuntimeException("<" + product.getTitle() + "> 이미 구매했음");
+                }
             }
 
             int totalPrice = OrderItemDTO.getScriptPrice() + OrderItemDTO.getPerformancePrice();
