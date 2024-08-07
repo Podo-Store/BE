@@ -417,14 +417,13 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자가 인증되지 않았습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
         }
 
-        UserEntity user = (UserEntity) authentication.getPrincipal();
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(true);
     }
 }

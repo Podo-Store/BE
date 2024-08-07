@@ -49,9 +49,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("토큰 에러 발생");
-                    return;
+                    response.getWriter().write("false(토큰 에러 발생)");
 
+                    return;
                 }else if(Objects.equals(claims.getIssuer(), "Expired")){
                     // 엑세스 토큰이 유효시간이 지난 경우
                     log.info("Token is expired");
@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("토큰 재발급을 받으세요");
+                    response.getWriter().write("false(토큰 에러 발생)");
 
                     return;
                 }else {

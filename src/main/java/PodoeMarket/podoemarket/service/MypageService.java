@@ -184,11 +184,11 @@ public class MypageService {
         return amazonS3.getUrl(bucket, filePath).toString();
     }
 
-//    public List<ProductListDTO> getAllMyOrders(UUID id) {
-//        List<OrdersEntity> orders = orderRepo.findAllByUserId(id);
-//
-//        return orders.stream()
-//                .map(EntityToDTOConverter::convertToProductList)
-//                .collect(Collectors.toList());
-//    }
+    public List<ProductListDTO> getAllMyOrders(UUID id) {
+        List<OrdersEntity> orders = orderRepo.findAllByUserId(id);
+
+        return orders.stream()
+                .map(EntityToDTOConverter::converToOrderList)
+                .collect(Collectors.toList());
+    }
 }

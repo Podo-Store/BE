@@ -205,15 +205,15 @@ public class MypageController {
         }
     }
 
-//    @GetMapping("/orderItems")
-//    public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
-//        try {
-//            log.info("orderItems 정보 : {}", mypageService.getAllMyOrders(userInfo.getId()));
-//
-//            return ResponseEntity.ok().body(true);
-//        } catch (Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
+    @GetMapping("/orderItems")
+    public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            log.info("orderItems 정보 : {}", mypageService.getAllMyOrders(userInfo.getId()));
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

@@ -48,7 +48,20 @@ public class EntityToDTOConverter {
         return productDTO;
     }
 
-//    public static OrderDTO converToOrderList(OrdersEntity entity) {
-//
-//    }
+    public static ProductListDTO converToOrderList(OrdersEntity entity) {
+        ProductListDTO productListDTO = new ProductListDTO();
+
+//        productListDTO.setId(entity.getId());
+//        productListDTO.setTitle(entity.getTitle());
+//        productListDTO.setWriter(entity.getWriter());
+//        productListDTO.setImagePath(entity.getImagePath());
+//        productListDTO.setScript(entity.isScript());
+//        productListDTO.setScriptPrice(entity.getScriptPrice());
+//        productListDTO.setPerformance(entity.isPerformance());
+//        productListDTO.setPerformancePrice(entity.getPerformancePrice());
+//        productListDTO.setDate(entity.getCreatedAt());
+//        productListDTO.setChecked(entity.isChecked());
+
+        return productListDTO;
+    }
 }
