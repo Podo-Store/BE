@@ -11,6 +11,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Entity
 @Table(name = "orderItem")
@@ -61,7 +62,6 @@ public class OrderItemEntity {
     // orders : orderItem = 1 : N
     @ManyToOne(targetEntity = OrdersEntity.class)
     @JoinColumn(name = "order_id", nullable = false)
-    @JsonIgnore
     private OrdersEntity order;
 
     // product : orderItem = 1 : N

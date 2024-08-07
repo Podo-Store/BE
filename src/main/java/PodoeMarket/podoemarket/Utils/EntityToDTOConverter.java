@@ -6,12 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
+
     public static ProductListDTO convertToProductList(ProductEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
@@ -47,5 +46,20 @@ public class EntityToDTOConverter {
         productDTO.setPlayType(entity.getPlayType());
 
         return productDTO;
+    }
+
+    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product) {
+        OrderItemDTO itemDTO = new OrderItemDTO();
+
+        itemDTO.setId(orderItem.getId());
+        itemDTO.setTitle(product.getTitle());
+        itemDTO.setImagePath(product.getImagePath());
+        itemDTO.setChecked(product.isChecked());
+        itemDTO.setScript(product.isScript());
+        itemDTO.setScriptPrice(product.getScriptPrice());
+        itemDTO.setPerformance(product.isPerformance());
+        itemDTO.setPerformancePrice(product.getPerformancePrice());
+
+        return itemDTO;
     }
 }

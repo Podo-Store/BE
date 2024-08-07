@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -35,10 +33,12 @@ public class OrderService {
                 throw new RuntimeException("물건이 존재하지 않음");
             }
 
-            OrderItemEntity item = orderItemRepo.findByProductId(OrderItemDTO.getProductId());
+            if(orderItemRepo.existsByProductId(OrderItemDTO.getProductId())) {
+                OrderItemEntity item = orderItemRepo.findByProductId(OrderItemDTO.getProductId());
 
-            if(item.isScript()) {
-                throw new RuntimeException("<" + product.getTitle() + "> 이미 구매했음");
+                if(item.isScript()) {
+                    throw new RuntimeException("<" + product.getTitle() + "> 이미 구매했음");
+                }
             }
 
             int totalPrice = OrderItemDTO.getScriptPrice() + OrderItemDTO.getPerformancePrice();

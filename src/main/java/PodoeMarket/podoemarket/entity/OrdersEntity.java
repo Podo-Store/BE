@@ -52,7 +52,6 @@ public class OrdersEntity {
     // user : order = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
     private UserEntity user;
 
     // orders : orderItem = 1 : N

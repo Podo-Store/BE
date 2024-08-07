@@ -1,9 +1,16 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.OrderDTO;
+import PodoeMarket.podoemarket.dto.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.OrderListDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
+import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
@@ -24,12 +31,16 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
+    private final OrderRepository orderRepo;
+    private final OrderItemRepository orderItemRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -173,10 +184,33 @@ public class MypageService {
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
-        metadata.setContentType(files[0].getContentType());
+        metadata.setContentType("application/pdf");
 
         amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
 
         return amazonS3.getUrl(bucket, filePath).toString();
+    }
+
+    public List<OrderListDTO> getAllMyOrdersWithProducts(UUID id) {
+        List<OrdersEntity> orders = orderRepo.findAllByUserId(id);
+
+        return orders.stream().map(order -> {
+            // 각 주문의 주문 항목을 가져옴
+            List<OrderItemEntity> ordersItems = orderItemRepo.findByOrderId(order.getId());
+
+            // 각 주문 항목에 대한 제품 정보 가져옴
+            List<OrderItemDTO> orderItemDetail = ordersItems.stream().map(orderItem -> {
+                ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
+
+                return convertToOrderItemDTO(orderItem, product);
+            }).collect(Collectors.toList());
+
+            OrderListDTO orderListDTO = new OrderListDTO();
+
+            orderListDTO.setOrderItem(orderItemDetail);
+            orderListDTO.setCreatedAt(order.getCreatedAt());
+
+            return orderListDTO;
+        }).collect(Collectors.toList());
     }
 }

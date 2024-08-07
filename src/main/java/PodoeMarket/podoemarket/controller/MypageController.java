@@ -2,8 +2,10 @@ package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -206,9 +208,7 @@ public class MypageController {
     @GetMapping("/orderItems")
     public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-
-
-            return ResponseEntity.ok().body(true);
+            return ResponseEntity.ok().body(mypageService.getAllMyOrdersWithProducts(userInfo.getId()));
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
