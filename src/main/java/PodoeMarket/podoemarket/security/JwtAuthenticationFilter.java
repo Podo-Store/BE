@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("false(토큰 에러 발생)");
+                    response.getWriter().write("false(토큰 재발급을 받으세요)");
 
                     return;
                 }else {

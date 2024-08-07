@@ -2,16 +2,20 @@ package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
+
     public static ProductListDTO convertToProductList(ProductEntity entity) {
         ProductListDTO productListDTO = new ProductListDTO();
 
@@ -48,20 +52,18 @@ public class EntityToDTOConverter {
         return productDTO;
     }
 
-    public static ProductListDTO converToOrderList(OrdersEntity entity) {
-        ProductListDTO productListDTO = new ProductListDTO();
+    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product) {
+        OrderItemDTO itemDTO = new OrderItemDTO();
 
-//        productListDTO.setId(entity.getId());
-//        productListDTO.setTitle(entity.getTitle());
-//        productListDTO.setWriter(entity.getWriter());
-//        productListDTO.setImagePath(entity.getImagePath());
-//        productListDTO.setScript(entity.isScript());
-//        productListDTO.setScriptPrice(entity.getScriptPrice());
-//        productListDTO.setPerformance(entity.isPerformance());
-//        productListDTO.setPerformancePrice(entity.getPerformancePrice());
-//        productListDTO.setDate(entity.getCreatedAt());
-//        productListDTO.setChecked(entity.isChecked());
+        itemDTO.setId(orderItem.getId());
+        itemDTO.setTitle(product.getTitle());
+        itemDTO.setImagePath(product.getImagePath());
+        itemDTO.setChecked(product.isChecked());
+        itemDTO.setScript(product.isScript());
+        itemDTO.setScriptPrice(product.getScriptPrice());
+        itemDTO.setPerformance(product.isPerformance());
+        itemDTO.setPerformancePrice(product.getPerformancePrice());
 
-        return productListDTO;
+        return itemDTO;
     }
 }
