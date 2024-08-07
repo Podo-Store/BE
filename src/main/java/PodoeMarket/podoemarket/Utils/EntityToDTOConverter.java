@@ -2,14 +2,9 @@ package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
