@@ -25,9 +25,6 @@ public class OrdersEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private int status; // 0: 결제 전, 1: 결제 완료
-
-    @Column(nullable = false)
     private int totalPrice;
 
 //    @Column(nullable = false)

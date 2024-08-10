@@ -13,6 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderDTO {
     List<OrderItemDTO> orderItem;
-    private int status; // 0: 결제 전, 1: 결제 완료
     private int totalPrice;
 }

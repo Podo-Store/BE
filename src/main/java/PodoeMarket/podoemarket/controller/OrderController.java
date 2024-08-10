@@ -62,7 +62,6 @@ public class OrderController {
         try {
             OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
-                    .status(dto.getStatus())
                     .build();
 
             orderService.orderCreate(order, dto);
