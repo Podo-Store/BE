@@ -47,6 +47,11 @@ public class OrderService {
             orderItem.setScript(OrderItemDTO.isScript());
             orderItem.setScriptPrice(OrderItemDTO.getScriptPrice());
             orderItem.setPerformance(OrderItemDTO.isPerformance());
+
+            if(OrderItemDTO.isPerformance()) {
+                orderItem.setContractStatus(1);
+            }
+
             orderItem.setPerformancePrice(OrderItemDTO.getPerformancePrice());
             orderItem.setTotalPrice(totalPrice);
 
