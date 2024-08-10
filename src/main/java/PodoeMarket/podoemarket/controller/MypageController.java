@@ -141,7 +141,12 @@ public class MypageController {
     @GetMapping("/scripts")
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            return ResponseEntity.ok().body(mypageService.getAllMyProducts(userInfo.getId()));
+            ProductListPageDTO result = ProductListPageDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .productList(mypageService.getAllMyProducts(userInfo.getId()))
+                    .build();
+
+            return ResponseEntity.ok().body(result);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
