@@ -50,7 +50,7 @@ public class MailSendService {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String toMail = email;
-        String title = "회원 가입 인증 이메일 입니다."; // 이메일 제목
+        String title = "인증 이메일"; // 이메일 제목
         String content =
                 "Podo Store를 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
                         "<br><br>" +
@@ -81,4 +81,6 @@ public class MailSendService {
         }
         redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
+
+
 }
