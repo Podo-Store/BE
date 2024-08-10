@@ -29,6 +29,16 @@ public class MypageController {
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
+    @GetMapping("/confirm")
+    public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
+        try{
+                return ResponseEntity.ok().body(userInfo.getNickname());
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
         try{
@@ -141,7 +151,12 @@ public class MypageController {
     @GetMapping("/scripts")
     public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            return ResponseEntity.ok().body(mypageService.getAllMyProducts(userInfo.getId()));
+            ProductListPageDTO result = ProductListPageDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .productList(mypageService.getAllMyProducts(userInfo.getId()))
+                    .build();
+
+            return ResponseEntity.ok().body(result);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -206,7 +221,12 @@ public class MypageController {
     @GetMapping("/orderItems")
     public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(mypageService.getAllMyOrdersWithProducts(userInfo.getId()));
+            OrderListPageDTO result = OrderListPageDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .orderList(mypageService.getAllMyOrdersWithProducts(userInfo.getId()))
+                    .build();
+
+            return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
