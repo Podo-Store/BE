@@ -29,6 +29,16 @@ public class MypageController {
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
+    @GetMapping("/confirm")
+    public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
+        try{
+                return ResponseEntity.ok().body(userInfo.getNickname());
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
         try{
