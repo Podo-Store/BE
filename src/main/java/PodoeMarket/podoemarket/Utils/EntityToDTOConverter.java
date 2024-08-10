@@ -59,7 +59,7 @@ public class EntityToDTOConverter {
         itemDTO.setScriptPrice(product.getScriptPrice());
         itemDTO.setPerformance(product.isPerformance());
         itemDTO.setPerformancePrice(product.getPerformancePrice());
-        itemDTO.setPerformanceStatus(product.getPerformanceStatus());
+        itemDTO.setContractStatus(product.getContractStatus());
 
         return itemDTO;
     }

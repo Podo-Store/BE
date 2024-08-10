@@ -22,7 +22,7 @@ public class OrderItemDTO {
     private int scriptPrice;
     private boolean performance;
     private int performancePrice;
-    private int performanceStatus;
+    private int contractStatus;
     private int totalPrice;
 
     private UUID productId;
