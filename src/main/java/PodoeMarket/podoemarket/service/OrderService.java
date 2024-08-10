@@ -49,7 +49,7 @@ public class OrderService {
             orderItem.setPerformance(OrderItemDTO.isPerformance());
 
             if(OrderItemDTO.isPerformance()) {
-//                orderItem.s
+                orderItem.setContractStatus(1);
             }
 
             orderItem.setPerformancePrice(OrderItemDTO.getPerformancePrice());
