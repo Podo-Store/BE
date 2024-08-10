@@ -206,7 +206,12 @@ public class MypageController {
     @GetMapping("/orderItems")
     public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(mypageService.getAllMyOrdersWithProducts(userInfo.getId()));
+            OrderListPageDTO result = OrderListPageDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .orderList(mypageService.getAllMyOrdersWithProducts(userInfo.getId()))
+                    .build();
+
+            return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
