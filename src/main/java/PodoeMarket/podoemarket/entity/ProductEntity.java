@@ -58,6 +58,10 @@ public class ProductEntity {
     private int performancePrice;
 
     @Column
+    @ColumnDefault("0")
+    private int performanceStatus; // 0: 공연권 구매, 1: 계약 중, 2: 계약 완료
+
+    @Column
     private String descriptionType;
 
     @Column
