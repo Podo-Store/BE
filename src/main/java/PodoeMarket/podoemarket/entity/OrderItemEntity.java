@@ -72,4 +72,9 @@ public class OrderItemEntity {
     @ManyToOne(targetEntity = ProductEntity.class)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
+
+    // user : orderItem = 1 : N
+    @ManyToOne(targetEntity = UserEntity.class)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }

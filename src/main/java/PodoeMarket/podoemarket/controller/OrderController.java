@@ -64,7 +64,7 @@ public class OrderController {
                     .user(userInfo)
                     .build();
 
-            orderService.orderCreate(order, dto);
+            orderService.orderCreate(order, dto, userInfo);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
