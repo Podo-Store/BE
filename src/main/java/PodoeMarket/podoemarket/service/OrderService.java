@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -21,7 +23,7 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
 
-    public void orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO) {
+    public void orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
         List<OrderItemEntity> orderItems = orderDTO.getOrderItem().stream().map(OrderItemDTO -> {
             OrderItemEntity orderItem = new OrderItemEntity();
@@ -33,8 +35,8 @@ public class OrderService {
                 throw new RuntimeException("물건이 존재하지 않음");
             }
 
-            if(orderItemRepo.existsByProductId(OrderItemDTO.getProductId())) {
-                OrderItemEntity item = orderItemRepo.findByProductId(OrderItemDTO.getProductId());
+            if(orderItemRepo.existsByProductIdAndUserId(OrderItemDTO.getProductId(), user.getId())) {
+                OrderItemEntity item = orderItemRepo.findByProductIdAndUserId(OrderItemDTO.getProductId(), user.getId());
 
                 if(item.isScript()) {
                     throw new RuntimeException("<" + product.getTitle() + "> 이미 구매했음");
@@ -54,6 +56,7 @@ public class OrderService {
 
             orderItem.setPerformancePrice(OrderItemDTO.getPerformancePrice());
             orderItem.setTotalPrice(totalPrice);
+            orderItem.setUser(user);
 
             return orderItem;
         }).toList();
