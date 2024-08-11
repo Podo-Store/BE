@@ -27,6 +27,7 @@ public class MypageController {
     private final MypageService mypageService;
     private final UserService userService;
     private final ProductService productService;
+    private final MailSendService mailService;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
@@ -237,7 +238,7 @@ public class MypageController {
     @PostMapping("/mailSend")
     public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(true);
+            return ResponseEntity.ok().body(mailService.joinEmailWithFile(userInfo.getEmail()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

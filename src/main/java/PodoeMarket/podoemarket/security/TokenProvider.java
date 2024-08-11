@@ -31,8 +31,10 @@ public class TokenProvider {
                 .setExpiration(expiryDate) // 토큰 만료 시간
                 .claim("id", user.getId()) // 토큰에 사용자 아이디 추가하여 전달
                 .claim("nickname", user.getNickname())
+                .claim("email", user.getEmail())
                 .compact(); // 토큰 생성
     }
+
     public String createRefreshToken(UserEntity user){
         log.info("creating refresh token");
 
@@ -47,6 +49,7 @@ public class TokenProvider {
                 .setExpiration(expiryDate)
                 .claim("id", user.getId())
                 .claim("nickname", user.getNickname())
+                .claim("email", user.getEmail())
                 .compact();
     }
 
