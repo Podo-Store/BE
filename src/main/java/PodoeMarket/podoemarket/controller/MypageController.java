@@ -66,7 +66,6 @@ public class MypageController {
             UserDTO info = UserDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
-                    .password(user.getPassword())
                     .nickname(user.getNickname())
                     .email(user.getEmail())
                     .build();
