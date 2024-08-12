@@ -238,7 +238,7 @@ public class MypageController {
     @PostMapping("/mailSend")
     public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            return ResponseEntity.ok().body(mailService.joinEmailWithFile(userInfo.getEmail()));
+            return ResponseEntity.ok().body(mailService.joinEmailWithFile(userInfo.getEmail(), userInfo.getNickname()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

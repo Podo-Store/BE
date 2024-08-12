@@ -94,7 +94,7 @@ public class MailSendService {
         redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
 
-    public String joinEmailWithFile(String email) {
+    public String joinEmailWithFile(String email, String nickname) {
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String toMail = email;
         String title = "공연권 계약서"; // 이메일 제목
@@ -105,14 +105,14 @@ public class MailSendService {
                         "<br>" +
                         "작성 후 회신 부탁드립니다."; //이메일 내용 삽입
 
-        mailSendWithFile(setFrom, toMail, title, content, "contractFile/저작권 비독점적 이용허락 계약서.hwp");
+        mailSendWithFile(setFrom, toMail, title, content, "contractFile/저작권 비독점적 이용허락 계약서.hwp", nickname);
 
         return "계약서 전달 완료";
     }
 
-    public void mailSendWithFile(String setFrom, String toMail, String title, String content, String fileKey) {
+    public void mailSendWithFile(String setFrom, String toMail, String title, String content, String fileKey, String nickname) {
         try {
-            File file = downloadFileFromS3(fileKey);
+            File file = downloadFileFromS3(fileKey, nickname);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message,true,"utf-8");
@@ -136,16 +136,18 @@ public class MailSendService {
         }
     }
 
-    public File downloadFileFromS3(String key) throws IOException {
+    public File downloadFileFromS3(String key, String nickname) throws IOException {
         S3Object s3Object = amazonS3.getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
 
         // 임시 파일 생성
-        File temp = File.createTempFile("temp-", "-" + key.replaceAll("[^a-zA-Z0-9._-]", "_")); // 특수 문자 대체
-        temp.deleteOnExit(); // 프로그램 종료 시 임시 파일 삭제
+//        File temp = File.createTempFile("temp-", "-" + key.replaceAll("[^a-zA-Z0-9._-]", "_")); // 특수 문자 대체
+//        File temp = File.createTempFile("저작권 비독점적 이용허락 계약서", "-" + nickname); // 특수 문자 대체
+//        temp.deleteOnExit(); // 프로그램 종료 시 임시 파일 삭제
+        File file = new File("저작권 비독점적 이용허락 계약서-" + nickname + ".hwp");
 
         // 파일에 저장
-        try (FileOutputStream outputStream = new FileOutputStream(temp)) {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             byte[] read_buf = new byte[1024];
             int read_len;
             while((read_len = inputStream.read(read_buf)) > 0) {
@@ -155,6 +157,6 @@ public class MailSendService {
             inputStream.close();
         }
 
-        return temp;
+        return file;
     }
 }
