@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class MypageController {
     private final MypageService mypageService;
     private final UserService userService;
     private final ProductService productService;
+    private final MailSendService mailService;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
@@ -227,6 +229,16 @@ public class MypageController {
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/mailSend")
+    public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            return ResponseEntity.ok().body(mailService.joinEmailWithContract(userInfo.getEmail(), userInfo.getNickname()));
+        } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }

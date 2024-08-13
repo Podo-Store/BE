@@ -70,6 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UserEntity user = new UserEntity();
                     user.setId(UUID.fromString(claims.getSubject())); // 아이디 할당
                     user.setNickname(claims.get("nickname", String.class)); // 닉네임 할당
+                    user.setEmail(claims.get("email", String.class)); // 이메일 할당
 
                     // 인증 완료 -> SecurityContextHolder 에 등록 되어야 인증된 사용자!
                     AbstractAuthenticationToken authentication

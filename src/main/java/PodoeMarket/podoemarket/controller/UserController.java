@@ -145,7 +145,7 @@ public class UserController {
             }
 
             return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
-        }catch(Exception e) {
+        } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
@@ -376,6 +376,7 @@ public class UserController {
             final UserDTO resUserDTO = UserDTO.builder()
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
+                    .email(user.getEmail())
                     .accessToken(accessToken)
                     .build();
 
@@ -407,6 +408,7 @@ public class UserController {
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
                     .refreshToken(refreshToken)
+                    .email(user.getEmail())
                     .build();
 
             return ResponseEntity.ok().body(resUserDTO);
