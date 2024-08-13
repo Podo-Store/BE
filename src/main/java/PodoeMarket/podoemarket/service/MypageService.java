@@ -217,6 +217,10 @@ public class MypageService {
     }
 
     public OrderItemEntity orderItem(UUID orderId) {
+        if(orderItemRepo.findById(orderId) == null) {
+            throw new RuntimeException("일치하는 구매 목록 없음");
+        }
+
         return orderItemRepo.findById(orderId);
     }
 
