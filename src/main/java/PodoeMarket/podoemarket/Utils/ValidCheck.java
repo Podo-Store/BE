@@ -51,7 +51,7 @@ public class ValidCheck {
     }
 
     public static boolean isValidPw(String password) {
-        String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@$!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+        String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
 
         if(password == null || password.isBlank()){ //password가 null이거나 빈 값일때
             log.warn("password is null or empty");
