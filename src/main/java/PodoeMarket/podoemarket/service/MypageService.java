@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.DateOrderDTO;
 import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.OrderListDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
@@ -24,10 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
@@ -190,27 +189,31 @@ public class MypageService {
         return amazonS3.getUrl(bucket, filePath).toString();
     }
 
-    public List<OrderListDTO> getAllMyOrdersWithProducts(UUID id) {
-        List<OrdersEntity> orders = orderRepo.findAllByUserId(id);
+    public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {
+        List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
 
-        return orders.stream().map(order -> {
+        // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
+        Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
+
+        for (OrdersEntity order : orders) {
             // 각 주문의 주문 항목을 가져옴
-            List<OrderItemEntity> ordersItems = orderItemRepo.findByOrderId(order.getId());
+            List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(order.getId());
 
-            // 각 주문 항목에 대한 제품 정보 가져옴
-            List<OrderItemDTO> orderItemDetail = ordersItems.stream().map(orderItem -> {
+            for (OrderItemEntity orderItem : orderItems) {
+                // 각 주문 항목에 대한 제품 정보 가져옴
                 ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
+                OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product);
 
-                return convertToOrderItemDTO(orderItem, product);
-            }).collect(Collectors.toList());
+                LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+            }
+        }
 
-            OrderListDTO orderListDTO = new OrderListDTO();
-
-            orderListDTO.setOrderItem(orderItemDetail);
-            orderListDTO.setCreatedAt(order.getCreatedAt());
-
-            return orderListDTO;
-        }).collect(Collectors.toList());
+        // DateOrderDTO로 변환
+        return OrderItems.entrySet().stream()
+                .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
     public void checkContractStatus(UUID id) {
