@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
@@ -237,7 +238,28 @@ public class MypageController {
     @PostMapping("/mailSend")
     public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderItemDTO dto) {
         try {
-            mypageService.checkContractStatus(dto.getId());
+            final OrderItemEntity orderItem = mypageService.orderItem(dto.getId());
+            final int contractStatus = orderItem.getContractStatus();
+
+            if (contractStatus == 0){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("공연권 계약이 불가한 작품입니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            } else if (contractStatus == 2) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("공연권 계약이 진행 중입니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            } else if (contractStatus == 3) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이미 공연권 계약이 완료되었습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
             if (mailService.joinEmailWithContract(userInfo.getEmail(), userInfo.getNickname())) {
                 mypageService.contractStatusUpdate(dto.getId());
@@ -245,6 +267,36 @@ public class MypageController {
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/contract")
+    public ResponseEntity<?> readContract(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
+        try {
+            final OrderItemEntity orderItem = mypageService.orderItem(orderId);
+
+            if (!(orderItem.getUser().getId().equals(userInfo.getId()))) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("권한이 없습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            final int contractStatus = orderItem.getContractStatus();
+
+            if (contractStatus != 3) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("공연권 계약이 체결되지 않았습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            return ResponseEntity.ok().body(orderItem.getContractPath());
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
