@@ -94,7 +94,7 @@ public class MailSendService {
         redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
 
-    public String joinEmailWithFile(String email, String nickname) {
+    public String joinEmailWithContract(String email, String nickname) {
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String toMail = email;
         String title = "공연권 계약서"; // 이메일 제목
@@ -105,14 +105,14 @@ public class MailSendService {
                         "<br>" +
                         "작성 후 회신 부탁드립니다."; //이메일 내용 삽입
 
-        mailSendWithFile(setFrom, toMail, title, content, "contractFile/저작권 비독점적 이용허락 계약서.hwp", nickname);
+        mailSendWithContract(setFrom, toMail, title, content, "contractFile/저작권 비독점적 이용허락 계약서.hwp", nickname);
 
         return "계약서 전달 완료";
     }
 
-    public void mailSendWithFile(String setFrom, String toMail, String title, String content, String fileKey, String nickname) {
+    public void mailSendWithContract(String setFrom, String toMail, String title, String content, String fileKey, String nickname) {
         try {
-            File file = downloadFileFromS3(fileKey, nickname);
+            File file = downloadContractFromS3(fileKey, nickname);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message,true,"utf-8");
@@ -136,7 +136,7 @@ public class MailSendService {
         }
     }
 
-    public File downloadFileFromS3(String key, String nickname) throws IOException {
+    public File downloadContractFromS3(String key, String nickname) throws IOException {
         S3Object s3Object = amazonS3.getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
 
