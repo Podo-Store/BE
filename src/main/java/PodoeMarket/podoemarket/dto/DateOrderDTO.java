@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderListPageDTO {
-    private String nickname;
-    List<DateOrderDTO> orderList;
+public class DateOrderDTO {
+    private LocalDate date;
+    private List<OrderItemDTO> orders;
 }
