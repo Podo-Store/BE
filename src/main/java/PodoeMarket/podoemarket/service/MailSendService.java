@@ -140,10 +140,6 @@ public class MailSendService {
         S3Object s3Object = amazonS3.getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
 
-        // 임시 파일 생성
-//        File temp = File.createTempFile("temp-", "-" + key.replaceAll("[^a-zA-Z0-9._-]", "_")); // 특수 문자 대체
-//        File temp = File.createTempFile("저작권 비독점적 이용허락 계약서", "-" + nickname); // 특수 문자 대체
-//        temp.deleteOnExit(); // 프로그램 종료 시 임시 파일 삭제
         File file = new File("저작권 비독점적 이용허락 계약서-" + nickname + ".hwp");
 
         // 파일에 저장
