@@ -94,7 +94,7 @@ public class MailSendService {
         redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
 
-    public String joinEmailWithContract(String email, String nickname) {
+    public Boolean joinEmailWithContract(String email, String nickname) {
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String toMail = email;
         String title = "공연권 계약서"; // 이메일 제목
@@ -107,7 +107,7 @@ public class MailSendService {
 
         mailSendWithContract(setFrom, toMail, title, content, "contractFile/저작권 비독점적 이용허락 계약서.hwp", nickname);
 
-        return "계약서 전달 완료";
+        return true;
     }
 
     public void mailSendWithContract(String setFrom, String toMail, String title, String content, String fileKey, String nickname) {

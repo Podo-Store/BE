@@ -34,7 +34,7 @@ public class MypageController {
     @GetMapping("/confirm")
     public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-                return ResponseEntity.ok().body(userInfo.getNickname());
+            return ResponseEntity.ok().body(userInfo.getNickname());
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -235,9 +235,15 @@ public class MypageController {
     }
 
     @PostMapping("/mailSend")
-    public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderItemDTO dto) {
         try {
-            return ResponseEntity.ok().body(mailService.joinEmailWithContract(userInfo.getEmail(), userInfo.getNickname()));
+            mypageService.checkContractStatus(dto.getId());
+
+            if (mailService.joinEmailWithContract(userInfo.getEmail(), userInfo.getNickname())) {
+                mypageService.contractStatusUpdate(dto.getId());
+            }
+
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
