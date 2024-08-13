@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.OrderListDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
@@ -146,14 +145,14 @@ public class MypageService {
         }
 
         // 파일 이름 가공
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        Date time = new Date();
-        String name = files[0].getOriginalFilename();
-        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        String filePath = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        final String filePath = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
 
-        ObjectMetadata metadata = new ObjectMetadata();
+        final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
@@ -175,14 +174,14 @@ public class MypageService {
         }
 
         // 파일 이름 가공
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        Date time = new Date();
-        String name = files[0].getOriginalFilename();
-        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        String filePath = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        final String filePath = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
 
-        ObjectMetadata metadata = new ObjectMetadata();
+        final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType("application/pdf");
 
@@ -212,5 +211,28 @@ public class MypageService {
 
             return orderListDTO;
         }).collect(Collectors.toList());
+    }
+
+    public void checkContractStatus(UUID id) {
+        final OrderItemEntity item = orderItemRepo.findById(id);
+        final int contractStatus = item.getContractStatus();
+
+        if (contractStatus == 0){
+            throw new RuntimeException("공연권 계약이 불가한 작품입니다.");
+        } else if (contractStatus == 2) {
+            throw new RuntimeException("공연권 계약이 진행 중입니다.");
+        } else if (contractStatus == 3) {
+            throw new RuntimeException("이미 공연권 계약이 완료되었습니다.");
+        }
+    }
+
+    public void contractStatusUpdate(UUID id) {
+        final OrderItemEntity item = orderItemRepo.findById(id);
+        final int contractStatus = item.getContractStatus();
+
+        if (contractStatus == 1) {
+            item.setContractStatus(2);
+            orderItemRepo.save(item);
+        }
     }
 }

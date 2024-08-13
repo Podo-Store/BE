@@ -12,4 +12,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     OrderItemEntity findByProductIdAndUserId(UUID productId, UUID userId);
 
     List<OrderItemEntity> findByOrderId(UUID id);
+
+    OrderItemEntity findById(UUID id);
 }
