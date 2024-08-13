@@ -93,7 +93,7 @@ public class MypageService {
     }
 
     public List<ProductListDTO> getAllMyProducts(UUID id) {
-        List<ProductEntity> products = productRepo.findAllByUserId(id);
+        final List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         return products.stream()
                 .map(EntityToDTOConverter::convertToProductList)
@@ -102,7 +102,7 @@ public class MypageService {
 
     @Transactional
     public void updateWriter(UUID id, String writer) {
-        List<ProductEntity> products = productRepo.findAllByUserId(id);
+        final List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         for (ProductEntity product : products) {
             product.setWriter(writer);
@@ -190,21 +190,21 @@ public class MypageService {
     }
 
     public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {
-        List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
+        final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
+        final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
 
         for (OrdersEntity order : orders) {
             // 각 주문의 주문 항목을 가져옴
-            List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(order.getId());
+            final List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(order.getId());
 
             for (OrderItemEntity orderItem : orderItems) {
                 // 각 주문 항목에 대한 제품 정보 가져옴
-                ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
-                OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product);
+                final ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
+                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product);
 
-                LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
                 OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
             }
@@ -216,17 +216,8 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public void checkContractStatus(UUID id) {
-        final OrderItemEntity item = orderItemRepo.findById(id);
-        final int contractStatus = item.getContractStatus();
-
-        if (contractStatus == 0){
-            throw new RuntimeException("공연권 계약이 불가한 작품입니다.");
-        } else if (contractStatus == 2) {
-            throw new RuntimeException("공연권 계약이 진행 중입니다.");
-        } else if (contractStatus == 3) {
-            throw new RuntimeException("이미 공연권 계약이 완료되었습니다.");
-        }
+    public OrderItemEntity orderItem(UUID orderId) {
+        return orderItemRepo.findById(orderId);
     }
 
     public void contractStatusUpdate(UUID id) {

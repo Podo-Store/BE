@@ -47,6 +47,9 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private int totalPrice;
 
+    @Column
+    private String contractPath;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
