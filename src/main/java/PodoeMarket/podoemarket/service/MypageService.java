@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
@@ -12,6 +11,14 @@ import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +27,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
@@ -47,6 +59,9 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.folder.folderName3}")
     private String descriptionBucketFolder;
+
+    @Value("${logo.path}")
+    private String logoPath;
 
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -241,6 +256,76 @@ public class MypageService {
         if (contractStatus == 1) {
             item.setContractStatus(2);
             orderItemRepo.save(item);
+        }
+    }
+
+    public String extractFileKeyFromUrl(String s3Url) {
+        try {
+            URL url = new URL(s3Url);
+            String path = url.getPath();
+            String fileKey = path.substring(1); // 첫 번째 '/' 제거
+            // URL 디코딩
+            return URLDecoder.decode(fileKey, StandardCharsets.UTF_8.name());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("올바른 url이 아님");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("올바른 url이 아님");
+        }
+    }
+
+    public File downloadFile(String fileKey, String title, String email) {
+        // S3에서 파일 객체 가져오기
+        S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
+
+        String homeDirectory = System.getProperty("user.home");
+        File file = new File(homeDirectory + "/Downloads/" + title +".pdf");
+
+        try (InputStream inputStream = s3Object.getObjectContent();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            addWatermark(inputStream, outputStream, email);
+
+            try (OutputStream fos = new FileOutputStream(file)) {
+                outputStream.writeTo(fos);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    public void addWatermark(InputStream src, ByteArrayOutputStream dest, String email) {
+        try (PdfReader reader = new PdfReader(src);
+            PdfWriter writer = new PdfWriter(dest);
+            PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
+            Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
+            Image image = new Image(ImageDataFactory.create(logoPath));
+            image.setOpacity(0.3f);
+
+            for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
+                PdfPage page = pdfDoc.getPage(i);
+                PdfCanvas canvas = new PdfCanvas(page);
+
+                image.setFixedPosition(i, (page.getPageSize().getWidth() - image.getImageWidth()) / 2,
+                        (page.getPageSize().getHeight() - image.getImageHeight()) / 2);
+
+                // 텍스트 설정
+                canvas.saveState();
+                canvas.setFillColor(new DeviceRgb(200, 200, 200));
+                canvas.beginText();
+                canvas.setFontAndSize(PdfFontFactory.createFont(), 20); // 폰트 및 크기 설정
+
+                // 텍스트 추가
+                canvas.showText(email); // showText 메소드를 사용하여 텍스트 추가
+                canvas.endText();
+                canvas.restoreState();
+
+                // 페이지에 이미지 추가
+                document.add(image);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

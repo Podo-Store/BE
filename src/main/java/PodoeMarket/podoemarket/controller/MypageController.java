@@ -6,9 +6,10 @@ import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -296,6 +300,26 @@ public class MypageController {
             }
 
             return ResponseEntity.ok().body(orderItem.getContractPath());
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
+    public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
+        try {
+            OrderItemEntity item = mypageService.orderItem(orderId);
+            String fileKey = mypageService.extractFileKeyFromUrl(item.getProduct().getFilePath());
+
+            File file = mypageService.downloadFile(fileKey, item.getProduct().getTitle(), userInfo.getEmail());
+
+            // 파일 이름을 UTF-8로 인코딩
+            String encodedFilename = URLEncoder.encode(file.getName(), "UTF-8");
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                    .body(file);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
