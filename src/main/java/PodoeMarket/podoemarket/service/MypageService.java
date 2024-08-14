@@ -19,7 +19,6 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +59,9 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.folder.folderName3}")
     private String descriptionBucketFolder;
+
+    @Value("${logo.path}")
+    private String logoPath;
 
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -272,19 +274,20 @@ public class MypageService {
         }
     }
 
-    public File downloadFile(String fileKey, String title) {
+    public File downloadFile(String fileKey, String title, String email) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
         String homeDirectory = System.getProperty("user.home");
-        File file = new File(homeDirectory + "/Downloads/" + title +".pdf"); // 파일 이름 수정 필요
+        File file = new File(homeDirectory + "/Downloads/" + title +".pdf");
 
         try (InputStream inputStream = s3Object.getObjectContent();
-             OutputStream outputStream = new FileOutputStream(file)) {
-            byte[] readBuffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(readBuffer)) > 0) {
-                outputStream.write(readBuffer, 0, bytesRead);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            addWatermark(inputStream, outputStream, email);
+
+            try (OutputStream fos = new FileOutputStream(file)) {
+                outputStream.writeTo(fos);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -292,19 +295,12 @@ public class MypageService {
         return file;
     }
 
-    public void addWatermark(String src, String dest, String imagePath) {
-        File sourceFile = new File(src);
-
-        if (!sourceFile.exists()) {
-            System.out.println("Source file does not exist: " + src);
-            return;
-        }
-
+    public void addWatermark(InputStream src, ByteArrayOutputStream dest, String email) {
         try (PdfReader reader = new PdfReader(src);
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
             Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
-            Image image = new Image(ImageDataFactory.create(imagePath));
+            Image image = new Image(ImageDataFactory.create(logoPath));
             image.setOpacity(0.3f);
 
             for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
@@ -321,7 +317,7 @@ public class MypageService {
                 canvas.setFontAndSize(PdfFontFactory.createFont(), 20); // 폰트 및 크기 설정
 
                 // 텍스트 추가
-                canvas.showText("abc123@naver.com"); // showText 메소드를 사용하여 텍스트 추가
+                canvas.showText(email); // showText 메소드를 사용하여 텍스트 추가
                 canvas.endText();
                 canvas.restoreState();
 
