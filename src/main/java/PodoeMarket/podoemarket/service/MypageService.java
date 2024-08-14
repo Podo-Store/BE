@@ -1,10 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.dto.DateOrderDTO;
-import PodoeMarket.podoemarket.dto.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.OrderListDTO;
-import PodoeMarket.podoemarket.dto.ProductListDTO;
+import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
@@ -30,6 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
+import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToProductList;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -92,11 +90,23 @@ public class MypageService {
         return userRepo.findById(id);
     }
 
-    public List<ProductListDTO> getAllMyProducts(UUID id) {
+    public List<DateProductDTO> getAllMyProducts(UUID id) {
         final List<ProductEntity> products = productRepo.findAllByUserId(id);
 
-        return products.stream()
-                .map(EntityToDTOConverter::convertToProductList)
+        // 날짜별로 작품을 그룹화하기 위한 맵 선언
+        final Map<LocalDate, List<ProductListDTO>> myProducts = new HashMap<>();
+
+        for (ProductEntity product : products) {
+            final ProductListDTO productListDTO = convertToProductList(product);
+
+            final LocalDate date = product.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+            // 날짜에 따른 리스트를 초기화하고 추가 - date라는 key가 없으면 만들고, productListDTO을 value로 추가
+            myProducts.computeIfAbsent(date, k -> new ArrayList<>()).add(productListDTO);
+        }
+
+        // DateProductDTO로 변환
+        return myProducts.entrySet().stream()
+                .map(entry -> new DateProductDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
