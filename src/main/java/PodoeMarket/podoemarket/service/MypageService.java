@@ -258,11 +258,9 @@ public class MypageService {
     }
 
     public String extractFileKeyFromUrl(String s3Url) {
-        // S3 URL의 형식: https://{bucket-name}.s3.{region}.amazonaws.com/{key}
-        // URL에서 key 부분을 추출
         try {
             URL url = new URL(s3Url);
-            String path = url.getPath(); // 경로 부분 (예: /folder/my-file.txt)
+            String path = url.getPath();
             String fileKey = path.substring(1); // 첫 번째 '/' 제거
             // URL 디코딩
             return URLDecoder.decode(fileKey, StandardCharsets.UTF_8.name());
@@ -274,12 +272,12 @@ public class MypageService {
         }
     }
 
-    public File downloadFile(String fileKey) {
+    public File downloadFile(String fileKey, String title) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
         String homeDirectory = System.getProperty("user.home");
-        File file = new File(homeDirectory + "/Downloads/test.pdf"); // 파일 이름 수정 필요
+        File file = new File(homeDirectory + "/Downloads/" + title +".pdf"); // 파일 이름 수정 필요
 
         try (InputStream inputStream = s3Object.getObjectContent();
              OutputStream outputStream = new FileOutputStream(file)) {
@@ -291,7 +289,7 @@ public class MypageService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return file; // 다운로드된 파일 반환
+        return file;
     }
 
     public void addWatermark(String src, String dest, String imagePath) {
@@ -299,7 +297,7 @@ public class MypageService {
 
         if (!sourceFile.exists()) {
             System.out.println("Source file does not exist: " + src);
-            return; // 파일이 존재하지 않으면 메소드 종료
+            return;
         }
 
         try (PdfReader reader = new PdfReader(src);

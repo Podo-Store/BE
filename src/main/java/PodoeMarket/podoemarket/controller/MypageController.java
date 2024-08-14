@@ -6,7 +6,6 @@ import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -304,7 +305,7 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/download")
+    @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> scriptDownload(@RequestParam("id") UUID orderId) {
 //        String src = "src\\main\\resources\\영미 문화 읽기.pdf"; // 원본 PDF 파일 경로
 //        String dest = "src\\main\\resources\\watermarked.pdf"; // 워터마크가 추가된 PDF 파일 경로
@@ -314,11 +315,13 @@ public class MypageController {
             OrderItemEntity item = mypageService.orderItem(orderId);
             String fileKey = mypageService.extractFileKeyFromUrl(item.getProduct().getFilePath());
 
-            File file = mypageService.downloadFile(fileKey);
+            File file = mypageService.downloadFile(fileKey, item.getProduct().getTitle());
 
-            // 파일 다운로드 응답
+            // 파일 이름을 UTF-8로 인코딩
+            String encodedFilename = URLEncoder.encode(file.getName(), "UTF-8");
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                     .body(file);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
