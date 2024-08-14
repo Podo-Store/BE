@@ -11,6 +11,7 @@ import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -27,8 +28,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -251,6 +255,43 @@ public class MypageService {
             item.setContractStatus(2);
             orderItemRepo.save(item);
         }
+    }
+
+    public String extractFileKeyFromUrl(String s3Url) {
+        // S3 URL의 형식: https://{bucket-name}.s3.{region}.amazonaws.com/{key}
+        // URL에서 key 부분을 추출
+        try {
+            URL url = new URL(s3Url);
+            String path = url.getPath(); // 경로 부분 (예: /folder/my-file.txt)
+            String fileKey = path.substring(1); // 첫 번째 '/' 제거
+            // URL 디코딩
+            return URLDecoder.decode(fileKey, StandardCharsets.UTF_8.name());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("올바른 url이 아님");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("올바른 url이 아님");
+        }
+    }
+
+    public File downloadFile(String fileKey) {
+        // S3에서 파일 객체 가져오기
+        S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
+
+        String homeDirectory = System.getProperty("user.home");
+        File file = new File(homeDirectory + "/Downloads/test.pdf"); // 파일 이름 수정 필요
+
+        try (InputStream inputStream = s3Object.getObjectContent();
+             OutputStream outputStream = new FileOutputStream(file)) {
+            byte[] readBuffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(readBuffer)) > 0) {
+                outputStream.write(readBuffer, 0, bytesRead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file; // 다운로드된 파일 반환
     }
 
     public void addWatermark(String src, String dest, String imagePath) {
