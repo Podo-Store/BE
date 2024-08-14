@@ -301,4 +301,22 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @GetMapping("/download")
+    public ResponseEntity<?> scriptDownload() {
+        String src = "src\\main\\resources\\영미 문화 읽기.pdf"; // 원본 PDF 파일 경로
+        String dest = "src\\main\\resources\\watermarked.pdf"; // 워터마크가 추가된 PDF 파일 경로
+        String imagePath = "src\\main\\resources\\logo.png";
+
+        mypageService.addWatermark(src, dest, imagePath);
+        return ResponseEntity.ok().body("Watermark added to PDF!");
+//        try {
+//
+//
+//            return ResponseEntity.ok().body(true);
+//        } catch (Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+    }
 }

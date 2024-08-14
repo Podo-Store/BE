@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
@@ -12,6 +11,14 @@ import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +27,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
@@ -241,6 +250,47 @@ public class MypageService {
         if (contractStatus == 1) {
             item.setContractStatus(2);
             orderItemRepo.save(item);
+        }
+    }
+
+    public void addWatermark(String src, String dest, String imagePath) {
+        File sourceFile = new File(src);
+
+        if (!sourceFile.exists()) {
+            System.out.println("Source file does not exist: " + src);
+            return; // 파일이 존재하지 않으면 메소드 종료
+        }
+
+        try (PdfReader reader = new PdfReader(src);
+            PdfWriter writer = new PdfWriter(dest);
+            PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
+            Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
+            Image image = new Image(ImageDataFactory.create(imagePath));
+            image.setOpacity(0.3f);
+
+            for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
+                PdfPage page = pdfDoc.getPage(i);
+                PdfCanvas canvas = new PdfCanvas(page);
+
+                image.setFixedPosition(i, (page.getPageSize().getWidth() - image.getImageWidth()) / 2,
+                        (page.getPageSize().getHeight() - image.getImageHeight()) / 2);
+
+                // 텍스트 설정
+                canvas.saveState();
+                canvas.setFillColor(new DeviceRgb(200, 200, 200));
+                canvas.beginText();
+                canvas.setFontAndSize(PdfFontFactory.createFont(), 20); // 폰트 및 크기 설정
+
+                // 텍스트 추가
+                canvas.showText("abc123@naver.com"); // showText 메소드를 사용하여 텍스트 추가
+                canvas.endText();
+                canvas.restoreState();
+
+                // 페이지에 이미지 추가
+                document.add(image);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
