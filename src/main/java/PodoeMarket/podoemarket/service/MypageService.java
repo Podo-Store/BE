@@ -286,9 +286,9 @@ public class MypageService {
 
             addWatermark(inputStream, outputStream, email);
 
-            try (OutputStream fos = new FileOutputStream(file)) {
-                outputStream.writeTo(fos);
-            }
+//            try (OutputStream fos = new FileOutputStream(file)) {
+//                outputStream.writeTo(fos);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
