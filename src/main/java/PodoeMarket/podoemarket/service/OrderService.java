@@ -35,6 +35,8 @@ public class OrderService {
                 throw new RuntimeException("물건이 존재하지 않음");
             }
 
+            // 대본권, 공연권 1일 때만 구매 가능
+
             if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
                 final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
 
