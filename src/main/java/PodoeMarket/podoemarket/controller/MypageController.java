@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URLEncoder;
 import java.util.Objects;
 import java.util.UUID;
@@ -315,9 +317,13 @@ public class MypageController {
             // 파일 이름을 UTF-8로 인코딩
             String encodedFilename = URLEncoder.encode(file.getName(), "UTF-8");
 
+            // InputStreamResource를 사용하여 파일을 ResponseEntity의 body로 설정
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
-                    .body(file);
+                    .body(resource);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
