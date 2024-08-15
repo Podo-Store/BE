@@ -321,7 +321,6 @@ public class MypageController {
             // InputStreamResource를 사용하여 파일을 ResponseEntity의 body로 설정
             InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
-
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)

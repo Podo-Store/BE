@@ -285,10 +285,6 @@ public class MypageService {
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             addWatermark(inputStream, outputStream, email);
-
-//            try (OutputStream fos = new FileOutputStream(file)) {
-//                outputStream.writeTo(fos);
-//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
