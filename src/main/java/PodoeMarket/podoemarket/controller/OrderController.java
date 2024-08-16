@@ -24,11 +24,19 @@ public class OrderController {
     private final ProductService productService;
 
     @GetMapping("/item")
-    public ResponseEntity<?> getPurchaseInfo(@ModelAttribute OrderItemDTO dto) {
+    public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderItemDTO dto) {
         try {
             ProductEntity orderProduct = productService.product(dto.getProductId());
 
-            if (orderProduct == null) {
+            if(userInfo.getId().equals(orderProduct.getUser().getId())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("본인 작품 구매 불가")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(orderProduct == null) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("작품 정보 조회 실패")
                         .build();
@@ -44,9 +52,9 @@ public class OrderController {
                     .imagePath(orderProduct.getImagePath())
                     .playType(orderProduct.getPlayType())
                     .script(dto.isScript())
-                    .scriptPrice(orderProduct.getScriptPrice())
+                    .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
                     .performance(dto.isPerformance())
-                    .performancePrice(orderProduct.getPerformancePrice())
+                    .performancePrice(dto.isPerformance() ? orderProduct.getPerformancePrice() : 0)
                     .totalPrice(totalPrice)
                     .build();
 
