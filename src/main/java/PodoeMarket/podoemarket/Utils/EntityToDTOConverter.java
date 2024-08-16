@@ -28,7 +28,7 @@ public class EntityToDTOConverter {
         return productListDTO;
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
@@ -44,6 +44,8 @@ public class EntityToDTOConverter {
         productDTO.setDate(entity.getCreatedAt());
         productDTO.setChecked(entity.isChecked());
         productDTO.setPlayType(entity.getPlayType());
+
+        productDTO.setBuyScript(isBuyScript);
 
         return productDTO;
     }

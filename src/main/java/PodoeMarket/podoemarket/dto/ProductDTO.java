@@ -26,4 +26,6 @@ public class ProductDTO {
     private int playType;
     private boolean checked;
     private LocalDateTime date;
+
+    private boolean buyScript; // 대본 구매 여부
 }

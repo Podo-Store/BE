@@ -32,9 +32,16 @@ public class ProductController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<?> scriptInfo(@RequestParam("script") UUID productId) {
+    public ResponseEntity<?> scriptInfo(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId);
+            // 로그인한 유저가 해당 작품의 대본을 구매한 이력이 있는지 확인
+            boolean isBuyScript = false;
+
+            if (userInfo != null) { // 로그인 시
+                 isBuyScript = productService.isBuyScript(userInfo.getId(), productId);
+            }
+
+            ProductDTO productInfo = productService.productDetail(productId, isBuyScript);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
