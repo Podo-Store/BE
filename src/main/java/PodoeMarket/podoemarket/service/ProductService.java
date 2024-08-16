@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
     private final ProductRepository productRepo;
+    private final OrderItemRepository orderItemRepo;
 
     public List<ProductListDTO> longPlayList() {
         List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
@@ -39,9 +41,20 @@ public class ProductService {
         return productRepo.findById(id);
     }
 
-    public ProductDTO productDetail(UUID productId) {
+    public boolean isBuyScript(UUID userId, UUID productId) {
+        List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
+
+        for(OrderItemEntity item : orderitems) {
+            if(item.isScript()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
         ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script);
+        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript);
     }
 }

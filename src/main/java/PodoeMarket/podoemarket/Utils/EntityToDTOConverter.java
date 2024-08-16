@@ -28,7 +28,7 @@ public class EntityToDTOConverter {
         return productListDTO;
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript) {
         ProductDTO productDTO = new ProductDTO();
 
         productDTO.setId(entity.getId());
@@ -45,6 +45,8 @@ public class EntityToDTOConverter {
         productDTO.setChecked(entity.isChecked());
         productDTO.setPlayType(entity.getPlayType());
 
+        productDTO.setBuyScript(isBuyScript);
+
         return productDTO;
     }
 
@@ -55,10 +57,10 @@ public class EntityToDTOConverter {
         itemDTO.setTitle(product.getTitle());
         itemDTO.setImagePath(product.getImagePath());
         itemDTO.setChecked(product.isChecked());
-        itemDTO.setScript(product.isScript());
-        itemDTO.setScriptPrice(product.getScriptPrice());
-        itemDTO.setPerformance(product.isPerformance());
-        itemDTO.setPerformancePrice(product.getPerformancePrice());
+        itemDTO.setScript(orderItem.isScript());
+        itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
+        itemDTO.setPerformance(orderItem.isPerformance());
+        itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
         itemDTO.setContractStatus(orderItem.getContractStatus());
 
         return itemDTO;

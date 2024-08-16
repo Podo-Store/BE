@@ -173,7 +173,7 @@ public class MypageController {
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId);
+            ProductDTO productInfo = productService.productDetail(productId, false);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -311,6 +311,14 @@ public class MypageController {
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
         try {
             OrderItemEntity item = mypageService.orderItem(orderId);
+            if(!item.isScript()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("대본을 구매하세요.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             String fileKey = mypageService.extractFileKeyFromUrl(item.getProduct().getFilePath());
 
             File file = mypageService.downloadFile(fileKey, item.getProduct().getTitle(), userInfo.getEmail());
