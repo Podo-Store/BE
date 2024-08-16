@@ -119,4 +119,8 @@ public class UserService {
     public UserEntity getByUserId(final String userId) {
         return userRepo.findByUserId(userId);
     }
+
+    public void delete(final UserEntity userEntity) {
+        userRepo.delete(userEntity);
+    }
 }
