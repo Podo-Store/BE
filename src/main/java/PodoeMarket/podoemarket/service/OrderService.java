@@ -36,6 +36,9 @@ public class OrderService {
             }
 
             // 대본권, 공연권 1일 때만 구매 가능
+            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && orderItemDTO.isPerformance())) {
+                throw new RuntimeException("구매 조건 확인");
+            }
 
             if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
                 final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
