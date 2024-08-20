@@ -54,8 +54,8 @@ public class WebConfig implements WebMvcConfigurer {
 
         // cors 설정
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
-//        config.setAllowedOriginPatterns(Arrays.asList("http://3.36.91.9:3000"));
+//        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
+        config.setAllowedOriginPatterns(Arrays.asList("http://43.203.217.223"));
         config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
 
