@@ -22,7 +22,7 @@ public class ProductService {
     private final OrderItemRepository orderItemRepo;
 
     public List<ProductListDTO> longPlayList() {
-        List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
+        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
 
         return longPlays.stream()
                 .map(EntityToDTOConverter::convertToProductList)
@@ -30,7 +30,7 @@ public class ProductService {
     }
 
     public List<ProductListDTO> shortPlayList() {
-        List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
+        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
 
         return shortPlays.stream()
                 .map(EntityToDTOConverter::convertToProductList)
@@ -42,7 +42,7 @@ public class ProductService {
     }
 
     public boolean isBuyScript(UUID userId, UUID productId) {
-        List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
+        final List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
 
         for(OrderItemEntity item : orderitems) {
             if(item.isScript()) {
@@ -53,7 +53,7 @@ public class ProductService {
     }
 
     public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
-        ProductEntity script = product(productId);
+        final ProductEntity script = product(productId);
 
         return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript);
     }

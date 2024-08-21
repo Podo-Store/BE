@@ -144,14 +144,12 @@ public class MypageService {
         }
 
         product.setImagePath(productEntity.getImagePath());
-        product.setImageType(productEntity.getImageType());
         product.setTitle(productEntity.getTitle());
         product.setScript(productEntity.isScript());
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
         product.setDescriptionPath(productEntity.getDescriptionPath());
-        product.setDescriptionType(productEntity.getDescriptionType());
 
         productRepo.save(product);
     }
@@ -174,15 +172,16 @@ public class MypageService {
         final String name = files[0].getOriginalFilename();
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        final String filePath = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        // S3 Key 구성
+        final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
-        amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
-        return amazonS3.getUrl(bucket, filePath).toString();
+        return S3Key;
     }
 
     public String uploadDescription(MultipartFile[] files, String title) throws IOException {
@@ -203,15 +202,16 @@ public class MypageService {
         final String name = files[0].getOriginalFilename();
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        final String filePath = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        // S3 Key 구성
+        final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType("application/pdf");
 
-        amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
-        return amazonS3.getUrl(bucket, filePath).toString();
+        return S3Key;
     }
 
     public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {

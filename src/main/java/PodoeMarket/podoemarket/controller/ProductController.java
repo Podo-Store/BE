@@ -22,7 +22,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> allProducts() {
         try{
-            ScriptListDTO lists = new ScriptListDTO(productService.longPlayList(), productService.shortPlayList());
+            final ScriptListDTO lists = new ScriptListDTO(productService.longPlayList(), productService.shortPlayList());
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -41,7 +41,7 @@ public class ProductController {
                  isBuyScript = productService.isBuyScript(userInfo.getId(), productId);
             }
 
-            ProductDTO productInfo = productService.productDetail(productId, isBuyScript);
+            final ProductDTO productInfo = productService.productDetail(productId, isBuyScript);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {

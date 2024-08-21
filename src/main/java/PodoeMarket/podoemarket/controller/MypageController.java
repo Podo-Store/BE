@@ -206,14 +206,12 @@ public class MypageController {
 
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)
-                    .imageType(file1[0].getContentType())
                     .title(dto.getTitle())
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
                     .scriptPrice(dto.getScriptPrice())
                     .performancePrice(dto.getPerformancePrice())
                     .descriptionPath(descriptionFilePath)
-                    .descriptionType(file2[0].getContentType())
                     .build();
 
             mypageService.productUpdate(dto.getId(), product);
