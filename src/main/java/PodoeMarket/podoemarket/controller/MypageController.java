@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -183,7 +184,7 @@ public class MypageController {
     }
 
     @PostMapping("/detail")
-    public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam("scriptImage") MultipartFile[] file1, @RequestParam("description") MultipartFile[] file2) {
+    public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1, @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
             if(!ValidCheck.isValidTitle(dto.getTitle())){
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -201,8 +202,19 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
-            String descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
+            String scriptImageFilePath;
+            if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
+                scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
+            } else {
+                scriptImageFilePath = dto.getImagePath();
+            }
+
+            String descriptionFilePath;
+            if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
+                descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
+            } else {
+                descriptionFilePath = dto.getDescriptionPath();
+            }
 
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)

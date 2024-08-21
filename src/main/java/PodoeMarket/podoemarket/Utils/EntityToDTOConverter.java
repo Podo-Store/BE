@@ -17,7 +17,6 @@ public class EntityToDTOConverter {
        try {
            ProductListDTO productListDTO = new ProductListDTO();
            String encodedScriptImage = URLEncoder.encode(entity.getImagePath(), "UTF-8");
-           log.info(bucketURL + encodedScriptImage);
 
            productListDTO.setId(entity.getId());
            productListDTO.setTitle(entity.getTitle());

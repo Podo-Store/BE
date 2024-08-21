@@ -64,7 +64,7 @@ public class MypageService {
     private String logoPath;
 
     @Value("${cloud.aws.s3.url}")
-    private static String bucketURL;
+    private String bucketURL;
 
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
@@ -158,10 +158,7 @@ public class MypageService {
     }
 
     public String uploadScriptImage(MultipartFile[] files, String title) throws IOException {
-        if(files[0].isEmpty()) {
-            throw new RuntimeException("선택된 작품 이미지가 없음");
-        }
-        else if(files.length > 1) {
+        if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
 
@@ -188,10 +185,7 @@ public class MypageService {
     }
 
     public String uploadDescription(MultipartFile[] files, String title) throws IOException {
-        if(files[0].isEmpty()) {
-            throw new RuntimeException("선택된 작품 설명 파일이 없음");
-        }
-        else if(files.length > 1) {
+        if(files.length > 1) {
             throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
         }
 
