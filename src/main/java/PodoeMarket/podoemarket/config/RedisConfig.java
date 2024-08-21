@@ -12,21 +12,28 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
+    // 배포용
+//    @Value("${spring.data.redis.host}")
+//    private String redisHost;
+//    @Value("${spring.data.redis.port}")
+//    private int redisPort;
+//
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory() {
+//        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisHost, redisPort);
+//        return lettuceConnectionFactory;
+//    }
+//
+//    @Bean
+//    public RedisTemplate<String, String> redisTemplate() {
+//        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
+//        stringRedisTemplate.setConnectionFactory(redisConnectionFactory());
+//        return stringRedisTemplate;
+//    }
 
+    // 로컬용
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisHost, redisPort);
-        return lettuceConnectionFactory;
-    }
-
-    @Bean
-    public RedisTemplate<String, String> redisTemplate() {
-        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
-        stringRedisTemplate.setConnectionFactory(redisConnectionFactory());
-        return stringRedisTemplate;
+        return new LettuceConnectionFactory();
     }
 }
