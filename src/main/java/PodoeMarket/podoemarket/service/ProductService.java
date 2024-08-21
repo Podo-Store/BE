@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,19 +22,22 @@ public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
 
+    @Value("${cloud.aws.s3.url}")
+    private String bucketURL;
+
     public List<ProductListDTO> longPlayList() {
-        List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
+        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
 
         return longPlays.stream()
-                .map(EntityToDTOConverter::convertToProductList)
+                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
                 .collect(Collectors.toList());
     }
 
     public List<ProductListDTO> shortPlayList() {
-        List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
+        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
 
         return shortPlays.stream()
-                .map(EntityToDTOConverter::convertToProductList)
+                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +46,7 @@ public class ProductService {
     }
 
     public boolean isBuyScript(UUID userId, UUID productId) {
-        List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
+        final List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
 
         for(OrderItemEntity item : orderitems) {
             if(item.isScript()) {
@@ -53,8 +57,8 @@ public class ProductService {
     }
 
     public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
-        ProductEntity script = product(productId);
+        final ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript);
+        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
     }
 }

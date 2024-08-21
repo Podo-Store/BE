@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,20 +45,21 @@ public class RegisterService {
         }
 
         // 파일 이름 가공
-        SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
-        Date time = new Date();
-        String name = files[0].getOriginalFilename();
-        String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+        final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        String filePath = bucketFolder + fileName[0] +"\\"+ writer + "\\" + dateFormat.format(time);
+        // S3 Key 구성
+        final String S3Key = bucketFolder + fileName[0] +"\\"+ writer + "\\" + dateFormat.format(time) + ".pdf";
 
-        ObjectMetadata metadata = new ObjectMetadata();
+        final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
-        amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
-        return amazonS3.getUrl(bucket, filePath).toString();
+        return S3Key;
     }
 
 }

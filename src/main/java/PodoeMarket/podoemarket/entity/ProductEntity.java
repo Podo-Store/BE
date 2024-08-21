@@ -30,13 +30,7 @@ public class ProductEntity {
     private String writer;
 
     @Column(nullable = false)
-    private String fileType;
-
-    @Column(nullable = false)
     private String filePath;
-
-    @Column
-    private String imageType;
 
     @Column
     private String imagePath;
@@ -56,9 +50,6 @@ public class ProductEntity {
     @Column
     @ColumnDefault("0")
     private int performancePrice;
-
-    @Column
-    private String descriptionType;
 
     @Column
     private String descriptionPath;

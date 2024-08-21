@@ -63,6 +63,9 @@ public class MypageService {
     @Value("${logo.path}")
     private String logoPath;
 
+    @Value("${cloud.aws.s3.url}")
+    private String bucketURL;
+
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
@@ -112,7 +115,7 @@ public class MypageService {
         final Map<LocalDate, List<ProductListDTO>> myProducts = new HashMap<>();
 
         for (ProductEntity product : products) {
-            final ProductListDTO productListDTO = convertToProductList(product);
+            final ProductListDTO productListDTO = convertToProductList(product, bucketURL);
 
             final LocalDate date = product.getCreatedAt().toLocalDate(); // localdatetime -> localdate
             // 날짜에 따른 리스트를 초기화하고 추가 - date라는 key가 없으면 만들고, productListDTO을 value로 추가
@@ -144,23 +147,18 @@ public class MypageService {
         }
 
         product.setImagePath(productEntity.getImagePath());
-        product.setImageType(productEntity.getImageType());
         product.setTitle(productEntity.getTitle());
         product.setScript(productEntity.isScript());
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
         product.setDescriptionPath(productEntity.getDescriptionPath());
-        product.setDescriptionType(productEntity.getDescriptionType());
 
         productRepo.save(product);
     }
 
     public String uploadScriptImage(MultipartFile[] files, String title) throws IOException {
-        if(files[0].isEmpty()) {
-            throw new RuntimeException("선택된 작품 이미지가 없음");
-        }
-        else if(files.length > 1) {
+        if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
 
@@ -174,22 +172,20 @@ public class MypageService {
         final String name = files[0].getOriginalFilename();
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        final String filePath = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        // S3 Key 구성
+        final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
-        amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
-        return amazonS3.getUrl(bucket, filePath).toString();
+        return S3Key;
     }
 
     public String uploadDescription(MultipartFile[] files, String title) throws IOException {
-        if(files[0].isEmpty()) {
-            throw new RuntimeException("선택된 작품 설명 파일이 없음");
-        }
-        else if(files.length > 1) {
+        if(files.length > 1) {
             throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
         }
 
@@ -203,15 +199,16 @@ public class MypageService {
         final String name = files[0].getOriginalFilename();
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
-        final String filePath = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time);
+        // S3 Key 구성
+        final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType("application/pdf");
 
-        amazonS3.putObject(bucket, filePath, files[0].getInputStream(), metadata);
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
-        return amazonS3.getUrl(bucket, filePath).toString();
+        return S3Key;
     }
 
     public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {
@@ -227,7 +224,7 @@ public class MypageService {
             for (OrderItemEntity orderItem : orderItems) {
                 // 각 주문 항목에 대한 제품 정보 가져옴
                 final ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product);
+                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product, bucketURL);
 
                 final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가

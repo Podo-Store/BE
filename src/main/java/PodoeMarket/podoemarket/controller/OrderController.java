@@ -26,7 +26,7 @@ public class OrderController {
     @GetMapping("/item")
     public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderItemDTO dto) {
         try {
-            ProductEntity orderProduct = productService.product(dto.getProductId());
+            final ProductEntity orderProduct = productService.product(dto.getProductId());
 
             if(userInfo.getId().equals(orderProduct.getUser().getId())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -44,7 +44,7 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.isPerformance() ? orderProduct.getPerformancePrice() : 0);
+            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.isPerformance() ? orderProduct.getPerformancePrice() : 0);
 
             OrderItemDTO item = OrderItemDTO.builder()
                     .title(orderProduct.getTitle())
@@ -68,7 +68,7 @@ public class OrderController {
     @PostMapping("/item")
     public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderDTO dto) {
         try {
-            OrdersEntity order = OrdersEntity.builder()
+            final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .build();
 
