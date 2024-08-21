@@ -16,12 +16,12 @@ public class EntityToDTOConverter {
     public static ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
        try {
            ProductListDTO productListDTO = new ProductListDTO();
-           String encodedScriptImage = URLEncoder.encode(entity.getImagePath(), "UTF-8");
+           String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
 
            productListDTO.setId(entity.getId());
            productListDTO.setTitle(entity.getTitle());
            productListDTO.setWriter(entity.getWriter());
-           productListDTO.setImagePath(bucketURL + encodedScriptImage);
+           productListDTO.setImagePath(encodedScriptImage);
            productListDTO.setScript(entity.isScript());
            productListDTO.setScriptPrice(entity.getScriptPrice());
            productListDTO.setPerformance(entity.isPerformance());
@@ -38,20 +38,20 @@ public class EntityToDTOConverter {
     public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript, String bucketURL) {
         try {
             ProductDTO productDTO = new ProductDTO();
-            String encodedScriptImage = URLEncoder.encode(entity.getImagePath(), "UTF-8");
-            String encodedFile = URLEncoder.encode(entity.getFilePath(), "UTF-8");
-            String encodedDescription = URLEncoder.encode(entity.getDescriptionPath(), "UTF-8");
+            String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
+            String encodedFile = entity.getFilePath() != null ? bucketURL + URLEncoder.encode(entity.getFilePath(), "UTF-8") : "";
+            String encodedDescription = entity.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(entity.getDescriptionPath(), "UTF-8") : "";
 
             productDTO.setId(entity.getId());
             productDTO.setTitle(entity.getTitle());
             productDTO.setWriter(entity.getWriter());
-            productDTO.setFilePath(bucketURL + encodedFile);
-            productDTO.setImagePath(bucketURL + encodedScriptImage);
+            productDTO.setFilePath(encodedFile);
+            productDTO.setImagePath(encodedScriptImage);
             productDTO.setScript(entity.isScript());
             productDTO.setScriptPrice(entity.getScriptPrice());
             productDTO.setPerformance(entity.isPerformance());
             productDTO.setPerformancePrice(entity.getPerformancePrice());
-            productDTO.setDescriptionPath(bucketURL + encodedDescription);
+            productDTO.setDescriptionPath(encodedDescription);
             productDTO.setDate(entity.getCreatedAt());
             productDTO.setChecked(entity.isChecked());
             productDTO.setPlayType(entity.getPlayType());
@@ -66,12 +66,12 @@ public class EntityToDTOConverter {
 
     public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
         try {
-            String encodedScriptImage = URLEncoder.encode(product.getImagePath(), "UTF-8");
+            String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
             OrderItemDTO itemDTO = new OrderItemDTO();
 
             itemDTO.setId(orderItem.getId());
             itemDTO.setTitle(product.getTitle());
-            itemDTO.setImagePath(bucketURL + encodedScriptImage);
+            itemDTO.setImagePath(encodedScriptImage);
             itemDTO.setChecked(product.isChecked());
             itemDTO.setScript(orderItem.isScript());
             itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
