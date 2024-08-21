@@ -63,6 +63,9 @@ public class MypageService {
     @Value("${logo.path}")
     private String logoPath;
 
+    @Value("${cloud.aws.s3.url}")
+    private static String bucketURL;
+
     public void userUpdate(UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
@@ -112,7 +115,7 @@ public class MypageService {
         final Map<LocalDate, List<ProductListDTO>> myProducts = new HashMap<>();
 
         for (ProductEntity product : products) {
-            final ProductListDTO productListDTO = convertToProductList(product);
+            final ProductListDTO productListDTO = convertToProductList(product, bucketURL);
 
             final LocalDate date = product.getCreatedAt().toLocalDate(); // localdatetime -> localdate
             // 날짜에 따른 리스트를 초기화하고 추가 - date라는 key가 없으면 만들고, productListDTO을 value로 추가
@@ -227,7 +230,7 @@ public class MypageService {
             for (OrderItemEntity orderItem : orderItems) {
                 // 각 주문 항목에 대한 제품 정보 가져옴
                 final ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product);
+                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product, bucketURL);
 
                 final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가

@@ -4,7 +4,6 @@ import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -14,12 +13,11 @@ import java.net.URLEncoder;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-    static final private String bucketURL = "https://podobucket.s3.ap-northeast-2.amazonaws.com/";
-
-    public static ProductListDTO convertToProductList(ProductEntity entity) {
+    public static ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
        try {
            ProductListDTO productListDTO = new ProductListDTO();
            String encodedScriptImage = URLEncoder.encode(entity.getImagePath(), "UTF-8");
+           log.info(bucketURL + encodedScriptImage);
 
            productListDTO.setId(entity.getId());
            productListDTO.setTitle(entity.getTitle());
@@ -38,7 +36,7 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript, String bucketURL) {
         try {
             ProductDTO productDTO = new ProductDTO();
             String encodedScriptImage = URLEncoder.encode(entity.getImagePath(), "UTF-8");
@@ -67,7 +65,7 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product) {
+    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
         try {
             String encodedScriptImage = URLEncoder.encode(product.getImagePath(), "UTF-8");
             OrderItemDTO itemDTO = new OrderItemDTO();
