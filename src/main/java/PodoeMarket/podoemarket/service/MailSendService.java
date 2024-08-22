@@ -51,7 +51,7 @@ public class MailSendService {
         String randomNumber = "";
 
         for(int i = 0; i < 6; i++)
-            randomNumber += Integer.toString(r.nextInt(10));
+            randomNumber += Integer.toString(r.nextInt(9) + 1);
 
         authNumber = Integer.parseInt(randomNumber);
     }
