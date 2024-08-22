@@ -211,6 +211,13 @@ public class MypageService {
         return S3Key;
     }
 
+    public String extractS3KeyFromURL(String S3URL) throws Exception {
+        String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
+        final URL url = new URL(decodedUrl);
+
+        return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+    }
+
     public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {
         final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
 

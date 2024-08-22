@@ -202,18 +202,23 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            log.info("205");
             String scriptImageFilePath;
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
+                log.info("파일로 들어옴");
                 scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
             } else {
-                scriptImageFilePath = dto.getImagePath();
+                scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
+                log.info(scriptImageFilePath);
             }
 
             String descriptionFilePath;
             if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
+                log.info("파일로 들어옴");
                 descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
             } else {
-                descriptionFilePath = dto.getDescriptionPath();
+                descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
+                log.info(descriptionFilePath);
             }
 
             ProductEntity product = ProductEntity.builder()
