@@ -206,14 +206,14 @@ public class MypageController {
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
                 scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
             } else {
-                scriptImageFilePath = dto.getImagePath();
+                scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
             }
 
             String descriptionFilePath;
             if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
                 descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
             } else {
-                descriptionFilePath = dto.getDescriptionPath();
+                descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
             }
 
             ProductEntity product = ProductEntity.builder()
@@ -329,20 +329,14 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String fileKey = mypageService.extractFileKeyFromUrl(item.getProduct().getFilePath());
+            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());
 
-            File file = mypageService.downloadFile(fileKey, item.getProduct().getTitle(), userInfo.getEmail());
-
-            // 파일 이름을 UTF-8로 인코딩
-            String encodedFilename = URLEncoder.encode(file.getName(), "UTF-8");
-
-            // InputStreamResource를 사용하여 파일을 ResponseEntity의 body로 설정
-            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+            String encodedFilename = URLEncoder.encode(item.getProduct().getTitle(), "UTF-8");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
-                    .body(resource);
+                    .body(fileData);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
