@@ -10,10 +10,13 @@ import PodoeMarket.podoemarket.service.OrderService;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URLEncoder;
 
 @RequiredArgsConstructor
 @Controller
@@ -22,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     private final OrderService orderService;
     private final ProductService productService;
+
+    @Value("${cloud.aws.s3.url}")
+    private String bucketURL;
 
     @GetMapping("/item")
     public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderItemDTO dto) {
@@ -45,11 +51,12 @@ public class OrderController {
             }
 
             final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.isPerformance() ? orderProduct.getPerformancePrice() : 0);
+            final String encodedScriptImage = orderProduct.getImagePath() != null ? bucketURL + URLEncoder.encode(orderProduct.getImagePath(), "UTF-8") : "";
 
             OrderItemDTO item = OrderItemDTO.builder()
                     .title(orderProduct.getTitle())
                     .writer(orderProduct.getWriter())
-                    .imagePath(orderProduct.getImagePath())
+                    .imagePath(encodedScriptImage)
                     .playType(orderProduct.getPlayType())
                     .script(dto.isScript())
                     .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
