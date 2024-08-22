@@ -263,36 +263,20 @@ public class MypageService {
         }
     }
 
-    public String extractFileKeyFromUrl(String s3Url) {
-        try {
-            URL url = new URL(s3Url);
-            String path = url.getPath();
-            String fileKey = path.substring(1); // 첫 번째 '/' 제거
-            // URL 디코딩
-            return URLDecoder.decode(fileKey, StandardCharsets.UTF_8.name());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("올바른 url이 아님");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("올바른 url이 아님");
-        }
-    }
-
-    public File downloadFile(String fileKey, String title, String email) {
+    public byte[] downloadFile(String fileKey, String email) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
-
-        String homeDirectory = System.getProperty("user.home");
-        File file = new File(homeDirectory + "/Downloads/" + title +".pdf");
 
         try (InputStream inputStream = s3Object.getObjectContent();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             addWatermark(inputStream, outputStream, email);
+
+            return outputStream.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("파일 다운로드 중 오류 발생");
         }
-        return file;
     }
 
     public void addWatermark(InputStream src, ByteArrayOutputStream dest, String email) {
