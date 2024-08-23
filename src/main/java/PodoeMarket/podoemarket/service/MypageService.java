@@ -157,7 +157,7 @@ public class MypageService {
         productRepo.save(product);
     }
 
-    public String uploadScriptImage(MultipartFile[] files, String title) throws IOException {
+    public String uploadScriptImage(MultipartFile[] files, String title, UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
@@ -179,12 +179,20 @@ public class MypageService {
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
+        // 기존 파일 삭제
+        String formalS3Key = productRepo.findById(id).getImagePath();
+
+        if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
+            amazonS3.deleteObject(bucket, formalS3Key);
+        }
+
+        // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
         return S3Key;
     }
 
-    public String uploadDescription(MultipartFile[] files, String title) throws IOException {
+    public String uploadDescription(MultipartFile[] files, String title, UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
         }
@@ -206,6 +214,14 @@ public class MypageService {
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType("application/pdf");
 
+        // 기존 파일 삭제
+        String formalS3Key = productRepo.findById(id).getDescriptionPath();
+
+        if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
+            amazonS3.deleteObject(bucket, formalS3Key);
+        }
+
+        // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
 
         return S3Key;
