@@ -204,14 +204,14 @@ public class MypageController {
 
             String scriptImageFilePath;
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
-                scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle());
+                scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle(), dto.getId());
             } else {
                 scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
             }
 
             String descriptionFilePath;
             if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
-                descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle());
+                descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle(), dto.getId());
             } else {
                 descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
             }
