@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -327,5 +326,9 @@ public class MypageService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void delete(final UserEntity userEntity) {
+        userRepo.delete(userEntity);
     }
 }

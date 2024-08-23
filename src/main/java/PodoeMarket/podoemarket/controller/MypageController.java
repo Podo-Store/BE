@@ -8,7 +8,6 @@ import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -337,6 +333,18 @@ public class MypageController {
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                     .body(fileData);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            mypageService.delete(userInfo);
+
+            return ResponseEntity.ok().body(userInfo.getNickname() + "의 계정 삭제");
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

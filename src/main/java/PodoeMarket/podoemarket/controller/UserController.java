@@ -356,18 +356,6 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserEntity userInfo) {
-        try {
-            userService.delete(userInfo);
-
-            return ResponseEntity.ok().body(userInfo.getNickname() + "의 계정 삭제");
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     // accessToken 재발급
     @PostMapping("/newToken")
     public ResponseEntity<?> createNewToken(HttpServletRequest request){
