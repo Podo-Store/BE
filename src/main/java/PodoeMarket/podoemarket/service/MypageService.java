@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -157,6 +156,26 @@ public class MypageService {
         productRepo.save(product);
     }
 
+    public void deleteScriptImage(UUID id) {
+        if(productRepo.findById(id).getImagePath() != null) {
+            final String formalS3Key = productRepo.findById(id).getImagePath();
+
+            if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
+                amazonS3.deleteObject(bucket, formalS3Key);
+            }
+        }
+    }
+
+    public void deleteDescription(UUID id) {
+        if(productRepo.findById(id).getDescriptionPath() != null) {
+            final String formalS3Key = productRepo.findById(id).getDescriptionPath();
+
+            if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
+                amazonS3.deleteObject(bucket, formalS3Key);
+            }
+        }
+    }
+
     public String uploadScriptImage(MultipartFile[] files, String title, UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
@@ -180,11 +199,7 @@ public class MypageService {
         metadata.setContentType(files[0].getContentType());
 
         // 기존 파일 삭제
-        String formalS3Key = productRepo.findById(id).getImagePath();
-
-        if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
-            amazonS3.deleteObject(bucket, formalS3Key);
-        }
+        deleteScriptImage(id);
 
         // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
@@ -215,11 +230,7 @@ public class MypageService {
         metadata.setContentType("application/pdf");
 
         // 기존 파일 삭제
-        String formalS3Key = productRepo.findById(id).getDescriptionPath();
-
-        if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
-            amazonS3.deleteObject(bucket, formalS3Key);
-        }
+        deleteDescription(id);
 
         // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
@@ -327,5 +338,20 @@ public class MypageService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void delete(final UserEntity userEntity) {
+        // s3에 저장된 파일 삭제
+        for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
+            if(amazonS3.doesObjectExist(bucket, product.getFilePath())) {
+                amazonS3.deleteObject(bucket, product.getFilePath());
+            }
+            // 작품 관련 이미지(scriptImage, description) 삭제
+            deleteScriptImage(product.getId());
+            deleteDescription(product.getId());
+        }
+
+        // DB 계정 삭제
+        userRepo.delete(userEntity);
     }
 }
