@@ -10,7 +10,7 @@ public class ValidCheck {
     // 유효성 검사
     public static boolean isValidUser(UserDTO userDTO){ // 아이디, 이메일, 비밀번호, 전화번호
         String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
-        String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@$!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+        String regx_pwd = "^(?=.*[0-9])([a-z|A-Z]*)(?=.*[$@!%*#?&]).{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
         String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
         String regx_nick = "^[0-9a-zA-Zㄱ-ㅎ가-힣 ]{0,8}$"; // 한글, 영어, 숫자, (-8)
 
