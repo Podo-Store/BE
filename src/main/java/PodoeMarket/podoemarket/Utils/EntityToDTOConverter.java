@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -83,5 +84,18 @@ public class EntityToDTOConverter {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static OrderCompleteDTO convertToOrderCompleteDTO(OrdersEntity ordersEntity, OrderItemEntity orderItem) {
+        OrderCompleteDTO completeDTO = new OrderCompleteDTO();
+
+        completeDTO.setOrderDate(ordersEntity.getCreatedAt());
+        completeDTO.setOrderNum(ordersEntity.getId());
+        completeDTO.setTitle(orderItem.getProduct().getTitle());
+        completeDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
+        completeDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
+        completeDTO.setTotalPrice(ordersEntity.getTotalPrice());
+
+        return completeDTO;
     }
 }

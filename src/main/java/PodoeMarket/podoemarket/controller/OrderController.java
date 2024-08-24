@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.ResponseDTO;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
@@ -79,9 +81,10 @@ public class OrderController {
                     .user(userInfo)
                     .build();
 
-            orderService.orderCreate(order, dto, userInfo);
+            OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
+            List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
 
-            return ResponseEntity.ok().body(true);
+            return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
