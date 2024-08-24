@@ -1,7 +1,8 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.dto.OrderItemDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
@@ -23,7 +24,7 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
 
-    public void orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
+    public OrdersEntity orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
         final List<OrderItemEntity> orderItems = orderDTO.getOrderItem().stream().map(orderItemDTO -> {
             final OrderItemEntity orderItem = new OrderItemEntity();
@@ -64,18 +65,20 @@ public class OrderService {
                 }
             }
 
-            final int totalPrice = orderItemDTO.getScriptPrice() + orderItemDTO.getPerformancePrice();
+            final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
+            final int performancePrice = orderItemDTO.isPerformance() ? product.getPerformancePrice() : 0;
+            final int totalPrice = scriptPrice + performancePrice;
 
             orderItem.setProduct(product);
             orderItem.setScript(orderItemDTO.isScript());
-            orderItem.setScriptPrice(orderItemDTO.getScriptPrice());
+            orderItem.setScriptPrice(scriptPrice);
             orderItem.setPerformance(orderItemDTO.isPerformance());
 
             if(orderItemDTO.isPerformance()) {
                 orderItem.setContractStatus(1);
             }
 
-            orderItem.setPerformancePrice(orderItemDTO.getPerformancePrice());
+            orderItem.setPerformancePrice(performancePrice);
             orderItem.setTotalPrice(totalPrice);
             orderItem.setUser(user);
 
@@ -84,6 +87,13 @@ public class OrderService {
 
         ordersEntity.setOrderItem(orderItems);
         ordersEntity.setTotalPrice(orderItems.stream().mapToInt(OrderItemEntity::getTotalPrice).sum());
-        orderRepo.save(ordersEntity);
+
+        return orderRepo.save(ordersEntity);
+    }
+
+    public List<OrderCompleteDTO> orderResult(final OrdersEntity ordersEntity) {
+        List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(ordersEntity.getId());
+
+        return orderItems.stream().map(orderItem -> EntityToDTOConverter.convertToOrderCompleteDTO(ordersEntity, orderItem)).toList();
     }
 }
