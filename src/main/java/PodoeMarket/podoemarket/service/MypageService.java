@@ -65,7 +65,7 @@ public class MypageService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    public void userUpdate(UUID id, final UserEntity userEntity) {
+    public void userUpdate(final UUID id, final UserEntity userEntity) {
         final String password = userEntity.getPassword();
         final String nickname = userEntity.getNickname();
 
@@ -92,7 +92,7 @@ public class MypageService {
         userRepo.save(user);
     }
 
-    public Boolean checkUser(UUID id, final String password, final PasswordEncoder encoder) {
+    public Boolean checkUser(final UUID id, final String password, final PasswordEncoder encoder) {
         try{
             final UserEntity originalUser = userRepo.findById(id);
 
@@ -103,11 +103,11 @@ public class MypageService {
         }
     }
 
-    public UserEntity originalUser(UUID id) {
+    public UserEntity originalUser(final UUID id) {
         return userRepo.findById(id);
     }
 
-    public List<DateProductDTO> getAllMyProducts(UUID id) {
+    public List<DateProductDTO> getAllMyProducts(final UUID id) {
         final List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         // 날짜별로 작품을 그룹화하기 위한 맵 선언
@@ -128,7 +128,7 @@ public class MypageService {
     }
 
     @Transactional
-    public void updateWriter(UUID id, String writer) {
+    public void updateWriter(final UUID id, final String writer) {
         final List<ProductEntity> products = productRepo.findAllByUserId(id);
 
         for (ProductEntity product : products) {
@@ -138,7 +138,7 @@ public class MypageService {
         productRepo.saveAll(products);
     }
 
-    public void productUpdate(UUID id, final ProductEntity productEntity) {
+    public void productUpdate(final UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
         if(!product.isChecked()) {
@@ -156,7 +156,7 @@ public class MypageService {
         productRepo.save(product);
     }
 
-    public void deleteScriptImage(UUID id) {
+    public void deleteScriptImage(final UUID id) {
         if(productRepo.findById(id).getImagePath() != null) {
             final String formalS3Key = productRepo.findById(id).getImagePath();
 
@@ -166,7 +166,7 @@ public class MypageService {
         }
     }
 
-    public void deleteDescription(UUID id) {
+    public void deleteDescription(final UUID id) {
         if(productRepo.findById(id).getDescriptionPath() != null) {
             final String formalS3Key = productRepo.findById(id).getDescriptionPath();
 
@@ -176,7 +176,7 @@ public class MypageService {
         }
     }
 
-    public String uploadScriptImage(MultipartFile[] files, String title, UUID id) throws IOException {
+    public String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
@@ -207,7 +207,7 @@ public class MypageService {
         return S3Key;
     }
 
-    public String uploadDescription(MultipartFile[] files, String title, UUID id) throws IOException {
+    public String uploadDescription(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
         }
@@ -238,14 +238,31 @@ public class MypageService {
         return S3Key;
     }
 
-    public String extractS3KeyFromURL(String S3URL) throws Exception {
+    public String extractS3KeyFromURL(final String S3URL) throws Exception {
         String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
         final URL url = new URL(decodedUrl);
 
         return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
     }
 
-    public List<DateOrderDTO> getAllMyOrdersWithProducts(UUID userId) {
+    public void deleteScript(final UUID productId, final UUID userId) {
+        final ProductEntity product =  productRepo.findById(productId);
+
+        if(!product.getUser().getId().equals(userId)) {
+            throw new RuntimeException("작가가 아님");
+        }
+
+        if(!product.isChecked()) {
+            throw new RuntimeException("심사 중");
+        }
+
+        deleteScriptImage(product.getId());
+        deleteDescription(product.getId());
+
+        productRepo.delete(product);
+    }
+
+    public List<DateOrderDTO> getAllMyOrdersWithProducts(final UUID userId) {
         final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
@@ -272,7 +289,7 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public OrderItemEntity orderItem(UUID orderId) {
+    public OrderItemEntity orderItem(final UUID orderId) {
         if(orderItemRepo.findById(orderId) == null) {
             throw new RuntimeException("일치하는 구매 목록 없음");
         }
@@ -280,7 +297,7 @@ public class MypageService {
         return orderItemRepo.findById(orderId);
     }
 
-    public void contractStatusUpdate(UUID id) {
+    public void contractStatusUpdate(final UUID id) {
         final OrderItemEntity item = orderItemRepo.findById(id);
         final int contractStatus = item.getContractStatus();
 
@@ -290,7 +307,7 @@ public class MypageService {
         }
     }
 
-    public byte[] downloadFile(String fileKey, String email) {
+    public byte[] downloadFile(final String fileKey, final String email) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
@@ -306,7 +323,7 @@ public class MypageService {
         }
     }
 
-    public void addWatermark(InputStream src, ByteArrayOutputStream dest, String email) {
+    public void addWatermark(final InputStream src, final ByteArrayOutputStream dest, final String email) {
         try (PdfReader reader = new PdfReader(src);
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
@@ -340,13 +357,13 @@ public class MypageService {
         }
     }
 
-    public void delete(final UserEntity userEntity) {
+    public void deleteUser(final UserEntity userEntity) {
         // s3에 저장된 파일 삭제
         for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
             if(amazonS3.doesObjectExist(bucket, product.getFilePath())) {
                 amazonS3.deleteObject(bucket, product.getFilePath());
             }
-            // 작품 관련 이미지(scriptImage, description) 삭제
+
             deleteScriptImage(product.getId());
             deleteDescription(product.getId());
         }
