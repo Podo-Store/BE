@@ -156,6 +156,12 @@ public class MypageService {
         productRepo.save(product);
     }
 
+    public void deleteScript(final UUID id) {
+        if(amazonS3.doesObjectExist(bucket, productRepo.findById(id).getFilePath())) {
+            amazonS3.deleteObject(bucket, productRepo.findById(id).getFilePath());
+        }
+    }
+
     public void deleteScriptImage(final UUID id) {
         if(productRepo.findById(id).getImagePath() != null) {
             final String formalS3Key = productRepo.findById(id).getImagePath();
@@ -256,6 +262,11 @@ public class MypageService {
             throw new RuntimeException("심사 중");
         }
 
+        if(amazonS3.doesObjectExist(bucket, product.getFilePath())) {
+            amazonS3.deleteObject(bucket, product.getFilePath());
+        }
+
+        deleteScript(product.getId());
         deleteScriptImage(product.getId());
         deleteDescription(product.getId());
 
@@ -360,10 +371,7 @@ public class MypageService {
     public void deleteUser(final UserEntity userEntity) {
         // s3에 저장된 파일 삭제
         for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
-            if(amazonS3.doesObjectExist(bucket, product.getFilePath())) {
-                amazonS3.deleteObject(bucket, product.getFilePath());
-            }
-
+            deleteScript(product.getId());
             deleteScriptImage(product.getId());
             deleteDescription(product.getId());
         }
