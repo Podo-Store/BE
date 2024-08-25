@@ -234,7 +234,7 @@ public class MypageController {
     @DeleteMapping("/deleteScript/{id}")
     public ResponseEntity<?> deleteScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try {
-            mypageService.deleteScript(id, userInfo.getId());
+            mypageService.deleteProduct(id, userInfo.getId());
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
