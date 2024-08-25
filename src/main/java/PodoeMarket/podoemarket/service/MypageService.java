@@ -265,11 +265,12 @@ public class MypageService {
             throw new RuntimeException("심사 중");
         }
 
-        // OrderItemEntity의 외래 키를 NULL로 설정
-        for (OrderItemEntity orderItem : product.getOrderItem()) {
-            orderItem.setProduct(null);
-            orderItemRepo.save(orderItem);
-        }
+        // 예비용
+//        // OrderItemEntity의 외래 키를 NULL로 설정
+//        for (OrderItemEntity orderItem : product.getOrderItem()) {
+//            orderItem.setProduct(null);
+//            orderItemRepo.save(orderItem);
+//        }
 
         deleteScript(product.getId());
         deleteScriptImage(product.getId());
