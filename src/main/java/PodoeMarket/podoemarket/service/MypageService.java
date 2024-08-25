@@ -157,8 +157,10 @@ public class MypageService {
     }
 
     public void deleteScript(final UUID id) {
-        if(amazonS3.doesObjectExist(bucket, productRepo.findById(id).getFilePath())) {
-            amazonS3.deleteObject(bucket, productRepo.findById(id).getFilePath());
+        final String S3Key = productRepo.findById(id).getFilePath();
+
+        if(amazonS3.doesObjectExist(bucket, S3Key)) {
+            amazonS3.deleteObject(bucket, S3Key);
         }
     }
 
@@ -251,7 +253,8 @@ public class MypageService {
         return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
     }
 
-    public void deleteScript(final UUID productId, final UUID userId) {
+    @Transactional
+    public void deleteProduct(final UUID productId, final UUID userId) {
         final ProductEntity product =  productRepo.findById(productId);
 
         if(!product.getUser().getId().equals(userId)) {
@@ -262,9 +265,12 @@ public class MypageService {
             throw new RuntimeException("심사 중");
         }
 
-        if(amazonS3.doesObjectExist(bucket, product.getFilePath())) {
-            amazonS3.deleteObject(bucket, product.getFilePath());
-        }
+        // 예비용
+//        // OrderItemEntity의 외래 키를 NULL로 설정
+//        for (OrderItemEntity orderItem : product.getOrderItem()) {
+//            orderItem.setProduct(null);
+//            orderItemRepo.save(orderItem);
+//        }
 
         deleteScript(product.getId());
         deleteScriptImage(product.getId());
@@ -368,6 +374,7 @@ public class MypageService {
         }
     }
 
+    @Transactional
     public void deleteUser(final UserEntity userEntity) {
         // s3에 저장된 파일 삭제
         for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
