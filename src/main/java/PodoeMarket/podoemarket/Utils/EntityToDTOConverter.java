@@ -67,18 +67,28 @@ public class EntityToDTOConverter {
 
     public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
         try {
-            String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
             OrderItemDTO itemDTO = new OrderItemDTO();
 
             itemDTO.setId(orderItem.getId());
-            itemDTO.setTitle(product.getTitle());
-            itemDTO.setImagePath(encodedScriptImage);
-            itemDTO.setChecked(product.isChecked());
+            itemDTO.setTitle(orderItem.getTitle());
             itemDTO.setScript(orderItem.isScript());
-            itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
             itemDTO.setPerformance(orderItem.isPerformance());
-            itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
             itemDTO.setContractStatus(orderItem.getContractStatus());
+
+            if(product != null) { // 삭제된 작품이 아닐 경우
+                String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
+
+                itemDTO.setDelete(false);
+                itemDTO.setWriter(product.getWriter());
+                itemDTO.setImagePath(encodedScriptImage);
+                itemDTO.setChecked(product.isChecked());
+                itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
+                itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
+            } else { // 삭제된 작품일 경우
+                itemDTO.setDelete(true);
+                itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
+                itemDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
+            }
 
             return itemDTO;
         } catch (UnsupportedEncodingException e) {
@@ -91,7 +101,7 @@ public class EntityToDTOConverter {
 
         completeDTO.setOrderDate(ordersEntity.getCreatedAt());
         completeDTO.setOrderNum(ordersEntity.getId());
-        completeDTO.setTitle(orderItem.getProduct().getTitle());
+        completeDTO.setTitle(orderItem.getTitle());
         completeDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
         completeDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
         completeDTO.setTotalPrice(ordersEntity.getTotalPrice());

@@ -77,6 +77,9 @@ public class ValidCheck {
         } else if(!Pattern.matches(regx_nick, nickname)) {
             log.warn("nickname is not fit in the rule");
             return false;
+        } else if(nickname.equals("삭제된 계정") || nickname.equals("삭제 계정")) {
+            log.warn("this nickname cannot use");
+            return false;
         } else {
             log.info("nickname valid checked");
             return true;

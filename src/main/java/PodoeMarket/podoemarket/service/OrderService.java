@@ -80,6 +80,7 @@ public class OrderService {
 
             orderItem.setPerformancePrice(performancePrice);
             orderItem.setTotalPrice(totalPrice);
+            orderItem.setTitle(product.getTitle());
             orderItem.setUser(user);
 
             return orderItem;
