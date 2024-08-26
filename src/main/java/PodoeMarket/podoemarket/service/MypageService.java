@@ -291,8 +291,7 @@ public class MypageService {
 
             for (OrderItemEntity orderItem : orderItems) {
                 // 각 주문 항목에 대한 제품 정보 가져옴
-                final ProductEntity product = productRepo.findById(orderItem.getProduct().getId());
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, product, bucketURL);
+                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
 
                 final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가

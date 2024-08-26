@@ -50,6 +50,9 @@ public class OrderItemEntity {
     @Column
     private String contractPath;
 
+    @Column(nullable = false)
+    private String title;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemDTO {
+    private boolean delete;
     private UUID id;
     private String title;
     private String writer;
