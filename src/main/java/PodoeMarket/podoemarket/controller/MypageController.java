@@ -243,12 +243,28 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/orderItems")
-    public ResponseEntity<?> getOrderItems(@AuthenticationPrincipal UserEntity userInfo) {
+
+    @GetMapping("/orderScripts")
+    public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
             OrderListPageDTO result = OrderListPageDTO.builder()
                     .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrdersWithProducts(userInfo.getId()))
+                    .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
+                    .build();
+
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/orderPerformances")
+    public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            OrderListPageDTO result = OrderListPageDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
                     .build();
 
             return ResponseEntity.ok().body(result);
