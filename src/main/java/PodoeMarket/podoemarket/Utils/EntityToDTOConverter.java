@@ -84,6 +84,7 @@ public class EntityToDTOConverter {
                 itemDTO.setChecked(product.isChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
                 itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
+                itemDTO.setProductId(product.getId());
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
