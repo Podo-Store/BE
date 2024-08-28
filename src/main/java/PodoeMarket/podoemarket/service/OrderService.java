@@ -55,7 +55,7 @@ public class OrderService {
                     }
 
                     // 공연권 제한
-                    if(orderItemDTO.isPerformance() && item.getContractStatus() != 3) {
+                    if(orderItemDTO.isPerformance() && item.isPerformance() && item.getContractStatus() != 3) {
                         throw new RuntimeException("<" + product.getTitle() + "> 공연권은 이미 구매했음");
                     }
                 }
