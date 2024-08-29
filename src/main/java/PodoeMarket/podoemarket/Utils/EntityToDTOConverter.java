@@ -65,7 +65,7 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
+    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL, int contractStatus) {
         try {
             OrderItemDTO itemDTO = new OrderItemDTO();
 
@@ -77,6 +77,7 @@ public class EntityToDTOConverter {
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
+                int buyPerformance = 0; // 구매 불가능(공연권 계약 중, 공연권 판매 중 아님)
 
                 itemDTO.setDelete(false);
                 itemDTO.setWriter(product.getWriter());
@@ -85,10 +86,21 @@ public class EntityToDTOConverter {
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
                 itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
                 itemDTO.setProductId(product.getId());
+
+                if (product.isPerformance()) { // 공연권 판매 중
+                    if (contractStatus == 1) { // 계약 전
+                        buyPerformance = 1; // 계약 필요
+                    } else if(contractStatus == 3) { // 계약 완료 or 공연권 구매 내역 없음
+                        buyPerformance = 2; // 구매 가능
+                    }
+                }
+                
+                itemDTO.setBuyPerformance(buyPerformance);               
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
                 itemDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
+                itemDTO.setBuyPerformance(0);
             }
 
             return itemDTO;

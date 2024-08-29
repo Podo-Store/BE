@@ -280,49 +280,64 @@ public class MypageService {
     }
 
     public List<DateOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
-        final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
+        // 모든 필요한 OrderItemEntity를 한 번에 가져옴
+        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userId, true);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
+        final Map<LocalDate, List<OrderItemDTO>> orderItemsGroupedByDate = new HashMap<>();
 
-        for (OrdersEntity order : orders) {
-            // 각 주문의 주문 항목을 가져옴
-            final List<OrderItemEntity> orderItems = orderItemRepo.findByOrderIdAndScript(order.getId(), true);
+        // 제품별로 공연권 구매 상태를 캐싱할 맵 (Integer로 contractStatus 값을 저장)
+        final Map<ProductEntity, Integer> performanceLogMap = new HashMap<>();
 
-            for (OrderItemEntity orderItem : orderItems) {
-                // 각 주문 항목에 대한 제품 정보 가져옴
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
+        for (OrderItemEntity orderItem : allOrderItems) {
+           ProductEntity product = orderItem.getProduct();
 
-                final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
-            }
-        }
+           // product가 null인 경우를 처리
+           if (product == null) {
+               continue; // product가 null이면 이 항목을 건너뜀
+           }
+
+           int contractStatus = performanceLogMap.computeIfAbsent(product, p -> {
+               List<OrderItemEntity> performanceLog = orderItemRepo.findByPerformanceAndProduct(true, p);
+
+               if (performanceLog.isEmpty() && product.isPerformance()) {
+                   return 3; // 재구매 가능
+               }
+
+               // 가장 최신의 내역을 기반으로 contractStatus 결정
+               return performanceLog.stream()
+                       .max(Comparator.comparing(OrderItemEntity::getCreatedAt)) // 가장 최근 날짜의 OrderItemEntity 선택
+                       .map(OrderItemEntity::getContractStatus)
+                       .orElse(3); // 기본값으로 재구매 가능 설정
+           });
+
+           final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, contractStatus);
+
+           // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+           LocalDate orderDate = orderItem.getOrder().getCreatedAt().toLocalDate(); // localdatetime -> localdate
+           orderItemsGroupedByDate.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+       }
 
         // DateOrderDTO로 변환
-        return OrderItems.entrySet().stream()
+        return orderItemsGroupedByDate.entrySet().stream()
                 .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
     public List<DateOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
-        final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
+        // 각 주문의 주문 항목을 가져옴
+        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndPerformance(userId, true);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
 
-        for (OrdersEntity order : orders) {
-            // 각 주문의 주문 항목을 가져옴
-            final List<OrderItemEntity> orderItems = orderItemRepo.findByOrderIdAndPerformance(order.getId(), true);
+        for (OrderItemEntity orderItem : allOrderItems) {
+            // 각 주문 항목에 대한 제품 정보 가져옴
+            final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, 0);
 
-            for (OrderItemEntity orderItem : orderItems) {
-                // 각 주문 항목에 대한 제품 정보 가져옴
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
-
-                final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
-            }
+            final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+            // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+            OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
         }
 
         // DateOrderDTO로 변환
@@ -330,6 +345,32 @@ public class MypageService {
                 .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
+
+//    public List<DateOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
+//        final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
+//
+//        // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
+//        final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
+//
+//        for (OrdersEntity order : orders) {
+//            // 각 주문의 주문 항목을 가져옴
+//            final List<OrderItemEntity> orderItems = orderItemRepo.findByOrderIdAndPerformance(order.getId(), true);
+//
+//            for (OrderItemEntity orderItem : orderItems) {
+//                // 각 주문 항목에 대한 제품 정보 가져옴
+//                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
+//
+//                final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+//                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+//                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+//            }
+//        }
+//
+//        // DateOrderDTO로 변환
+//        return OrderItems.entrySet().stream()
+//                .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
+//                .collect(Collectors.toList());
+//    }
 
     public OrderItemEntity orderItem(final UUID orderId) {
         if(orderItemRepo.findById(orderId) == null) {
