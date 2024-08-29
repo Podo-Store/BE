@@ -25,6 +25,7 @@ public class OrderItemDTO {
     private int performancePrice;
     private int contractStatus; // 0: 공연권 판매 안함, 1: 공연권 구매, 2: 계약 중, 3: 계약 완료
     private int totalPrice;
+    private int buyPerformance; // 0: 구매 불가, 1: 계약 필요, 2: 구매 가능
 
     private UUID productId;
 }
