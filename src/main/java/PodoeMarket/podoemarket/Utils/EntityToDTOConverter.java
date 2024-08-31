@@ -77,7 +77,7 @@ public class EntityToDTOConverter {
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
-                int buyPerformance = 0; // 구매 불가능(공연권 계약 중, 공연권 판매 중 아님)
+                int buyPerformance = 0; // 구매 불가능(공연권 판매 중 아님)
 
                 itemDTO.setDelete(false);
                 itemDTO.setWriter(product.getWriter());
@@ -90,8 +90,10 @@ public class EntityToDTOConverter {
                 if (product.isPerformance()) { // 공연권 판매 중
                     if (contractStatus == 1) { // 계약 전
                         buyPerformance = 1; // 계약 필요
+                    } else if(contractStatus == 2) { // 계약 중
+                        buyPerformance = 2; // 계약 중 (구매 불가)
                     } else if(contractStatus == 3) { // 계약 완료 or 공연권 구매 내역 없음
-                        buyPerformance = 2; // 구매 가능
+                        buyPerformance = 3; // 구매 가능
                     }
                 }
                 
