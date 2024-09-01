@@ -346,32 +346,6 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-//    public List<DateOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
-//        final List<OrdersEntity> orders = orderRepo.findAllByUserId(userId);
-//
-//        // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-//        final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
-//
-//        for (OrdersEntity order : orders) {
-//            // 각 주문의 주문 항목을 가져옴
-//            final List<OrderItemEntity> orderItems = orderItemRepo.findByOrderIdAndPerformance(order.getId(), true);
-//
-//            for (OrderItemEntity orderItem : orderItems) {
-//                // 각 주문 항목에 대한 제품 정보 가져옴
-//                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
-//
-//                final LocalDate orderDate = order.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-//                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-//                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
-//            }
-//        }
-//
-//        // DateOrderDTO로 변환
-//        return OrderItems.entrySet().stream()
-//                .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
-//                .collect(Collectors.toList());
-//    }
-
     public OrderItemEntity orderItem(final UUID orderId) {
         if(orderItemRepo.findById(orderId) == null) {
             throw new RuntimeException("일치하는 구매 목록 없음");
