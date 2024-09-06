@@ -12,6 +12,7 @@ import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -46,7 +47,6 @@ import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToProduc
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
-    private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final AmazonS3 amazonS3;
 
@@ -58,9 +58,6 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.folder.folderName3}")
     private String descriptionBucketFolder;
-
-    @Value("${logo.path}")
-    private String logoPath;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -370,7 +367,6 @@ public class MypageService {
 
         try (InputStream inputStream = s3Object.getObjectContent();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
             addWatermark(inputStream, outputStream, email);
 
             return outputStream.toByteArray();
@@ -385,7 +381,16 @@ public class MypageService {
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
             Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
-            Image image = new Image(ImageDataFactory.create(logoPath));
+
+            InputStream logoInputStream = getClass().getClassLoader().getResourceAsStream("logo.png");
+            if (logoInputStream == null) {
+                throw new FileNotFoundException("Resource not found: logo.png");
+            }
+
+            // ImageDataFactory를 사용하여 이미지 데이터를 생성
+            ImageData imageData = ImageDataFactory.create(logoInputStream.readAllBytes());
+            Image image = new Image(imageData);
+
             image.setOpacity(0.3f);
 
             for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
