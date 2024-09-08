@@ -152,7 +152,7 @@ public class UserController {
     }
 
     @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
+    public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
         try{
             log.info("Start mailauthCheck");
 
