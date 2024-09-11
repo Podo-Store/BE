@@ -10,7 +10,7 @@ public class ValidCheck {
     // 유효성 검사
     public static boolean isValidUser(UserDTO userDTO){ // 아이디, 이메일, 비밀번호, 전화번호
         String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
-        String regx_pwd = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+        String regx_pwd = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
         String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
         String regx_nick = "^[가-힣a-zA-Z0-9]{3,8}$"; // 한글, 영어, 숫자, (-8)
 
@@ -51,7 +51,7 @@ public class ValidCheck {
     }
 
     public static boolean isValidPw(String password) {
-        String regx_pwd = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+        String regx_pwd = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
 
         if(password == null || password.isBlank()){ //password가 null이거나 빈 값일때
             log.warn("password is null or empty");
