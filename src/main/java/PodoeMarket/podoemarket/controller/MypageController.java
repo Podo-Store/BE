@@ -114,36 +114,34 @@ public class MypageController {
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
         try{
-            if(!ValidCheck.isValidPw(dto.getPassword())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("비밀번호 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            } else if(!ValidCheck.isValidNickname(dto.getNickname())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("닉네임 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(!dto.getPassword().equals(dto.getConfirmPassword())){
+            if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword())){
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("비밀번호가 일치하지 않음")
                         .build();
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            UserEntity user = UserEntity.builder()
-                    .userId(dto.getUserId())
-                    .password(pwdEncoder.encode(dto.getPassword()))
-                    .nickname(dto.getNickname())
-                    .email(dto.getEmail())
-                    .build();
+            if(!dto.getPassword().isBlank()) {
+                if(!ValidCheck.isValidPw(dto.getPassword())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("비밀번호 유효성 검사 실패")
+                            .build();
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+                userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
+            }
 
-            mypageService.userUpdate(userInfo.getId(), user);
-            mypageService.updateWriter(userInfo.getId(), dto.getNickname());
+            if(!dto.getNickname().isBlank()) {
+                if(!ValidCheck.isValidNickname(dto.getNickname())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("닉네임 유효성 검사 실패")
+                            .build();
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+                userInfo.setNickname(dto.getNickname());
+            }
+
+            mypageService.updateUser(userInfo);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
