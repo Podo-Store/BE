@@ -2,11 +2,9 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
@@ -62,29 +60,22 @@ public class MypageService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    public void userUpdate(final UUID id, final UserEntity userEntity) {
-        final String password = userEntity.getPassword();
-        final String nickname = userEntity.getNickname();
+    @Transactional
+    public void updateUser(final UserEntity userEntity) {
+        final UserEntity user = userRepo.findById(userEntity.getId());
 
-        final UserEntity user = userRepo.findById(id);
+        if(userEntity.getPassword() != null && !userEntity.getPassword().isBlank())
+            user.setPassword(userEntity.getPassword());
 
-        // 비밀번호
-        if(password == null) {
-            throw new RuntimeException("password가 올바르지 않음");        }
-
-        // 닉네임
-        if(nickname == null || nickname.isBlank()) {
-            throw new RuntimeException("nickname이 올바르지 않음");
-        }
-
-        if(!user.getNickname().equals(nickname)){
-            if(userRepo.existsByNickname(nickname)){
-                throw new RuntimeException("이미 존재하는 닉네임");
+        if(!userEntity.getNickname().isEmpty()){
+            if(!userEntity.getNickname().equals(user.getNickname())) {
+                if(userRepo.existsByNickname(userEntity.getNickname())){
+                    throw new RuntimeException("이미 존재하는 닉네임");
+                }
             }
+            user.setNickname(userEntity.getNickname());
+            updateWriter(userEntity.getId(), userEntity.getNickname());
         }
-
-        user.setPassword(password);
-        user.setNickname(nickname);
 
         userRepo.save(user);
     }
