@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class MypageController {
     private final UserService userService;
     private final ProductService productService;
     private final MailSendService mailService;
+    private final TokenProvider tokenProvider;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
@@ -141,9 +143,19 @@ public class MypageController {
                 userInfo.setNickname(dto.getNickname());
             }
 
-            mypageService.updateUser(userInfo);
+            UserEntity user = mypageService.updateUser(userInfo);
 
-            return ResponseEntity.ok().body(true);
+            final UserDTO resUserDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .userId(user.getUserId())
+                    .email(user.getEmail())
+                    .password(user.getPassword())
+                    .nickname(user.getNickname())
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .refreshToken(tokenProvider.createRefreshToken(user))
+                    .build();
+
+            return ResponseEntity.ok().body(resUserDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

@@ -61,7 +61,7 @@ public class MypageService {
     private String bucketURL;
 
     @Transactional
-    public void updateUser(final UserEntity userEntity) {
+    public UserEntity updateUser(final UserEntity userEntity) {
         final UserEntity user = userRepo.findById(userEntity.getId());
 
         if(userEntity.getPassword() != null && !userEntity.getPassword().isBlank())
@@ -77,7 +77,7 @@ public class MypageService {
             updateWriter(userEntity.getId(), userEntity.getNickname());
         }
 
-        userRepo.save(user);
+        return userRepo.save(user);
     }
 
     public Boolean checkUser(final UUID id, final String password, final PasswordEncoder encoder) {
