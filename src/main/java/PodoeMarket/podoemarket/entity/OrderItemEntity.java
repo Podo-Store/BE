@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +10,6 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Entity
 @Table(name = "orderItem")

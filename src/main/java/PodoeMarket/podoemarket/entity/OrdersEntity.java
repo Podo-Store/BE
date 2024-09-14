@@ -49,7 +49,11 @@ public class OrdersEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // orders : orderItem = 1 : N
+    // order : orderItem = 1 : N
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItem = new ArrayList<>();
+
+    // order : refund = 1 : N
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefundEntity> refund = new ArrayList<>();
 }

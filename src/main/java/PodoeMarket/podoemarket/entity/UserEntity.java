@@ -63,4 +63,8 @@ public class UserEntity {
     // user : orderItem = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItem = new ArrayList<>();
+
+    // user : refund = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefundEntity> refund = new ArrayList<>();
 }
