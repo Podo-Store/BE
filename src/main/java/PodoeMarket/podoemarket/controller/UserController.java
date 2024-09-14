@@ -39,16 +39,13 @@ public class UserController {
     private final TokenProvider tokenProvider;
     private final MailSendService mailService;
     private final RedisUtil redisUtil;
-    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
-
     private final JwtProperties jwtProperties;
+    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
         try {
             if(dto.isCheck()) { // True : 회원가입, False : 비밀번호 찾기
-                log.info("check userId");
-
                 if(userService.checkUserId(dto.getUserId())) {
                     ResponseDTO resDTO = ResponseDTO.builder()
                             .error("이미 존재하는 아이디")
@@ -59,8 +56,6 @@ public class UserController {
 
                 return ResponseEntity.ok().body(true);
             } else {
-                log.info("check userId");
-
                 if(!userService.checkUserId(dto.getUserId())) {
                     ResponseDTO resDTO = ResponseDTO.builder()
                             .error("존재하지 않는 아이디")
@@ -98,8 +93,6 @@ public class UserController {
     @PostMapping("/checkNickname")
     public ResponseEntity<?> duplicateNickname(@RequestBody UserDTO dto){
         try {
-            log.info("check nickname duplication");
-
             if(userService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
@@ -154,8 +147,6 @@ public class UserController {
     @PostMapping("/mailauthCheck")
     public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
         try{
-            log.info("Start mailauthCheck");
-
             boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
 
             if(Checked)
@@ -171,8 +162,6 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO dto) {
         try{
-            log.info("Start signup");
-
             // 유저 유효성 검사
             if(!ValidCheck.isValidUser(dto)){
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -212,25 +201,17 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO dto) {
         try{
-            log.info("Start signin");
-
             UserEntity user = userService.getByCredentials(dto.getUserId(), dto.getPassword(), pwdEncoder);
-//            log.info("user: {}", user);
 
             if(user.getId() != null) {
-                final String accessToken = tokenProvider.createAccessToken(user);
-                final String refreshToken = tokenProvider.createRefreshToken(user);
-                log.info("accessToken value: {}", accessToken);
-                log.info("finish creating token");
-
                 final UserDTO resUserDTO = UserDTO.builder()
                         .id(user.getId())
                         .userId(user.getUserId())
                         .email(user.getEmail())
                         .password(user.getPassword())
                         .nickname(user.getNickname())
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
+                        .accessToken(tokenProvider.createAccessToken(user))
+                        .refreshToken(tokenProvider.createRefreshToken(user))
                         .build();
 
                 return ResponseEntity.ok().body(resUserDTO);
@@ -251,8 +232,6 @@ public class UserController {
     @PostMapping("/findUserId")
     public ResponseEntity<?> findUserId(@RequestBody UserDTO dto) {
         try{
-            log.info("Start find userId");
-
             // 인증번호 확인
             if (!mailService.CheckAuthNum(dto.getEmail(), dto.getAuthNum())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -305,17 +284,14 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            final String accessToken = tokenProvider.createAccessToken(user);
-            final String refreshToken = tokenProvider.createRefreshToken(user);
-
             final UserDTO resUserDTO = UserDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
                     .email(user.getEmail())
                     .password(user.getPassword())
                     .nickname(user.getNickname())
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .refreshToken(tokenProvider.createRefreshToken(user))
                     .build();
 
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
@@ -369,15 +345,13 @@ public class UserController {
                     .getBody();
 
             UUID id = UUID.fromString(claims.getSubject());
-            log.info("id : {}", id);
 
             UserEntity user = userService.getById(id);
-            String accessToken = tokenProvider.createAccessToken(user);
             final UserDTO resUserDTO = UserDTO.builder()
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
                     .email(user.getEmail())
-                    .accessToken(accessToken)
+                    .accessToken(tokenProvider.createAccessToken(user))
                     .build();
 
             return ResponseEntity.ok().body(resUserDTO);
@@ -400,14 +374,12 @@ public class UserController {
                     .getBody();
 
             UUID id = UUID.fromString(claims.getSubject());
-            log.info("id : {}", id);
 
             UserEntity user = userService.getById(id);
-            String refreshToken = tokenProvider.createRefreshToken(user);
             final UserDTO resUserDTO = UserDTO.builder()
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
-                    .refreshToken(refreshToken)
+                    .refreshToken(tokenProvider.createRefreshToken(user))
                     .email(user.getEmail())
                     .build();
 
