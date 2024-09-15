@@ -32,6 +32,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -274,9 +275,6 @@ public class MypageService {
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderItemDTO>> orderItemsGroupedByDate = new HashMap<>();
 
-        // 제품별로 공연권 구매 상태를 캐싱할 맵 (Integer로 contractStatus 값을 저장)
-        final Map<ProductEntity, Integer> performanceLogMap = new HashMap<>();
-
         for (OrderItemEntity orderItem : allOrderItems) {
            ProductEntity product = orderItem.getProduct();
 
@@ -340,7 +338,10 @@ public class MypageService {
         }
     }
 
-    public byte[] downloadFile(final String fileKey, final String email) {
+    public byte[] downloadFile(final String fileKey, final String email, final LocalDateTime time) {
+        if(LocalDateTime.now().isAfter(time.plusYears(1)))
+            throw new RuntimeException("구매 후 1년이 경과되어 다운로드 불가");
+
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 

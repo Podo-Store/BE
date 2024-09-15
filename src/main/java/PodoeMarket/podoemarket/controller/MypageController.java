@@ -363,7 +363,7 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());
+            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail(), item.getCreatedAt());
 
             String encodedFilename = URLEncoder.encode(item.getProduct().getTitle(), "UTF-8");
 
