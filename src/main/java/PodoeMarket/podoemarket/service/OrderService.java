@@ -32,56 +32,46 @@ public class OrderService {
 
             final ProductEntity product = productRepo.findById(orderItemDTO.getProductId());
 
-            if(product == null) {
+            if(product == null)
                 throw new RuntimeException("물건이 존재하지 않음");
-            }
 
-            if(user.getId().equals(product.getUser().getId())) {
+            if(user.getId().equals(product.getUser().getId()))
                 throw new RuntimeException("본인 작품 구매 불가");
-            }
 
             // 대본권, 공연권 1일 때만 구매 가능
-            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && orderItemDTO.isPerformance())) {
+            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && (orderItemDTO.getContractStatus() > 0)))
                 throw new RuntimeException("구매 조건 확인");
-            }
 
             if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
                 final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
 
                 for(OrderItemEntity item : items) {
                     // 대본권 제한
-                    if(orderItemDTO.isScript() && item.isScript()) {
+                    if(orderItemDTO.isScript() && item.isScript())
                         throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
-                    }
-
-                    // 공연권 제한
-                    if(orderItemDTO.isPerformance() && item.isPerformance() && item.getContractStatus() != 3) {
-                        throw new RuntimeException("<" + product.getTitle() + "> 공연권은 이미 구매했음");
-                    }
-                }
-            } else {
-                if(!orderItemDTO.isScript() && orderItemDTO.isPerformance()) {
-                    throw new RuntimeException("대본권을 구매해야 함");
                 }
             }
+            else {
+                if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
+                    throw new RuntimeException("대본권을 구매해야 함");
+            }
+            log.info("수량: {}", orderItemDTO.getPerformanceAmount());
 
             final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
-            final int performancePrice = orderItemDTO.isPerformance() ? product.getPerformancePrice() : 0;
+            final int performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
             final int totalPrice = scriptPrice + performancePrice;
 
             orderItem.setProduct(product);
             orderItem.setScript(orderItemDTO.isScript());
             orderItem.setScriptPrice(scriptPrice);
-            orderItem.setPerformance(orderItemDTO.isPerformance());
-
-            if(orderItemDTO.isPerformance()) {
-                orderItem.setContractStatus(1);
-            }
-
+            orderItem.setPerformanceAmount(orderItemDTO.getPerformanceAmount());
             orderItem.setPerformancePrice(performancePrice);
             orderItem.setTotalPrice(totalPrice);
             orderItem.setTitle(product.getTitle());
             orderItem.setUser(user);
+
+//            if(orderItemDTO.getPerformanceAmount()) // 공연권 구매 개수에 따라 공연 날짜 입력 테이블 생성
+//                orderItem.setContractStatus(1);
 
             return orderItem;
         }).toList();

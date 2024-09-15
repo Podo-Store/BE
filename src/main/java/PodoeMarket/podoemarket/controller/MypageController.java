@@ -254,35 +254,35 @@ public class MypageController {
     }
 
 
-    @GetMapping("/orderScripts")
-    public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
-        try {
-            OrderListPageDTO result = OrderListPageDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
-                    .build();
+//    @GetMapping("/orderScripts")
+//    public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
+//        try {
+//            OrderListPageDTO result = OrderListPageDTO.builder()
+//                    .nickname(userInfo.getNickname())
+//                    .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
+//                    .build();
+//
+//            return ResponseEntity.ok().body(result);
+//        } catch (Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+//    }
 
-            return ResponseEntity.ok().body(result);
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/orderPerformances")
-    public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
-        try {
-            OrderListPageDTO result = OrderListPageDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
-                    .build();
-
-            return ResponseEntity.ok().body(result);
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
+//    @GetMapping("/orderPerformances")
+//    public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
+//        try {
+//            OrderListPageDTO result = OrderListPageDTO.builder()
+//                    .nickname(userInfo.getNickname())
+//                    .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
+//                    .build();
+//
+//            return ResponseEntity.ok().body(result);
+//        } catch (Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+//    }
 
     @PostMapping("/mailSend")
     public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderItemDTO dto) {
@@ -321,35 +321,35 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/contract")
-    public ResponseEntity<?> readContract(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
-        try {
-            final OrderItemEntity orderItem = mypageService.orderItem(orderId);
-
-            if (!(orderItem.getUser().getId().equals(userInfo.getId()))) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("권한이 없습니다.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            final int contractStatus = orderItem.getContractStatus();
-
-            if (contractStatus != 3) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("공연권 계약이 체결되지 않았습니다.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            return ResponseEntity.ok().body(orderItem.getContractPath());
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
+//    @GetMapping("/contract")
+//    public ResponseEntity<?> readContract(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
+//        try {
+//            final OrderItemEntity orderItem = mypageService.orderItem(orderId);
+//
+//            if (!(orderItem.getUser().getId().equals(userInfo.getId()))) {
+//                ResponseDTO resDTO = ResponseDTO.builder()
+//                        .error("권한이 없습니다.")
+//                        .build();
+//
+//                return ResponseEntity.badRequest().body(resDTO);
+//            }
+//
+//            final int contractStatus = orderItem.getContractStatus();
+//
+//            if (contractStatus != 3) {
+//                ResponseDTO resDTO = ResponseDTO.builder()
+//                        .error("공연권 계약이 체결되지 않았습니다.")
+//                        .build();
+//
+//                return ResponseEntity.badRequest().body(resDTO);
+//            }
+//
+//            return ResponseEntity.ok().body(orderItem.getContractPath());
+//        } catch (Exception e) {
+//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+//            return ResponseEntity.badRequest().body(resDTO);
+//        }
+//    }
 
     @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {

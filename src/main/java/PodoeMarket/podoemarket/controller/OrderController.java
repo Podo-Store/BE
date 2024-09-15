@@ -52,7 +52,7 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.isPerformance() ? orderProduct.getPerformancePrice() : 0);
+            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0);
             final String encodedScriptImage = orderProduct.getImagePath() != null ? bucketURL + URLEncoder.encode(orderProduct.getImagePath(), "UTF-8") : "";
 
             OrderItemDTO item = OrderItemDTO.builder()
@@ -62,8 +62,8 @@ public class OrderController {
                     .playType(orderProduct.getPlayType())
                     .script(dto.isScript())
                     .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
-                    .performance(dto.isPerformance())
-                    .performancePrice(dto.isPerformance() ? orderProduct.getPerformancePrice() : 0)
+                    .performanceAmount(dto.getPerformanceAmount())
+                    .performancePrice(dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0)
                     .totalPrice(totalPrice)
                     .build();
 

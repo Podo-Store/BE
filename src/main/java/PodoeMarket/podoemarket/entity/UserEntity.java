@@ -34,7 +34,7 @@ public class UserEntity {
     private String nickname;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     private boolean auth;
 
     @Column(nullable = false, updatable = false)

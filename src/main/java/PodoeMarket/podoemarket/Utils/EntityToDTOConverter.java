@@ -71,37 +71,33 @@ public class EntityToDTOConverter {
             itemDTO.setId(orderItem.getId());
             itemDTO.setTitle(orderItem.getTitle());
             itemDTO.setScript(orderItem.isScript());
-            itemDTO.setPerformance(orderItem.isPerformance());
+            itemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
             itemDTO.setContractStatus(orderItem.getContractStatus());
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
-                int buyPerformance = 0; // 구매 불가능(공연권 판매 중 아님)
 
                 itemDTO.setDelete(false);
                 itemDTO.setWriter(product.getWriter());
                 itemDTO.setImagePath(encodedScriptImage);
                 itemDTO.setChecked(product.isChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
-                itemDTO.setPerformancePrice(orderItem.isPerformance() ? product.getPerformancePrice() : 0);
+                itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItem.getPerformanceAmount() : 0);
                 itemDTO.setProductId(product.getId());
 
                 if (product.isPerformance()) { // 공연권 판매 중
-                    if (contractStatus == 1) { // 계약 전
-                        buyPerformance = 1; // 계약 필요
-                    } else if(contractStatus == 2) { // 계약 중
-                        buyPerformance = 2; // 계약 중 (구매 불가)
-                    } else if(contractStatus == 3) { // 계약 완료 or 공연권 구매 내역 없음
-                        buyPerformance = 3; // 구매 가능
-                    }
+//                    if (contractStatus == 1) { // 계약 전
+//                        buyPerformance = 1; // 계약 필요
+//                    } else if(contractStatus == 2) { // 계약 중
+//                        buyPerformance = 2; // 계약 중 (구매 불가)
+//                    } else if(contractStatus == 3) { // 계약 완료 or 공연권 구매 내역 없음
+//                        buyPerformance = 3; // 구매 가능
+//                    }
                 }
-                
-                itemDTO.setBuyPerformance(buyPerformance);               
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
-                itemDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
-                itemDTO.setBuyPerformance(0);
+                itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItem.getPerformanceAmount() : 0);
             }
 
             return itemDTO;
@@ -117,7 +113,7 @@ public class EntityToDTOConverter {
         completeDTO.setOrderNum(ordersEntity.getId());
         completeDTO.setTitle(orderItem.getTitle());
         completeDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
-        completeDTO.setPerformancePrice(orderItem.isPerformance() ? orderItem.getPerformancePrice() : 0);
+        completeDTO.setPerformancePrice(orderItem.getPerformancePrice());
         completeDTO.setTotalPrice(ordersEntity.getTotalPrice());
 
         return completeDTO;
