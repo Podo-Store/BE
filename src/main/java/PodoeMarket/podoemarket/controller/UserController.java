@@ -109,9 +109,9 @@ public class UserController {
     }
 
     @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO emailDTO){
+    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO dto){
         try {
-            if(!ValidCheck.isValidEmail(emailDTO.getEmail())) {
+            if(!ValidCheck.isValidEmail(dto.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("이메일 유효성 검사 실패")
                         .build();
@@ -119,25 +119,15 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if(emailDTO.isCheck()) { // 회원 가입 시, 이메일 중복 확인
-                if(userService.checkEmail(emailDTO.getEmail())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("이메일 중복")
-                            .build();
+            if(userService.checkEmail(dto.getEmail())) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 중복")
+                        .build();
 
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-            } else { // 아이디 찾기 - check 값이 0
-                if(!userService.checkEmail(emailDTO.getEmail())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("사용자 정보 없음")
-                            .build();
-
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
+                return ResponseEntity.badRequest().body(resDTO);
             }
 
-            return ResponseEntity.ok().body(mailService.joinEmail(emailDTO.getEmail()));
+            return ResponseEntity.ok().body(mailService.joinEmail(dto.getEmail()));
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -145,9 +135,9 @@ public class UserController {
     }
 
     @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckDTO emailCheckDTO){
+    public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckDTO dto){
         try{
-            boolean Checked = mailService.CheckAuthNum(emailCheckDTO.getEmail(),emailCheckDTO.getAuthNum());
+            boolean Checked = mailService.CheckAuthNum(dto.getEmail(),dto.getAuthNum());
 
             if(Checked)
                 return ResponseEntity.ok().body(true);
@@ -229,6 +219,33 @@ public class UserController {
         }
     }
 
+    @PostMapping("/find/mailSend")
+    public ResponseEntity<?> findMailSend(@RequestBody EmailRequestDTO dto) {
+        try {
+            if(dto.isFlag()) { // 비밀번호 찾기 - check 값이 true
+                if (userService.getByUserId(dto.getUserId()) != userService.getByUserEmail(dto.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("아이디와 이메일의 정보가 일치하지 않습니다.")
+                            .build();
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+            } else { // 아이디 찾기 - check 값이 false
+                if(!userService.checkEmail(dto.getEmail())) {
+                    ResponseDTO resDTO = ResponseDTO.builder()
+                            .error("사용자 정보 없음")
+                            .build();
+
+                    return ResponseEntity.badRequest().body(resDTO);
+                }
+            }
+
+            return ResponseEntity.ok().body(mailService.joinEmail(dto.getEmail()));
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/findUserId")
     public ResponseEntity<?> findUserId(@RequestBody UserDTO dto) {
         try{
@@ -280,7 +297,6 @@ public class UserController {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("아이디와 이메일의 정보가 일치하지 않습니다.")
                         .build();
-
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
