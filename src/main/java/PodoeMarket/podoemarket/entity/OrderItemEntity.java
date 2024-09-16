@@ -9,6 +9,8 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -77,4 +79,8 @@ public class OrderItemEntity {
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    // orderItem : performanceDate = 1 : N
+    @OneToMany(mappedBy = "orderItem")
+    private List<PerformanceDateEntity> performanceDate = new ArrayList<>();
 }
