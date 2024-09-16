@@ -17,5 +17,6 @@ public class OrderCompleteDTO {
     private String title;
     private int scriptPrice;
     private int performancePrice;
+    private int performanceAmount;
     private int totalPrice;
 }

@@ -108,12 +108,12 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public UserEntity update(UUID id, final UserEntity userEntity) {
+    public void update(UUID id, final UserEntity userEntity) {
         final UserEntity user = userRepo.findById(id);
 
         user.setPassword(userEntity.getPassword());
 
-        return userRepo.save(user);
+        userRepo.save(user);
     }
 
     public UserEntity getByUserId(final String userId) {

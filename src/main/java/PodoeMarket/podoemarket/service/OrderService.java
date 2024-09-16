@@ -3,10 +3,8 @@ package PodoeMarket.podoemarket.service;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -23,6 +21,7 @@ public class OrderService {
     private final ProductRepository productRepo;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
+    private final ApplicantRepository applicantRepo;
 
     public OrdersEntity orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
@@ -55,7 +54,6 @@ public class OrderService {
                 if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
                     throw new RuntimeException("대본권을 구매해야 함");
             }
-            log.info("수량: {}", orderItemDTO.getPerformanceAmount());
 
             final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
             final int performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
@@ -70,9 +68,6 @@ public class OrderService {
             orderItem.setTitle(product.getTitle());
             orderItem.setUser(user);
 
-//            if(orderItemDTO.getPerformanceAmount()) // 공연권 구매 개수에 따라 공연 날짜 입력 테이블 생성
-//                orderItem.setContractStatus(1);
-
             return orderItem;
         }).toList();
 
@@ -86,5 +81,34 @@ public class OrderService {
         List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(ordersEntity.getId());
 
         return orderItems.stream().map(orderItem -> EntityToDTOConverter.convertToOrderCompleteDTO(ordersEntity, orderItem)).toList();
+    }
+
+    public boolean buyPerformance(final Long id) {
+        List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(id);
+
+        for(OrderItemEntity orderItem : orderItems) {
+            if(orderItem.getPerformanceAmount() > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    public void createApplicant(final ApplicantEntity applicant) {
+        final String number_regex = "[0-9]+";
+
+        if(applicant.getName().isBlank()) {
+            throw new RuntimeException("이름에 공백은 불가합니다.");
+        }
+
+        if(applicant.getPhoneNumber().length() > 11 || applicant.getPhoneNumber().isBlank() || !applicant.getPhoneNumber().matches(number_regex)) {
+            throw new RuntimeException("전화번호가 올바르지 않습니다.");
+        }
+
+        if(applicant.getAddress().isBlank()) {
+            throw new RuntimeException("주소가 올바르지 않습니다.");
+        }
+
+        applicantRepo.save(applicant);
     }
 }

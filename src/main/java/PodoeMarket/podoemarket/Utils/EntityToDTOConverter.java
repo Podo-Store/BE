@@ -102,8 +102,9 @@ public class EntityToDTOConverter {
         completeDTO.setOrderDate(ordersEntity.getCreatedAt());
         completeDTO.setOrderNum(ordersEntity.getId());
         completeDTO.setTitle(orderItem.getTitle());
-        completeDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
+        completeDTO.setScriptPrice(orderItem.getScriptPrice());
         completeDTO.setPerformancePrice(orderItem.getPerformancePrice());
+        completeDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
         completeDTO.setTotalPrice(ordersEntity.getTotalPrice());
 
         return completeDTO;

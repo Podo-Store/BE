@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDTO {
-    ApplicantDTO applicant;
-    List<OrderItemDTO> orderItem;
-    private int totalPrice;
+public class ApplicantDTO {
+    private String name;
+    private String phoneNumber;
+    private String address;
 }

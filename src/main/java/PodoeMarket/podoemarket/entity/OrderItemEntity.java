@@ -50,15 +50,6 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column
-    private String name;
-
-    @Column
-    private int phoneNumber;
-
-    @Column
-    private String address;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -92,4 +83,8 @@ public class OrderItemEntity {
     // orderItem : performanceDate = 1 : N
     @OneToMany(mappedBy = "orderItem")
     private List<PerformanceDateEntity> performanceDate = new ArrayList<>();
+
+    // orderItem : applicant = 1 : 1
+    @OneToOne(mappedBy = "orderItem")
+    private ApplicantEntity applicant;
 }
