@@ -67,8 +67,4 @@ public class UserEntity {
     // user : refund = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefundEntity> refund = new ArrayList<>();
-
-    // user : applicant = 1 : 1
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ApplicantEntity applicant;
 }

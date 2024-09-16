@@ -50,6 +50,15 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private String title;
 
+    @Column
+    private String name;
+
+    @Column
+    private int phoneNumber;
+
+    @Column
+    private String address;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

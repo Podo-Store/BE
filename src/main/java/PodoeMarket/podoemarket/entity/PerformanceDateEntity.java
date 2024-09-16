@@ -23,11 +23,6 @@ public class PerformanceDateEntity {
     @Column
     private LocalDateTime date;
 
-    // applicant : performanceDate = 1 : N
-    @ManyToOne(targetEntity = ApplicantEntity.class)
-    @JoinColumn(name  = "applicant_id", nullable = false)
-    private ApplicantEntity applicant;
-
     // orderItem : performanceDate = 1 : N
     @ManyToOne(targetEntity = OrderItemEntity.class)
     @JoinColumn(name  = "orderItem_id", nullable = false)
