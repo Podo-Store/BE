@@ -24,7 +24,6 @@ public class ProductDTO {
     private int performancePrice;
     private String descriptionPath;
     private int playType;
-    private byte[] preview;
     private boolean checked;
     private LocalDateTime date;
 

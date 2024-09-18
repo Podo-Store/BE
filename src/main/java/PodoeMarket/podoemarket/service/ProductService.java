@@ -64,38 +64,9 @@ public class ProductService {
         return false;
     }
 
-    public byte[] scriptPreview(ProductEntity product) {
-        S3Object s3Object = amazonS3.getObject("podobucket", product.getFilePath());
-
-        try (InputStream src = s3Object.getObjectContent();
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
-            PdfDocument pdfDoc = new PdfDocument(new PdfReader(src));
-            PdfDocument newPdf = new PdfDocument(new PdfWriter(outputStream));
-
-            int totalPages = pdfDoc.getNumberOfPages();
-
-            if (product.getPlayType() == 1) { // 장편극
-                for(int page = 1; page <= Math.min(3, totalPages); page ++) {
-                    newPdf.addPage(pdfDoc.getPage(page).copyTo(newPdf));
-                }
-            } else if (product.getPlayType() == 2) { // 단편극
-                if (totalPages >= 1)
-                    newPdf.addPage(pdfDoc.getPage(1).copyTo(newPdf));
-            }
-
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("미리보기 오류 발생");
-        }
-    }
-
     public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
         final ProductEntity script = product(productId);
-        final ProductDTO productDTO = EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
-        productDTO.setPreview(scriptPreview(script));
 
-        return productDTO;
+        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
     }
 }
