@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MypageService;

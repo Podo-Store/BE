@@ -1,9 +1,14 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.DateOrderDTO;
+import PodoeMarket.podoemarket.dto.response.DateProductDTO;
+import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.response.ProductListDTO;
+import PodoeMarket.podoemarket.entity.ApplicantEntity;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import PodoeMarket.podoemarket.repository.UserRepository;
@@ -47,6 +52,7 @@ public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
+    private final ApplicantRepository applicantRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -320,12 +326,11 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public OrderItemEntity orderItem(final UUID orderId) {
-        if(orderItemRepo.findById(orderId) == null) {
+    public OrderItemEntity getOrderItem(final UUID orderItemId) {
+        if(orderItemRepo.findById(orderItemId) == null)
             throw new RuntimeException("일치하는 구매 목록 없음");
-        }
 
-        return orderItemRepo.findById(orderId);
+        return orderItemRepo.findById(orderItemId);
     }
 
     public void contractStatusUpdate(final UUID id) {
@@ -410,5 +415,12 @@ public class MypageService {
 
         // DB 계정 삭제
         userRepo.delete(userEntity);
+    }
+
+    public ApplicantEntity getApplicant(final UUID orderItemId) {
+        if(applicantRepo.findByOrderItemId(orderItemId) == null)
+            throw new RuntimeException("일치하는 구매 목록 없음");
+
+        return applicantRepo.findByOrderItemId(orderItemId);
     }
 }

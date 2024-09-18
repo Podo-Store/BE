@@ -1,9 +1,9 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
+import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.dto.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ApplicantEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;

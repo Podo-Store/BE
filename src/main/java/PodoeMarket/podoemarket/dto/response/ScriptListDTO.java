@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class ResponseDTO <T> {
-    private String error;
-    private List<T> data;
+public class ScriptListDTO {
+    private List<ProductListDTO> longPlay;
+    private List<ProductListDTO> shortPlay;
 }

@@ -1,7 +1,7 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
+import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.ApplicantRepository;
@@ -98,15 +98,15 @@ public class OrderService {
         final String number_regex = "[0-9]+";
 
         if(applicant.getName().isBlank()) {
-            throw new RuntimeException("이름에 공백은 불가합니다.");
+            throw new RuntimeException("이름에 공백 불가");
         }
 
         if(applicant.getPhoneNumber().length() > 11 || applicant.getPhoneNumber().isBlank() || !applicant.getPhoneNumber().matches(number_regex)) {
-            throw new RuntimeException("전화번호가 올바르지 않습니다.");
+            throw new RuntimeException("전화번호가 올바르지 않음");
         }
 
         if(applicant.getAddress().isBlank()) {
-            throw new RuntimeException("주소가 올바르지 않습니다.");
+            throw new RuntimeException("주소가 올바르지 않음");
         }
 
         applicantRepo.save(applicant);

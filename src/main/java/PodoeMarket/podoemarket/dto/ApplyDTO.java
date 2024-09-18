@@ -5,18 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCompleteDTO {
-    private LocalDateTime orderDate;
-    private Long orderNum;
+public class ApplyDTO {
+    private String filePath;
     private String title;
-    private int scriptPrice;
-    private int performancePrice;
+    private String writer;
     private int performanceAmount;
-    private int totalPrice;
+    private ApplicantDTO applicant;
+    private PerformanceDateDTO performanceDate;
 }

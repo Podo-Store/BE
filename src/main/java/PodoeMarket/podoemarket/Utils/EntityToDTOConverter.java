@@ -1,6 +1,9 @@
 package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
+import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,5 +111,18 @@ public class EntityToDTOConverter {
         completeDTO.setTotalPrice(ordersEntity.getTotalPrice());
 
         return completeDTO;
+    }
+
+    public static ApplyDTO convertToApplyDTO(OrderItemEntity orderItemEntity, ApplicantEntity applicantEntity) {
+      ApplyDTO applyDTO = new ApplyDTO();
+
+      applyDTO.setFilePath(orderItemEntity.getProduct().getFilePath());
+      applyDTO.setTitle(orderItemEntity.getTitle());
+      applyDTO.setWriter(orderItemEntity.getProduct().getWriter());
+//      applyDTO.getPerformanceAmount(orderItemEntity.getPerformanceAmount());
+//      applyDTO.getApplicant(applicantEntity);
+//      applyDTO.getPerformanceDate(orderItemEntity.getPerformanceDate());
+
+        return applyDTO;
     }
 }
