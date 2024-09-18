@@ -1,7 +1,9 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.ApplyDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListPageDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
@@ -326,15 +328,14 @@ public class MypageController {
     }
 
     @GetMapping("/apply")
-    public ResponseEntity<?> applyPerformance(@RequestParam("id") UUID orderItemId, ApplyDTO dto) {
+    public ResponseEntity<?> applyPerformance(@RequestParam("id") UUID orderItemId) {
         try {
             OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
             ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
+            ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
 
-
-
-            return ResponseEntity.ok().body(orderItem);
+            return ResponseEntity.ok().body(applyDTO);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

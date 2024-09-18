@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.ApplyDTO;
 import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -119,10 +122,21 @@ public class EntityToDTOConverter {
       applyDTO.setFilePath(orderItemEntity.getProduct().getFilePath());
       applyDTO.setTitle(orderItemEntity.getTitle());
       applyDTO.setWriter(orderItemEntity.getProduct().getWriter());
-//      applyDTO.getPerformanceAmount(orderItemEntity.getPerformanceAmount());
-//      applyDTO.getApplicant(applicantEntity);
-//      applyDTO.getPerformanceDate(orderItemEntity.getPerformanceDate());
+      applyDTO.setPerformanceAmount(orderItemEntity.getPerformanceAmount());
 
-        return applyDTO;
+       ApplicantDTO applicantDTO = ApplicantDTO.builder()
+               .name(applicantEntity.getName())
+               .phoneNumber(applicantEntity.getPhoneNumber())
+               .address(applicantEntity.getAddress())
+               .build();
+
+       applyDTO.setApplicant(applicantDTO);
+
+       List<PerformanceDateDTO> performanceDateDTO = orderItemEntity.getPerformanceDate()
+               .stream()
+               .map(performanceDate -> new PerformanceDateDTO(performanceDate.getDate()))
+               .toList();
+
+      return applyDTO;
     }
 }

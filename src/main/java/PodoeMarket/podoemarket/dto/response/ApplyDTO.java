@@ -1,9 +1,13 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
+import PodoeMarket.podoemarket.dto.ApplicantDTO;
+import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -15,5 +19,5 @@ public class ApplyDTO {
     private String writer;
     private int performanceAmount;
     private ApplicantDTO applicant;
-    private PerformanceDateDTO performanceDate;
+    List<PerformanceDateDTO> performanceDate;
 }
