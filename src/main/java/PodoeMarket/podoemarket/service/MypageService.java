@@ -333,16 +333,6 @@ public class MypageService {
         return orderItemRepo.findById(orderItemId);
     }
 
-//    public void contractStatusUpdate(final UUID id) {
-//        final OrderItemEntity item = orderItemRepo.findById(id);
-//        final int contractStatus = item.getContractStatus();
-//
-//        if (contractStatus == 1) {
-//            item.setContractStatus(2);
-//            orderItemRepo.save(item);
-//        }
-//    }
-
     public byte[] downloadFile(final String fileKey, final String email, final LocalDateTime time) {
         if(LocalDateTime.now().isAfter(time.plusYears(1)))
             throw new RuntimeException("구매 후 1년이 경과되어 다운로드 불가");
@@ -419,7 +409,7 @@ public class MypageService {
 
     public ApplicantEntity getApplicant(final UUID orderItemId) {
         if(applicantRepo.findByOrderItemId(orderItemId) == null)
-            throw new RuntimeException("일치하는 구매 목록 없음");
+            throw new RuntimeException("일치하는 신청자 정보 없음");
 
         return applicantRepo.findByOrderItemId(orderItemId);
     }
