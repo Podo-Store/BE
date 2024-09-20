@@ -7,10 +7,8 @@ import PodoeMarket.podoemarket.dto.response.ApplyDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListPageDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.entity.ApplicantEntity;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -37,7 +36,6 @@ public class MypageController {
     private final MypageService mypageService;
     private final UserService userService;
     private final ProductService productService;
-    private final MailSendService mailService;
     private final TokenProvider tokenProvider;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
@@ -259,7 +257,6 @@ public class MypageController {
         }
     }
 
-
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
@@ -291,7 +288,7 @@ public class MypageController {
     }
 
     @GetMapping("/apply")
-    public ResponseEntity<?> applyPerformance(@RequestParam("id") UUID orderItemId) {
+    public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
             OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
             ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
@@ -299,6 +296,29 @@ public class MypageController {
             ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
 
             return ResponseEntity.ok().body(applyDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/apply")
+    public ResponseEntity<?> apply(@RequestBody ApplyDTO dto) {
+        try {
+            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
+
+            log.info("dto: {}", dto);
+
+            for(PerformanceDateDTO dateDto : dto.getPerformanceDate()) {
+                final PerformanceDateEntity date = PerformanceDateEntity.builder()
+                        .date(dateDto.getDate())
+                        .orderItem(orderItem)
+                        .build();
+
+                mypageService.dateRegister(date);
+            }
+
+            return ResponseEntity.ok().body(true);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

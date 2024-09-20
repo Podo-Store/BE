@@ -4,14 +4,8 @@ import PodoeMarket.podoemarket.dto.response.DateOrderDTO;
 import PodoeMarket.podoemarket.dto.response.DateProductDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
-import PodoeMarket.podoemarket.entity.ApplicantEntity;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.repository.ApplicantRepository;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.ProductRepository;
-import PodoeMarket.podoemarket.repository.UserRepository;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -53,6 +47,7 @@ public class MypageService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
+    private final PerformanceDateRepository performanceDateRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -412,5 +407,9 @@ public class MypageService {
             throw new RuntimeException("일치하는 신청자 정보 없음");
 
         return applicantRepo.findByOrderItemId(orderItemId);
+    }
+
+    public void dateRegister(PerformanceDateEntity performanceDateEntity) {
+        performanceDateRepo.save(performanceDateEntity);
     }
 }

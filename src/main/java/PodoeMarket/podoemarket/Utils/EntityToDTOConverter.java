@@ -119,6 +119,7 @@ public class EntityToDTOConverter {
     public static ApplyDTO convertToApplyDTO(OrderItemEntity orderItemEntity, ApplicantEntity applicantEntity) {
       ApplyDTO applyDTO = new ApplyDTO();
 
+      applyDTO.setOrderItemId(orderItemEntity.getId());
       applyDTO.setFilePath(orderItemEntity.getProduct().getFilePath());
       applyDTO.setTitle(orderItemEntity.getTitle());
       applyDTO.setWriter(orderItemEntity.getProduct().getWriter());

@@ -84,7 +84,7 @@ public class OrderController {
                     .user(userInfo)
                     .build();
 
-            OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
+            final OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
 
             if(orderService.buyPerformance(orders.getId())) {
                 final ApplicantEntity applicant = ApplicantEntity.builder()
@@ -97,7 +97,7 @@ public class OrderController {
                 orderService.createApplicant(applicant);
             }
 
-            List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
+            final List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
