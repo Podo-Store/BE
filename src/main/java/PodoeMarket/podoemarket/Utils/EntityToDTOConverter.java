@@ -137,6 +137,8 @@ public class EntityToDTOConverter {
                .map(performanceDate -> new PerformanceDateDTO(performanceDate.getDate()))
                .toList();
 
+       applyDTO.setPerformanceDate(performanceDateDTO);
+
       return applyDTO;
     }
 }

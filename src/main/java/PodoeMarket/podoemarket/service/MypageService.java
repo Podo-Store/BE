@@ -333,15 +333,15 @@ public class MypageService {
         return orderItemRepo.findById(orderItemId);
     }
 
-    public void contractStatusUpdate(final UUID id) {
-        final OrderItemEntity item = orderItemRepo.findById(id);
-        final int contractStatus = item.getContractStatus();
-
-        if (contractStatus == 1) {
-            item.setContractStatus(2);
-            orderItemRepo.save(item);
-        }
-    }
+//    public void contractStatusUpdate(final UUID id) {
+//        final OrderItemEntity item = orderItemRepo.findById(id);
+//        final int contractStatus = item.getContractStatus();
+//
+//        if (contractStatus == 1) {
+//            item.setContractStatus(2);
+//            orderItemRepo.save(item);
+//        }
+//    }
 
     public byte[] downloadFile(final String fileKey, final String email, final LocalDateTime time) {
         if(LocalDateTime.now().isAfter(time.plusYears(1)))
