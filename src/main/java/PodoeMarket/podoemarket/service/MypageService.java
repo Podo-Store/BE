@@ -412,4 +412,8 @@ public class MypageService {
     public void dateRegister(PerformanceDateEntity performanceDateEntity) {
         performanceDateRepo.save(performanceDateEntity);
     }
+
+    public int registerDates(final UUID orderItemId) {
+        return performanceDateRepo.countByOrderItemId(orderItemId);
+    }
 }

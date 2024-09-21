@@ -307,7 +307,21 @@ public class MypageController {
         try {
             final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
 
-            log.info("dto: {}", dto);
+            if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDates(dto.getOrderItemId()))) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("공연권 구매량 초과")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(dto.getPerformanceDate().isEmpty()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("신청 날짜가 비어있음")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
             for(PerformanceDateDTO dateDto : dto.getPerformanceDate()) {
                 final PerformanceDateEntity date = PerformanceDateEntity.builder()
