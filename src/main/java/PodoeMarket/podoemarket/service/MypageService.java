@@ -413,7 +413,7 @@ public class MypageService {
         performanceDateRepo.save(performanceDateEntity);
     }
 
-    public int registerDates(final UUID orderItemId) {
+    public int registerDatesNum(final UUID orderItemId) {
         return performanceDateRepo.countByOrderItemId(orderItemId);
     }
 }

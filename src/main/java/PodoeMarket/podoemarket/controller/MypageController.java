@@ -3,16 +3,14 @@ package PodoeMarket.podoemarket.controller;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.ApplyDTO;
-import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.response.ProductListPageDTO;
-import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -307,7 +305,7 @@ public class MypageController {
         try {
             final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
 
-            if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDates(dto.getOrderItemId()))) {
+            if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId()))) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("공연권 구매량 초과")
                         .build();
@@ -371,6 +369,33 @@ public class MypageController {
             mypageService.deleteUser(userInfo);
 
             return ResponseEntity.ok().body(userInfo.getNickname() + "의 계정 삭제");
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/refund")
+    public ResponseEntity<?> refundInto(@RequestParam("id") UUID orderItemId) {
+        try {
+            OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+
+            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(orderItemId);
+            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+
+            RefundDTO resDTO = RefundDTO.builder()
+                    .scriptImage(orderItem.getProduct().getImagePath())
+                    .title(orderItem.getTitle())
+                    .writer(orderItem.getProduct().getWriter())
+                    .orderDate(orderItem.getCreatedAt())
+                    .orderNum(orderItem.getOrder().getId())
+                    .orderAmount(orderItem.getPerformanceAmount())
+                    .orderPrice(orderItem.getPerformancePrice())
+                    .possibleAmount(possibleAmount)
+                    .possiblePrice(possiblePrice)
+                    .build();
+
+            return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

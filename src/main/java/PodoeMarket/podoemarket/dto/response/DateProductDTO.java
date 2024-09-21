@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.dto.response;
 
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
