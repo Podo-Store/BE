@@ -1,6 +1,8 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.dto.response.ScriptListDTO;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.service.ProductService;
 import lombok.RequiredArgsConstructor;

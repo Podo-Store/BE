@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +9,9 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Entity
 @Table(name = "orderItem")
@@ -25,7 +25,7 @@ public class OrderItemEntity {
     private UUID id;
 
     @Column(nullable = false)
-    @ColumnDefault("False")
+    @ColumnDefault("false")
     private boolean script; // 대본권 구매 여부
 
     @Column(nullable = false)
@@ -33,8 +33,8 @@ public class OrderItemEntity {
     private int scriptPrice;
 
     @Column(nullable = false)
-    @ColumnDefault("False")
-    private boolean performance; // 공연권 구매 여부
+    @ColumnDefault("0")
+    private int performanceAmount;
 
     @Column
     @ColumnDefault("0")
@@ -42,13 +42,10 @@ public class OrderItemEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int contractStatus; // 0: 공연권 판매 안함, 1: 공연권 구매, 2: 계약 중, 3: 계약 완료
+    private int contractStatus; // 0: 공연권 판매 안함, 1: 공연권 구매, 2: 계약 완료
 
     @Column(nullable = false)
     private int totalPrice;
-
-    @Column
-    private String contractPath;
 
     @Column(nullable = false)
     private String title;
@@ -68,7 +65,6 @@ public class OrderItemEntity {
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
-
     // orders : orderItem = 1 : N
     @ManyToOne(targetEntity = OrdersEntity.class)
     @JoinColumn(name = "order_id", nullable = false)
@@ -83,4 +79,12 @@ public class OrderItemEntity {
     @ManyToOne(targetEntity = UserEntity.class)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    // orderItem : performanceDate = 1 : N
+    @OneToMany(mappedBy = "orderItem")
+    private List<PerformanceDateEntity> performanceDate = new ArrayList<>();
+
+    // orderItem : applicant = 1 : 1
+    @OneToOne(mappedBy = "orderItem")
+    private ApplicantEntity applicant;
 }

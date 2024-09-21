@@ -5,13 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class ResponseDTO <T> {
-    private String error;
-    private List<T> data;
+public class ApplicantDTO {
+    private String name;
+    private String phoneNumber;
+    private String address;
 }

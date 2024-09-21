@@ -1,14 +1,16 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -31,7 +34,6 @@ public class MypageController {
     private final MypageService mypageService;
     private final UserService userService;
     private final ProductService productService;
-    private final MailSendService mailService;
     private final TokenProvider tokenProvider;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
@@ -253,7 +255,6 @@ public class MypageController {
         }
     }
 
-
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
@@ -284,67 +285,52 @@ public class MypageController {
         }
     }
 
-    @PostMapping("/mailSend")
-    public ResponseEntity<?> mailSend(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderItemDTO dto) {
+    @GetMapping("/apply")
+    public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
-            final OrderItemEntity orderItem = mypageService.orderItem(dto.getId());
-            final int contractStatus = orderItem.getContractStatus();
+            OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+            ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
-            if (contractStatus == 0){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("공연권 계약이 불가한 작품입니다.")
-                        .build();
+            ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
 
-                return ResponseEntity.badRequest().body(resDTO);
-            } else if (contractStatus == 2) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("공연권 계약이 진행 중입니다.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            } else if (contractStatus == 3) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이미 공연권 계약이 완료되었습니다.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if (mailService.joinEmailWithContract(userInfo.getEmail(), userInfo.getNickname())) {
-                mypageService.contractStatusUpdate(dto.getId());
-            }
-
-            return ResponseEntity.ok().body(true);
-        } catch(Exception e) {
+            return ResponseEntity.ok().body(applyDTO);
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
 
-    @GetMapping("/contract")
-    public ResponseEntity<?> readContract(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
+    @PostMapping("/apply")
+    public ResponseEntity<?> apply(@RequestBody ApplyDTO dto) {
         try {
-            final OrderItemEntity orderItem = mypageService.orderItem(orderId);
+            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
 
-            if (!(orderItem.getUser().getId().equals(userInfo.getId()))) {
+            if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId()))) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("권한이 없습니다.")
+                        .error("공연권 구매량 초과")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            final int contractStatus = orderItem.getContractStatus();
-
-            if (contractStatus != 3) {
+            if(dto.getPerformanceDate().isEmpty()) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("공연권 계약이 체결되지 않았습니다.")
+                        .error("신청 날짜가 비어있음")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            return ResponseEntity.ok().body(orderItem.getContractPath());
+            for(PerformanceDateDTO dateDto : dto.getPerformanceDate()) {
+                final PerformanceDateEntity date = PerformanceDateEntity.builder()
+                        .date(dateDto.getDate())
+                        .orderItem(orderItem)
+                        .build();
+
+                mypageService.dateRegister(date);
+            }
+
+            return ResponseEntity.ok().body(true);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -354,7 +340,7 @@ public class MypageController {
     @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
         try {
-            OrderItemEntity item = mypageService.orderItem(orderId);
+            OrderItemEntity item = mypageService.getOrderItem(orderId);
             if(!item.isScript()) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("대본을 구매하세요.")
@@ -363,7 +349,7 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());
+            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail(), item.getCreatedAt());
 
             String encodedFilename = URLEncoder.encode(item.getProduct().getTitle(), "UTF-8");
 
@@ -383,6 +369,71 @@ public class MypageController {
             mypageService.deleteUser(userInfo);
 
             return ResponseEntity.ok().body(userInfo.getNickname() + "의 계정 삭제");
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/refund")
+    public ResponseEntity<?> refundInto(@RequestParam("id") UUID orderItemId) {
+        try {
+            final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+
+            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(orderItemId);
+            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+
+            RefundDTO resDTO = RefundDTO.builder()
+                    .scriptImage(orderItem.getProduct().getImagePath())
+                    .title(orderItem.getTitle())
+                    .writer(orderItem.getProduct().getWriter())
+                    .orderDate(orderItem.getCreatedAt())
+                    .orderNum(orderItem.getOrder().getId())
+                    .orderAmount(orderItem.getPerformanceAmount())
+                    .orderPrice(orderItem.getPerformancePrice())
+                    .possibleAmount(possibleAmount)
+                    .possiblePrice(possiblePrice)
+                    .build();
+
+            return ResponseEntity.ok().body(resDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<?> refund(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RefundDTO dto) {
+        try {
+            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
+            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId());
+            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+
+            if(dto.getRefundAmount() > possibleAmount || dto.getRefundPrice() > possiblePrice || dto.getRefundAmount() == 0) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("환불 가능 수량과 가격이 아님")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(dto.getReason().isEmpty() || dto.getReason().length() > 50) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("환불 사유는 1 ~ 50자까지 가능")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            final RefundEntity refund = RefundEntity.builder()
+                    .quantity(dto.getRefundAmount())
+                    .price(dto.getRefundPrice())
+                    .content(dto.getReason())
+                    .order(orderItem.getOrder())
+                    .user(userInfo)
+                    .build();
+
+            mypageService.refundRegister(refund);
+
+            return ResponseEntity.ok().body(true);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

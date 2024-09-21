@@ -1,12 +1,11 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.ProductRepository;
-import PodoeMarket.podoemarket.repository.UserRepository;
+import PodoeMarket.podoemarket.dto.response.DateOrderDTO;
+import PodoeMarket.podoemarket.dto.response.DateProductDTO;
+import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.response.ProductListDTO;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -32,6 +31,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +46,9 @@ public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
+    private final ApplicantRepository applicantRepo;
+    private final PerformanceDateRepository performanceDateRepo;
+    private final RefundRepository refundRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -274,9 +277,6 @@ public class MypageService {
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderItemDTO>> orderItemsGroupedByDate = new HashMap<>();
 
-        // 제품별로 공연권 구매 상태를 캐싱할 맵 (Integer로 contractStatus 값을 저장)
-        final Map<ProductEntity, Integer> performanceLogMap = new HashMap<>();
-
         for (OrderItemEntity orderItem : allOrderItems) {
            ProductEntity product = orderItem.getProduct();
 
@@ -285,21 +285,7 @@ public class MypageService {
                continue; // product가 null이면 이 항목을 건너뜀
            }
 
-           int contractStatus = performanceLogMap.computeIfAbsent(product, p -> {
-               List<OrderItemEntity> performanceLog = orderItemRepo.findByPerformanceAndProduct(true, p);
-
-               if (performanceLog.isEmpty() && product.isPerformance()) {
-                   return 3; // 재구매 가능
-               }
-
-               // 가장 최신의 내역을 기반으로 contractStatus 결정
-               return performanceLog.stream()
-                       .max(Comparator.comparing(OrderItemEntity::getCreatedAt)) // 가장 최근 날짜의 OrderItemEntity 선택
-                       .map(OrderItemEntity::getContractStatus)
-                       .orElse(3); // 기본값으로 재구매 가능 설정
-           });
-
-           final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, contractStatus);
+           final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
 
            // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
            LocalDate orderDate = orderItem.getOrder().getCreatedAt().toLocalDate(); // localdatetime -> localdate
@@ -314,18 +300,20 @@ public class MypageService {
 
     public List<DateOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
         // 각 주문의 주문 항목을 가져옴
-        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndPerformance(userId, true);
+        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userId);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
 
         for (OrderItemEntity orderItem : allOrderItems) {
-            // 각 주문 항목에 대한 제품 정보 가져옴
-            final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, 0);
+            if (orderItem.getPerformanceAmount() > 0) {
+                // 각 주문 항목에 대한 제품 정보 가져옴
+                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
 
-            final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-            // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-            OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+                final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+            }
         }
 
         // DateOrderDTO로 변환
@@ -334,25 +322,17 @@ public class MypageService {
                 .collect(Collectors.toList());
     }
 
-    public OrderItemEntity orderItem(final UUID orderId) {
-        if(orderItemRepo.findById(orderId) == null) {
+    public OrderItemEntity getOrderItem(final UUID orderItemId) {
+        if(orderItemRepo.findById(orderItemId) == null)
             throw new RuntimeException("일치하는 구매 목록 없음");
-        }
 
-        return orderItemRepo.findById(orderId);
+        return orderItemRepo.findById(orderItemId);
     }
 
-    public void contractStatusUpdate(final UUID id) {
-        final OrderItemEntity item = orderItemRepo.findById(id);
-        final int contractStatus = item.getContractStatus();
+    public byte[] downloadFile(final String fileKey, final String email, final LocalDateTime time) {
+        if(LocalDateTime.now().isAfter(time.plusYears(1)))
+            throw new RuntimeException("구매 후 1년이 경과되어 다운로드 불가");
 
-        if (contractStatus == 1) {
-            item.setContractStatus(2);
-            orderItemRepo.save(item);
-        }
-    }
-
-    public byte[] downloadFile(final String fileKey, final String email) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
@@ -421,5 +401,24 @@ public class MypageService {
 
         // DB 계정 삭제
         userRepo.delete(userEntity);
+    }
+
+    public ApplicantEntity getApplicant(final UUID orderItemId) {
+        if(applicantRepo.findByOrderItemId(orderItemId) == null)
+            throw new RuntimeException("일치하는 신청자 정보 없음");
+
+        return applicantRepo.findByOrderItemId(orderItemId);
+    }
+
+    public void dateRegister(final PerformanceDateEntity performanceDateEntity) {
+        performanceDateRepo.save(performanceDateEntity);
+    }
+
+    public int registerDatesNum(final UUID orderItemId) {
+        return performanceDateRepo.countByOrderItemId(orderItemId);
+    }
+
+    public void refundRegister(final RefundEntity refundEntity) {
+        refundRepo.save(refundEntity);
     }
 }

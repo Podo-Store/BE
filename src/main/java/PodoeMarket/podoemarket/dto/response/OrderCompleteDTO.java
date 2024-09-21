@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,5 +17,6 @@ public class OrderCompleteDTO {
     private String title;
     private int scriptPrice;
     private int performancePrice;
+    private int performanceAmount;
     private int totalPrice;
 }

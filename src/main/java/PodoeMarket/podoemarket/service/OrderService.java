@@ -1,12 +1,10 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
+import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
@@ -23,6 +21,7 @@ public class OrderService {
     private final ProductRepository productRepo;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
+    private final ApplicantRepository applicantRepo;
 
     public OrdersEntity orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
@@ -32,52 +31,38 @@ public class OrderService {
 
             final ProductEntity product = productRepo.findById(orderItemDTO.getProductId());
 
-            if(product == null) {
+            if(product == null)
                 throw new RuntimeException("물건이 존재하지 않음");
-            }
 
-            if(user.getId().equals(product.getUser().getId())) {
+            if(user.getId().equals(product.getUser().getId()))
                 throw new RuntimeException("본인 작품 구매 불가");
-            }
 
             // 대본권, 공연권 1일 때만 구매 가능
-            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && orderItemDTO.isPerformance())) {
+            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && (orderItemDTO.getContractStatus() > 0)))
                 throw new RuntimeException("구매 조건 확인");
-            }
 
             if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
                 final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
 
                 for(OrderItemEntity item : items) {
                     // 대본권 제한
-                    if(orderItemDTO.isScript() && item.isScript()) {
+                    if(orderItemDTO.isScript() && item.isScript())
                         throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
-                    }
-
-                    // 공연권 제한
-                    if(orderItemDTO.isPerformance() && item.isPerformance() && item.getContractStatus() != 3) {
-                        throw new RuntimeException("<" + product.getTitle() + "> 공연권은 이미 구매했음");
-                    }
                 }
-            } else {
-                if(!orderItemDTO.isScript() && orderItemDTO.isPerformance()) {
+            }
+            else {
+                if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
                     throw new RuntimeException("대본권을 구매해야 함");
-                }
             }
 
             final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
-            final int performancePrice = orderItemDTO.isPerformance() ? product.getPerformancePrice() : 0;
+            final int performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
             final int totalPrice = scriptPrice + performancePrice;
 
             orderItem.setProduct(product);
             orderItem.setScript(orderItemDTO.isScript());
             orderItem.setScriptPrice(scriptPrice);
-            orderItem.setPerformance(orderItemDTO.isPerformance());
-
-            if(orderItemDTO.isPerformance()) {
-                orderItem.setContractStatus(1);
-            }
-
+            orderItem.setPerformanceAmount(orderItemDTO.getPerformanceAmount());
             orderItem.setPerformancePrice(performancePrice);
             orderItem.setTotalPrice(totalPrice);
             orderItem.setTitle(product.getTitle());
@@ -96,5 +81,34 @@ public class OrderService {
         List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(ordersEntity.getId());
 
         return orderItems.stream().map(orderItem -> EntityToDTOConverter.convertToOrderCompleteDTO(ordersEntity, orderItem)).toList();
+    }
+
+    public boolean buyPerformance(final Long id) {
+        List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(id);
+
+        for(OrderItemEntity orderItem : orderItems) {
+            if(orderItem.getPerformanceAmount() > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    public void createApplicant(final ApplicantEntity applicant) {
+        final String number_regex = "[0-9]+";
+
+        if(applicant.getName().isBlank()) {
+            throw new RuntimeException("이름에 공백 불가");
+        }
+
+        if(applicant.getPhoneNumber().length() > 11 || applicant.getPhoneNumber().isBlank() || !applicant.getPhoneNumber().matches(number_regex)) {
+            throw new RuntimeException("전화번호가 올바르지 않음");
+        }
+
+        if(applicant.getAddress().isBlank()) {
+            throw new RuntimeException("주소가 올바르지 않음");
+        }
+
+        applicantRepo.save(applicant);
     }
 }

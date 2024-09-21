@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class ProductEntity {
     private String imagePath;
 
     @Column(nullable = false)
-    @ColumnDefault("False")
+    @ColumnDefault("false")
     private boolean script; // 대본권 판매 여부
 
     @Column(nullable = false)
@@ -44,7 +43,7 @@ public class ProductEntity {
     private int scriptPrice;
 
     @Column(nullable = false)
-    @ColumnDefault("False")
+    @ColumnDefault("false")
     private boolean performance; // 공연권 판매 여부
 
     @Column

@@ -1,14 +1,16 @@
 package PodoeMarket.podoemarket.controller;
 
-import PodoeMarket.podoemarket.dto.OrderCompleteDTO;
+import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.dto.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
+import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.entity.ApplicantEntity;
 import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.service.OrderService;
 import PodoeMarket.podoemarket.service.ProductService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +54,7 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.isPerformance() ? orderProduct.getPerformancePrice() : 0);
+            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0);
             final String encodedScriptImage = orderProduct.getImagePath() != null ? bucketURL + URLEncoder.encode(orderProduct.getImagePath(), "UTF-8") : "";
 
             OrderItemDTO item = OrderItemDTO.builder()
@@ -62,8 +64,8 @@ public class OrderController {
                     .playType(orderProduct.getPlayType())
                     .script(dto.isScript())
                     .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
-                    .performance(dto.isPerformance())
-                    .performancePrice(dto.isPerformance() ? orderProduct.getPerformancePrice() : 0)
+                    .performanceAmount(dto.getPerformanceAmount())
+                    .performancePrice(dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0)
                     .totalPrice(totalPrice)
                     .build();
 
@@ -74,6 +76,7 @@ public class OrderController {
         }
     }
 
+    @Transactional
     @PostMapping("/item")
     public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderDTO dto) {
         try {
@@ -81,8 +84,20 @@ public class OrderController {
                     .user(userInfo)
                     .build();
 
-            OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
-            List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
+            final OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
+
+            if(orderService.buyPerformance(orders.getId())) {
+                final ApplicantEntity applicant = ApplicantEntity.builder()
+                        .name(dto.getApplicant().getName())
+                        .phoneNumber(dto.getApplicant().getPhoneNumber())
+                        .address(dto.getApplicant().getAddress())
+                        .orderItem(orders.getOrderItem().get(0))
+                        .build();
+
+                orderService.createApplicant(applicant);
+            }
+
+            final List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {

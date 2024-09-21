@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductListPageDTO {
-    private String nickname;
-    List<DateProductDTO> productList;
+public class ScriptListDTO {
+    private List<ProductListDTO> longPlay;
+    private List<ProductListDTO> shortPlay;
 }
