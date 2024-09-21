@@ -48,6 +48,7 @@ public class MypageService {
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
     private final PerformanceDateRepository performanceDateRepo;
+    private final RefundRepository refundRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -409,11 +410,15 @@ public class MypageService {
         return applicantRepo.findByOrderItemId(orderItemId);
     }
 
-    public void dateRegister(PerformanceDateEntity performanceDateEntity) {
+    public void dateRegister(final PerformanceDateEntity performanceDateEntity) {
         performanceDateRepo.save(performanceDateEntity);
     }
 
     public int registerDatesNum(final UUID orderItemId) {
         return performanceDateRepo.countByOrderItemId(orderItemId);
+    }
+
+    public void refundRegister(final RefundEntity refundEntity) {
+        refundRepo.save(refundEntity);
     }
 }

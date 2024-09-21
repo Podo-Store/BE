@@ -378,7 +378,7 @@ public class MypageController {
     @GetMapping("/refund")
     public ResponseEntity<?> refundInto(@RequestParam("id") UUID orderItemId) {
         try {
-            OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+            final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
 
             final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(orderItemId);
             final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
@@ -396,6 +396,44 @@ public class MypageController {
                     .build();
 
             return ResponseEntity.ok().body(resDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<?> refund(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RefundDTO dto) {
+        try {
+            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
+            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId());
+            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+
+            if(dto.getRefundAmount() > possibleAmount || dto.getRefundPrice() > possiblePrice || dto.getRefundAmount() == 0) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("환불 가능 수량과 가격이 아님")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            if(dto.getReason().isEmpty() || dto.getReason().length() > 50) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("환불 사유는 1 ~ 50자까지 가능")
+                        .build();
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            final RefundEntity refund = RefundEntity.builder()
+                    .quantity(dto.getRefundAmount())
+                    .price(dto.getRefundPrice())
+                    .content(dto.getReason())
+                    .order(orderItem.getOrder())
+                    .user(userInfo)
+                    .build();
+
+            mypageService.refundRegister(refund);
+
+            return ResponseEntity.ok().body(true);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
