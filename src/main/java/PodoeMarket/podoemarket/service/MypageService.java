@@ -329,10 +329,7 @@ public class MypageService {
         return orderItemRepo.findById(orderItemId);
     }
 
-    public byte[] downloadFile(final String fileKey, final String email, final LocalDateTime time) {
-        if(LocalDateTime.now().isAfter(time.plusYears(1)))
-            throw new RuntimeException("구매 후 1년이 경과되어 다운로드 불가");
-
+    public byte[] downloadFile(final String fileKey, final String email) {
         // S3에서 파일 객체 가져오기
         S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
@@ -420,5 +417,10 @@ public class MypageService {
 
     public void refundRegister(final RefundEntity refundEntity) {
         refundRepo.save(refundEntity);
+    }
+
+    public void expire(final LocalDateTime time) {
+        if(LocalDateTime.now().isAfter(time.plusYears(1)))
+            throw new RuntimeException("구매 후 1년 경과");
     }
 }
