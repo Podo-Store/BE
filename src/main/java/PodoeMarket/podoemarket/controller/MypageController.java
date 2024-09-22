@@ -289,6 +289,8 @@ public class MypageController {
     public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
             OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+            mypageService.expire(orderItem.getCreatedAt());
+
             ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
             ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
@@ -348,8 +350,9 @@ public class MypageController {
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
+            mypageService.expire(item.getCreatedAt());
 
-            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail(), item.getCreatedAt());
+            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());
 
             String encodedFilename = URLEncoder.encode(item.getProduct().getTitle(), "UTF-8");
 
