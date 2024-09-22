@@ -288,10 +288,8 @@ public class MypageController {
     @GetMapping("/apply")
     public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
-            OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
-            mypageService.expire(orderItem.getCreatedAt());
-
-            ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
+            final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+            final ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
             ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
 
@@ -306,6 +304,7 @@ public class MypageController {
     public ResponseEntity<?> apply(@RequestBody ApplyDTO dto) {
         try {
             final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
+            mypageService.expire(orderItem.getCreatedAt());
 
             if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId()))) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -342,7 +341,7 @@ public class MypageController {
     @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
         try {
-            OrderItemEntity item = mypageService.getOrderItem(orderId);
+            final OrderItemEntity item = mypageService.getOrderItem(orderId);
             if(!item.isScript()) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("대본을 구매하세요.")
