@@ -411,8 +411,9 @@ public class MypageController {
             final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
             final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId());
             final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+            final int refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
 
-            if(dto.getRefundAmount() > possibleAmount || dto.getRefundPrice() > possiblePrice || dto.getRefundAmount() == 0) {
+            if(dto.getRefundAmount() > possibleAmount || refundPrice > possiblePrice || dto.getRefundAmount() == 0 || refundPrice < 0) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("환불 가능 수량과 가격이 아님")
                         .build();
@@ -428,7 +429,7 @@ public class MypageController {
 
             final RefundEntity refund = RefundEntity.builder()
                     .quantity(dto.getRefundAmount())
-                    .price(dto.getRefundPrice())
+                    .price(refundPrice)
                     .content(dto.getReason())
                     .order(orderItem.getOrder())
                     .user(userInfo)

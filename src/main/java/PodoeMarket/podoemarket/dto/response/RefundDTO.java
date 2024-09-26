@@ -25,6 +25,5 @@ public class RefundDTO {
     private int possibleAmount;
     private int possiblePrice;
     private int refundAmount;
-    private int refundPrice;
     private String reason;
 }
