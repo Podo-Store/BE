@@ -389,6 +389,7 @@ public class MypageController {
                     .scriptImage(orderItem.getProduct().getImagePath())
                     .title(orderItem.getTitle())
                     .writer(orderItem.getProduct().getWriter())
+                    .performancePrice(orderItem.getProduct().getPerformancePrice())
                     .orderDate(orderItem.getCreatedAt())
                     .orderNum(orderItem.getOrder().getId())
                     .orderAmount(orderItem.getPerformanceAmount())

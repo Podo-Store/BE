@@ -17,6 +17,7 @@ public class RefundDTO {
     private String scriptImage;
     private String title;
     private String writer;
+    private int performancePrice;
     private LocalDateTime orderDate;
     private Long orderNum;
     private int orderAmount;
