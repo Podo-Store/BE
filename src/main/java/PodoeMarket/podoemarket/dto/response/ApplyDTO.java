@@ -16,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ApplyDTO {
     private UUID orderItemId;
-    private String filePath;
+    private String ImagePath;
     private String title;
     private String writer;
     private int performanceAmount;

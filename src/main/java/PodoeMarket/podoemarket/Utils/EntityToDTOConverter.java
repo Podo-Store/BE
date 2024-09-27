@@ -120,7 +120,7 @@ public class EntityToDTOConverter {
       ApplyDTO applyDTO = new ApplyDTO();
 
       applyDTO.setOrderItemId(orderItemEntity.getId());
-      applyDTO.setFilePath(orderItemEntity.getProduct().getFilePath());
+      applyDTO.setImagePath(orderItemEntity.getProduct().getImagePath());
       applyDTO.setTitle(orderItemEntity.getTitle());
       applyDTO.setWriter(orderItemEntity.getProduct().getWriter());
       applyDTO.setPerformanceAmount(orderItemEntity.getPerformanceAmount());
