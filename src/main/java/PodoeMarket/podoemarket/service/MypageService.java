@@ -1,9 +1,6 @@
 package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.dto.response.DateOrderDTO;
-import PodoeMarket.podoemarket.dto.response.DateProductDTO;
-import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
+import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.*;
 import com.amazonaws.services.s3.AmazonS3;
@@ -36,8 +33,7 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToOrderItemDTO;
-import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.convertToProductList;
+import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -270,12 +266,12 @@ public class MypageService {
         productRepo.delete(product);
     }
 
-    public List<DateOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
+    public List<DateScriptOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
         // 모든 필요한 OrderItemEntity를 한 번에 가져옴
         final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userId, true);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        final Map<LocalDate, List<OrderItemDTO>> orderItemsGroupedByDate = new HashMap<>();
+        final Map<LocalDate, List<OrderScriptDTO>> orderItemsGroupedByDate = new HashMap<>();
 
         for (OrderItemEntity orderItem : allOrderItems) {
            ProductEntity product = orderItem.getProduct();
@@ -285,7 +281,7 @@ public class MypageService {
                continue; // product가 null이면 이 항목을 건너뜀
            }
 
-           final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
+           final OrderScriptDTO orderItemDTO = convertToScriptOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
 
            // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
            LocalDate orderDate = orderItem.getOrder().getCreatedAt().toLocalDate(); // localdatetime -> localdate
@@ -294,21 +290,23 @@ public class MypageService {
 
         // DateOrderDTO로 변환
         return orderItemsGroupedByDate.entrySet().stream()
-                .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
+                .map(entry -> new DateScriptOrderDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
-    public List<DateOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
+    public List<DatePerformanceOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
         // 각 주문의 주문 항목을 가져옴
         final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userId);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        final Map<LocalDate, List<OrderItemDTO>> OrderItems = new HashMap<>();
+        final Map<LocalDate, List<OrderPerformanceDTO>> OrderItems = new HashMap<>();
 
         for (OrderItemEntity orderItem : allOrderItems) {
             if (orderItem.getPerformanceAmount() > 0) {
+                final int dateCount = performanceDateRepo.countByOrderItemId(orderItem.getId());
+
                 // 각 주문 항목에 대한 제품 정보 가져옴
-                final OrderItemDTO orderItemDTO = convertToOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
+                final OrderPerformanceDTO orderItemDTO = convertToPerformanceOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, dateCount);
 
                 final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
@@ -318,7 +316,7 @@ public class MypageService {
 
         // DateOrderDTO로 변환
         return OrderItems.entrySet().stream()
-                .map(entry -> new DateOrderDTO(entry.getKey(), entry.getValue()))
+                .map(entry -> new DatePerformanceOrderDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 

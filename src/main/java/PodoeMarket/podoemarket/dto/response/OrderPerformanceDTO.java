@@ -11,7 +11,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItemDTO {
+public class OrderPerformanceDTO {
     private boolean delete;
     private UUID id;
     private String title;
@@ -19,13 +19,10 @@ public class OrderItemDTO {
     private String imagePath;
     private boolean checked;
     private int playType;
-    private boolean script;
-    private int scriptPrice;
     private int performanceAmount;
     private int performancePrice;
     private int performanceTotalPrice;
     private int possibleCount;
-    private int totalPrice;
 
     private UUID productId;
 }

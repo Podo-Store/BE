@@ -1,6 +1,5 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
-import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderListDTO {
+public class OrderPerformanceListDTO {
     private LocalDateTime createdAt;
-    List<OrderItemDTO> orderItem;
+    List<OrderPerformanceDTO> orderPerformance;
 }

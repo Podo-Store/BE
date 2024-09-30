@@ -1,6 +1,5 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.dto.response;
 
-import PodoeMarket.podoemarket.dto.response.DateOrderDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderListPageDTO {
+public class OrderScriptListPageDTO {
     private String nickname;
-    List<DateOrderDTO> orderList;
+    List<DateScriptOrderDTO> orderList;
 }

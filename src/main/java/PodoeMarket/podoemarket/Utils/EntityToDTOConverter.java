@@ -1,10 +1,7 @@
 package PodoeMarket.podoemarket.Utils;
 
 import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.ApplyDTO;
-import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
-import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
+import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +9,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
+
     public static ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
        try {
            ProductListDTO productListDTO = new ProductListDTO();
@@ -70,15 +68,13 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static OrderItemDTO convertToOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
+    public static OrderScriptDTO convertToScriptOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
         try {
-            OrderItemDTO itemDTO = new OrderItemDTO();
+            OrderScriptDTO itemDTO = new OrderScriptDTO();
 
             itemDTO.setId(orderItem.getId());
             itemDTO.setTitle(orderItem.getTitle());
             itemDTO.setScript(orderItem.isScript());
-            itemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
-            itemDTO.setContractStatus(orderItem.getContractStatus());
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
@@ -88,12 +84,46 @@ public class EntityToDTOConverter {
                 itemDTO.setImagePath(encodedScriptImage);
                 itemDTO.setChecked(product.isChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
-                itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
                 itemDTO.setProductId(product.getId());
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
+            }
+
+            return itemDTO;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static OrderPerformanceDTO convertToPerformanceOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL, int dateCount) {
+        try {
+            OrderPerformanceDTO itemDTO = new OrderPerformanceDTO();
+
+            itemDTO.setId(orderItem.getId());
+            itemDTO.setTitle(orderItem.getTitle());
+            itemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
+
+            if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1))) {
+                itemDTO.setPossibleCount(0);
+            } else {
+                itemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
+            }
+
+            if(product != null) { // 삭제된 작품이 아닐 경우
+                String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
+
+                itemDTO.setDelete(false);
+                itemDTO.setWriter(product.getWriter());
+                itemDTO.setImagePath(encodedScriptImage);
+                itemDTO.setChecked(product.isChecked());
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
+                itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                itemDTO.setProductId(product.getId());
+            } else { // 삭제된 작품일 경우
+                itemDTO.setDelete(true);
+                itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
+                itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
             }
 
             return itemDTO;
