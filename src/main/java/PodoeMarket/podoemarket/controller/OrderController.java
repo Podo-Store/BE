@@ -65,7 +65,8 @@ public class OrderController {
                     .script(dto.isScript())
                     .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
                     .performanceAmount(dto.getPerformanceAmount())
-                    .performancePrice(dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0)
+                    .performancePrice(orderProduct.getPerformancePrice())
+                    .performanceTotalPrice(dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0)
                     .totalPrice(totalPrice)
                     .build();
 

@@ -78,7 +78,7 @@ public class EntityToDTOConverter {
             itemDTO.setTitle(orderItem.getTitle());
             itemDTO.setScript(orderItem.isScript());
             itemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
-            itemDTO.setContractStatus(orderItem.getContractStatus());
+//            itemDTO.setPossibleCount();
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
@@ -89,11 +89,13 @@ public class EntityToDTOConverter {
                 itemDTO.setChecked(product.isChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
+                itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                 itemDTO.setProductId(product.getId());
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
+                itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
             }
 
             return itemDTO;
