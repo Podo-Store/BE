@@ -387,12 +387,12 @@ public class MypageService {
 
     @Transactional
     public void deleteUser(final UserEntity userEntity) {
-        // s3에 저장된 파일 삭제
-        for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
-            deleteScript(product.getId());
-            deleteScriptImage(product.getId());
-            deleteDescription(product.getId());
-        }
+//        // s3에 저장된 파일 삭제
+//        for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
+//            deleteScript(product.getId());
+//            deleteScriptImage(product.getId());
+//            deleteDescription(product.getId());
+//        }
 
         // DB 계정 삭제
         userRepo.delete(userEntity);
