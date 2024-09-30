@@ -5,12 +5,10 @@ import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -258,7 +255,7 @@ public class MypageController {
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderListPageDTO result = OrderListPageDTO.builder()
+            OrderScriptListPageDTO result = OrderScriptListPageDTO.builder()
                     .nickname(userInfo.getNickname())
                     .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
                     .build();
@@ -273,7 +270,7 @@ public class MypageController {
     @GetMapping("/orderPerformances")
     public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderListPageDTO result = OrderListPageDTO.builder()
+            OrderPerformanceListPageDTO result = OrderPerformanceListPageDTO.builder()
                     .nickname(userInfo.getNickname())
                     .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
                     .build();
