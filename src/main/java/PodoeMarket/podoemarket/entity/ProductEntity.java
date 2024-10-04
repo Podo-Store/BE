@@ -79,7 +79,7 @@ public class ProductEntity {
 
     // user : product = 1 : N
     @ManyToOne(targetEntity = UserEntity.class)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     @JsonIgnore
     private UserEntity user;
 

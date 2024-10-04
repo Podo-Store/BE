@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.*;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.image.ImageData;
@@ -153,20 +154,20 @@ public class MypageService {
 
     public void deleteScriptImage(final UUID id) {
         if(productRepo.findById(id).getImagePath() != null) {
-            final String formalS3Key = productRepo.findById(id).getImagePath();
+            final String S3Key = productRepo.findById(id).getImagePath();
 
-            if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
-                amazonS3.deleteObject(bucket, formalS3Key);
+            if(amazonS3.doesObjectExist(bucket, S3Key)) {
+                amazonS3.deleteObject(bucket, S3Key);
             }
         }
     }
 
     public void deleteDescription(final UUID id) {
         if(productRepo.findById(id).getDescriptionPath() != null) {
-            final String formalS3Key = productRepo.findById(id).getDescriptionPath();
+            final String S3Key = productRepo.findById(id).getDescriptionPath();
 
-            if(amazonS3.doesObjectExist(bucket, formalS3Key)) {
-                amazonS3.deleteObject(bucket, formalS3Key);
+            if(amazonS3.doesObjectExist(bucket, S3Key)) {
+                amazonS3.deleteObject(bucket, S3Key);
             }
         }
     }
@@ -386,13 +387,36 @@ public class MypageService {
     }
 
     @Transactional
+    public void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
+        // delete 폴더로 옮기기
+        final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
+        if(amazonS3.doesObjectExist(bucket, sourceKey))
+            amazonS3.copyObject(copyFile);
+    }
+
+    @Transactional
     public void deleteUser(final UserEntity userEntity) {
-//        // s3에 저장된 파일 삭제
-//        for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
+        // s3에 저장된 파일 이전 및 삭제
+        for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
+            final String filePath = product.getFilePath().replace("script", "delete");
+            moveFile(bucket, product.getFilePath(), filePath);
+            product.setFilePath(filePath);
+
+            final String imagePath = product.getImagePath().replace("scriptImage", "delete");
+            moveFile(bucket, product.getFilePath(), imagePath);
+            product.setImagePath(imagePath);
+
+            final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
+            moveFile(bucket, product.getFilePath(), descriptionPath);
+            product.setDescriptionPath(descriptionPath);
+
+            // 기존 폴더에서 삭제
 //            deleteScript(product.getId());
 //            deleteScriptImage(product.getId());
 //            deleteDescription(product.getId());
-//        }
+
+            productRepo.save(product);
+        }
 
         // DB 계정 삭제
         userRepo.delete(userEntity);

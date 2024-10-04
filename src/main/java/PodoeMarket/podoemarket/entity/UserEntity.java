@@ -53,7 +53,7 @@ public class UserEntity {
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
     // user : product = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user")
     private List<ProductEntity> product = new ArrayList<>();
 
     // user : order = 1 : N
