@@ -144,31 +144,6 @@ public class MypageService {
         productRepo.save(product);
     }
 
-    public void deleteScript(final UUID id) {
-        final String S3Key = productRepo.findById(id).getFilePath();
-
-        if(amazonS3.doesObjectExist(bucket, S3Key))
-            amazonS3.deleteObject(bucket, S3Key);
-    }
-
-    public void deleteScriptImage(final UUID id) {
-        if(productRepo.findById(id).getImagePath() != null) {
-            final String S3Key = productRepo.findById(id).getImagePath();
-
-            if(amazonS3.doesObjectExist(bucket, S3Key))
-                amazonS3.deleteObject(bucket, S3Key);
-        }
-    }
-
-    public void deleteDescription(final UUID id) {
-        if(productRepo.findById(id).getDescriptionPath() != null) {
-            final String S3Key = productRepo.findById(id).getDescriptionPath();
-
-            if(amazonS3.doesObjectExist(bucket, S3Key))
-                amazonS3.deleteObject(bucket, S3Key);
-        }
-    }
-
     public String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
@@ -192,7 +167,11 @@ public class MypageService {
         metadata.setContentType(files[0].getContentType());
 
         // 기존 파일 삭제
-        deleteScriptImage(id);
+        if(productRepo.findById(id).getImagePath() != null) {
+            final String sourceKey = productRepo.findById(id).getImagePath();
+
+            deleteFile(bucket, sourceKey);
+        }
 
         // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
@@ -223,7 +202,11 @@ public class MypageService {
         metadata.setContentType("application/pdf");
 
         // 기존 파일 삭제
-        deleteDescription(id);
+        if(productRepo.findById(id).getDescriptionPath() != null) {
+            final String sourceKey = productRepo.findById(id).getDescriptionPath();
+
+            deleteFile(bucket, sourceKey);
+        }
 
         // 저장
         amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
@@ -250,16 +233,7 @@ public class MypageService {
             throw new RuntimeException("심사 중");
         }
 
-        // 예비용
-//        // OrderItemEntity의 외래 키를 NULL로 설정
-//        for (OrderItemEntity orderItem : product.getOrderItem()) {
-//            orderItem.setProduct(null);
-//            orderItemRepo.save(orderItem);
-//        }
-
-        deleteScript(product.getId());
-        deleteScriptImage(product.getId());
-        deleteDescription(product.getId());
+        // 탈퇴와 동일한 파일 삭제 처리 필요
 
         productRepo.delete(product);
     }
