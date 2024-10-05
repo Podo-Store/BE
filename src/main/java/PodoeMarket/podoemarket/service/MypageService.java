@@ -149,6 +149,7 @@ public class MypageService {
 
         if(amazonS3.doesObjectExist(bucket, S3Key)) {
             amazonS3.deleteObject(bucket, S3Key);
+            log.info("delete script");
         }
     }
 
@@ -158,6 +159,7 @@ public class MypageService {
 
             if(amazonS3.doesObjectExist(bucket, S3Key)) {
                 amazonS3.deleteObject(bucket, S3Key);
+                log.info("delete image");
             }
         }
     }
@@ -168,6 +170,7 @@ public class MypageService {
 
             if(amazonS3.doesObjectExist(bucket, S3Key)) {
                 amazonS3.deleteObject(bucket, S3Key);
+                log.info("delete description");
             }
         }
     }
@@ -388,8 +391,8 @@ public class MypageService {
 
     @Transactional
     public void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
-        // delete 폴더로 옮기기
         final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
+
         if(amazonS3.doesObjectExist(bucket, sourceKey))
             amazonS3.copyObject(copyFile);
     }
@@ -400,26 +403,32 @@ public class MypageService {
         for(ProductEntity product : productRepo.findAllByUserId(userEntity.getId())) {
             final String filePath = product.getFilePath().replace("script", "delete");
             moveFile(bucket, product.getFilePath(), filePath);
+            deleteFile(bucket, product.getFilePath());
             product.setFilePath(filePath);
 
             final String imagePath = product.getImagePath().replace("scriptImage", "delete");
-            moveFile(bucket, product.getFilePath(), imagePath);
+            moveFile(bucket, product.getImagePath(), imagePath);
+            deleteFile(bucket, product.getImagePath());
             product.setImagePath(imagePath);
 
             final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
-            moveFile(bucket, product.getFilePath(), descriptionPath);
+            moveFile(bucket, product.getDescriptionPath(), descriptionPath);
+            deleteFile(bucket, product.getDescriptionPath());
             product.setDescriptionPath(descriptionPath);
-
-            // 기존 폴더에서 삭제
-//            deleteScript(product.getId());
-//            deleteScriptImage(product.getId());
-//            deleteDescription(product.getId());
 
             productRepo.save(product);
         }
 
         // DB 계정 삭제
         userRepo.delete(userEntity);
+    }
+
+    public void deleteFile(final String bucket, final String sourceKey) {
+        log.info("delete start");
+        if(amazonS3.doesObjectExist(bucket, sourceKey)) {
+            amazonS3.deleteObject(bucket, sourceKey);
+            log.info("delete end");
+        }
     }
 
     public ApplicantEntity getApplicant(final UUID orderItemId) {
