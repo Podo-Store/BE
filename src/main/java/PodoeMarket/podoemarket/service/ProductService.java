@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
-    private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -37,6 +36,7 @@ public class ProductService {
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true);
 
         return longPlays.stream()
+                .filter(entity -> entity.getUser() != null)
                 .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
                 .collect(Collectors.toList());
     }
@@ -45,6 +45,7 @@ public class ProductService {
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true);
 
         return shortPlays.stream()
+                .filter(entity -> entity.getUser() != null)
                 .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
                 .collect(Collectors.toList());
     }
