@@ -109,8 +109,6 @@ public class UserController {
     @PostMapping ("/mailSend")
     public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO dto){
         try {
-            log.info("email:{}", dto.getEmail());
-
             if(!ValidCheck.isValidEmail(dto.getEmail())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("이메일 유효성 검사 실패")

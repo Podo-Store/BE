@@ -147,20 +147,16 @@ public class MypageService {
     public void deleteScript(final UUID id) {
         final String S3Key = productRepo.findById(id).getFilePath();
 
-        if(amazonS3.doesObjectExist(bucket, S3Key)) {
+        if(amazonS3.doesObjectExist(bucket, S3Key))
             amazonS3.deleteObject(bucket, S3Key);
-            log.info("delete script");
-        }
     }
 
     public void deleteScriptImage(final UUID id) {
         if(productRepo.findById(id).getImagePath() != null) {
             final String S3Key = productRepo.findById(id).getImagePath();
 
-            if(amazonS3.doesObjectExist(bucket, S3Key)) {
+            if(amazonS3.doesObjectExist(bucket, S3Key))
                 amazonS3.deleteObject(bucket, S3Key);
-                log.info("delete image");
-            }
         }
     }
 
@@ -168,10 +164,8 @@ public class MypageService {
         if(productRepo.findById(id).getDescriptionPath() != null) {
             final String S3Key = productRepo.findById(id).getDescriptionPath();
 
-            if(amazonS3.doesObjectExist(bucket, S3Key)) {
+            if(amazonS3.doesObjectExist(bucket, S3Key))
                 amazonS3.deleteObject(bucket, S3Key);
-                log.info("delete description");
-            }
         }
     }
 
@@ -424,11 +418,8 @@ public class MypageService {
     }
 
     public void deleteFile(final String bucket, final String sourceKey) {
-        log.info("delete start");
-        if(amazonS3.doesObjectExist(bucket, sourceKey)) {
+        if(amazonS3.doesObjectExist(bucket, sourceKey))
             amazonS3.deleteObject(bucket, sourceKey);
-            log.info("delete end");
-        }
     }
 
     public ApplicantEntity getApplicant(final UUID orderItemId) {
