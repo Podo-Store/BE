@@ -225,17 +225,28 @@ public class MypageService {
     public void deleteProduct(final UUID productId, final UUID userId) {
         final ProductEntity product =  productRepo.findById(productId);
 
-        if(!product.getUser().getId().equals(userId)) {
+        if(!product.getUser().getId().equals(userId))
             throw new RuntimeException("작가가 아님");
-        }
 
-        if(!product.isChecked()) {
+        if(!product.isChecked())
             throw new RuntimeException("심사 중");
-        }
 
         // 탈퇴와 동일한 파일 삭제 처리 필요
+        final String filePath = product.getFilePath().replace("script", "delete");
+        moveFile(bucket, product.getFilePath(), filePath);
+        deleteFile(bucket, product.getFilePath());
+        product.setFilePath(filePath);
 
-        productRepo.delete(product);
+        product.setImagePath(null);
+
+        if(product.getDescriptionPath() != null) {
+            final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
+            moveFile(bucket, product.getDescriptionPath(), descriptionPath);
+            deleteFile(bucket, product.getDescriptionPath());
+            product.setDescriptionPath(descriptionPath);
+        }
+
+        productRepo.save(product);
     }
 
     public List<DateScriptOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
@@ -374,15 +385,14 @@ public class MypageService {
             deleteFile(bucket, product.getFilePath());
             product.setFilePath(filePath);
 
-            final String imagePath = product.getImagePath().replace("scriptImage", "delete");
-            moveFile(bucket, product.getImagePath(), imagePath);
-            deleteFile(bucket, product.getImagePath());
-            product.setImagePath(imagePath);
+            product.setImagePath(null);
 
-            final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
-            moveFile(bucket, product.getDescriptionPath(), descriptionPath);
-            deleteFile(bucket, product.getDescriptionPath());
-            product.setDescriptionPath(descriptionPath);
+            if (product.getDescriptionPath() != null) {
+                final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
+                moveFile(bucket, product.getDescriptionPath(), descriptionPath);
+                deleteFile(bucket, product.getDescriptionPath());
+                product.setDescriptionPath(descriptionPath);
+            }
 
             productRepo.save(product);
         }
