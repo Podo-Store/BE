@@ -14,6 +14,8 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +35,10 @@ public class ProductService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    private final Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+    private final Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
     public List<ProductListDTO> longPlayList() {
-        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true, sort);
+        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true, pageable);
 
         return longPlays.stream()
                 .filter(entity -> entity.getUser() != null)
@@ -45,7 +47,7 @@ public class ProductService {
     }
 
     public List<ProductListDTO> shortPlayList() {
-        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true, sort);
+        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true, pageable);
 
         return shortPlays.stream()
                 .filter(entity -> entity.getUser() != null)
