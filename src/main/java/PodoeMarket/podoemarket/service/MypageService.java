@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +60,8 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
+
+    private final Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
 
     @Transactional
     public UserEntity updateUser(final UserEntity userEntity) {
@@ -251,19 +254,12 @@ public class MypageService {
 
     public List<DateScriptOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
         // 모든 필요한 OrderItemEntity를 한 번에 가져옴
-        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userId, true);
+        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userId, true, sort);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderScriptDTO>> orderItemsGroupedByDate = new HashMap<>();
 
         for (OrderItemEntity orderItem : allOrderItems) {
-           ProductEntity product = orderItem.getProduct();
-
-           // product가 null인 경우를 처리
-           if (product == null) {
-               continue; // product가 null이면 이 항목을 건너뜀
-           }
-
            final OrderScriptDTO orderItemDTO = convertToScriptOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
 
            // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가

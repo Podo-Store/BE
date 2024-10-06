@@ -58,9 +58,9 @@ public class ProductService {
     }
 
     public boolean isBuyScript(UUID userId, UUID productId) {
-        final List<OrderItemEntity> orderitems = orderItemRepo.findByProductIdAndUserId(productId, userId);
+        final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userId);
 
-        for(OrderItemEntity item : orderitems) {
+        for(OrderItemEntity item : orderItems) {
             if(item.isScript()) {
                 return true;
             }
