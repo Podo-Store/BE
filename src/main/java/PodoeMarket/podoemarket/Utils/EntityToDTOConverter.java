@@ -104,11 +104,10 @@ public class EntityToDTOConverter {
             itemDTO.setTitle(orderItem.getTitle());
             itemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
-            if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1))) {
+            if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1)))
                 itemDTO.setPossibleCount(0);
-            } else {
+            else
                 itemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
-            }
 
             if(product != null) { // 삭제된 작품이 아닐 경우
                 String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";

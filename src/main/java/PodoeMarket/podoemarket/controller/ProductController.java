@@ -39,9 +39,8 @@ public class ProductController {
             // 로그인한 유저가 해당 작품의 대본을 구매한 이력이 있는지 확인
             boolean isBuyScript = false;
 
-            if (userInfo != null) { // 로그인 시
+            if (userInfo != null) // 로그인 시
                  isBuyScript = productService.isBuyScript(userInfo.getId(), productId);
-            }
 
             final ProductDTO productInfo = productService.productDetail(productId, isBuyScript);
 

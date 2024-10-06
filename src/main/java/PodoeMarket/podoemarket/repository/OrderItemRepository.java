@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.repository;
 
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findByOrderId(Long id);
 
-    List<OrderItemEntity> findAllByUserIdAndScript(UUID id, boolean script);
+    List<OrderItemEntity> findAllByUserIdAndScript(UUID id, boolean script, Sort sort);
 
     List<OrderItemEntity> findAllByUserId(UUID id);
 
