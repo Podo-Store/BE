@@ -99,7 +99,7 @@ public class MypageService {
     }
 
     public List<DateProductDTO> getAllMyProducts(final UUID id) {
-        final List<ProductEntity> products = productRepo.findAllByUserId(id);
+        final List<ProductEntity> products = productRepo.findAllByUserId(id, sort);
 
         // 날짜별로 작품을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<ProductListDTO>> myProducts = new HashMap<>();
