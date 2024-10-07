@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.dto.*;
+import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.dto.response.ScriptListDTO;
 import PodoeMarket.podoemarket.entity.*;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -24,7 +26,32 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> allProducts() {
         try{
-            final ScriptListDTO lists = new ScriptListDTO(productService.longPlayList(), productService.shortPlayList());
+            final ScriptListDTO lists = new ScriptListDTO(productService.mainLongPlayList(), productService.mainShortPlayList());
+
+            return ResponseEntity.ok().body(lists);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/long")
+    public ResponseEntity<?> longProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+        try{
+            final List<ProductListDTO> lists = productService.longPlayList(page);
+
+            return ResponseEntity.ok().body(lists);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+
+    @GetMapping("/short")
+    public ResponseEntity<?> shortProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+        try{
+            final List<ProductListDTO> lists = productService.shortPlayList(page);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
