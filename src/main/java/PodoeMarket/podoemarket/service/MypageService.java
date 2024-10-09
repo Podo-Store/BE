@@ -15,6 +15,7 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.properties.TextAlignment;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -308,7 +309,7 @@ public class MypageService {
 
     public byte[] downloadFile(final String fileKey, final String email) {
         // S3에서 파일 객체 가져오기
-        S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
+        final S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
 
         try (InputStream inputStream = s3Object.getObjectContent();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -327,20 +328,19 @@ public class MypageService {
             PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
             Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
 
-            InputStream logoInputStream = getClass().getClassLoader().getResourceAsStream("logo.png");
-            if (logoInputStream == null) {
+            final InputStream logoInputStream = getClass().getClassLoader().getResourceAsStream("logo.png");
+            if (logoInputStream == null)
                 throw new FileNotFoundException("Resource not found: logo.png");
-            }
 
             // ImageDataFactory를 사용하여 이미지 데이터를 생성
-            ImageData imageData = ImageDataFactory.create(logoInputStream.readAllBytes());
-            Image image = new Image(imageData);
+            final ImageData imageData = ImageDataFactory.create(logoInputStream.readAllBytes());
+            final Image image = new Image(imageData);
 
             image.setOpacity(0.3f);
 
             for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
-                PdfPage page = pdfDoc.getPage(i);
-                PdfCanvas canvas = new PdfCanvas(page);
+                final PdfPage page = pdfDoc.getPage(i);
+                final PdfCanvas canvas = new PdfCanvas(page);
 
                 image.setFixedPosition(i, (page.getPageSize().getWidth() - image.getImageWidth()) / 2,
                         (page.getPageSize().getHeight() - image.getImageHeight()) / 2);
@@ -352,6 +352,10 @@ public class MypageService {
                 canvas.setFontAndSize(PdfFontFactory.createFont(), 20); // 폰트 및 크기 설정
 
                 // 텍스트 추가
+                float x = page.getPageSize().getWidth() / 2 - 100; // X 좌표: 페이지 중앙
+                float y = (page.getPageSize().getHeight() - image.getImageHeight()) / 2; // Y 좌표: 이미지 중앙 위로 이동
+
+                canvas.setTextMatrix(x, y); // 텍스트 위치 설정
                 canvas.showText(email); // showText 메소드를 사용하여 텍스트 추가
                 canvas.endText();
                 canvas.restoreState();
