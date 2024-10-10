@@ -95,19 +95,16 @@ public class OrderService {
     }
 
     public void createApplicant(final ApplicantEntity applicant) {
-        final String number_regex = "[0-9]+";
+        final String number_regex = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$";
 
-        if(applicant.getName().isBlank()) {
+        if(applicant.getName().isBlank())
             throw new RuntimeException("이름에 공백 불가");
-        }
 
-        if(applicant.getPhoneNumber().length() > 11 || applicant.getPhoneNumber().isBlank() || !applicant.getPhoneNumber().matches(number_regex)) {
+        if(applicant.getPhoneNumber().isBlank() || !applicant.getPhoneNumber().matches(number_regex))
             throw new RuntimeException("전화번호가 올바르지 않음");
-        }
 
-        if(applicant.getAddress().isBlank()) {
+        if(applicant.getAddress().isBlank())
             throw new RuntimeException("주소가 올바르지 않음");
-        }
 
         applicantRepo.save(applicant);
     }
