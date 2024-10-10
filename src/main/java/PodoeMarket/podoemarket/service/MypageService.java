@@ -429,4 +429,24 @@ public class MypageService {
         if(LocalDateTime.now().isAfter(time.plusYears(1)))
             throw new RuntimeException("구매 후 1년 경과");
     }
+
+    public void setScriptImageDefault(final UUID productId) {
+        final ProductEntity product = productRepo.findById(productId);
+
+        if(product.getImagePath() != null) {
+            final String imagePath = product.getImagePath().replace("scriptImage", "delete");
+            moveFile(bucket, product.getImagePath(), imagePath);
+            deleteFile(bucket, product.getImagePath());
+        }
+    }
+
+    public void setDescriptionDefault(final UUID productId) {
+        final ProductEntity product = productRepo.findById(productId);
+
+        if(product.getDescriptionPath() != null) {
+            final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
+            moveFile(bucket, product.getDescriptionPath(), descriptionPath);
+            deleteFile(bucket, product.getDescriptionPath());
+        }
+    }
 }

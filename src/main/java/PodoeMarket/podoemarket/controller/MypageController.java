@@ -188,7 +188,7 @@ public class MypageController {
         }
     }
 
-    @PostMapping("/detail")
+    @PatchMapping("/detail")
     public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1, @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
             if(!ValidCheck.isValidTitle(dto.getTitle())){
@@ -207,18 +207,22 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String scriptImageFilePath;
+            String scriptImageFilePath = null;
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
                 scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle(), dto.getId());
-            } else {
+            } else if (dto.getImagePath() != null) {
                 scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
+            } else if (dto.getImagePath() == null) {
+                mypageService.setScriptImageDefault(dto.getId());
             }
 
-            String descriptionFilePath;
+            String descriptionFilePath = null;
             if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
                 descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle(), dto.getId());
-            } else {
+            } else if (dto.getDescriptionPath() != null) {
                 descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
+            } else if (dto.getDescriptionPath() == null) {
+                mypageService.setDescriptionDefault(dto.getId());
             }
 
             ProductEntity product = ProductEntity.builder()
