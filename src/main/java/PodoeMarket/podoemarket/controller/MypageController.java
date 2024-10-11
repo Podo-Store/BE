@@ -188,7 +188,7 @@ public class MypageController {
         }
     }
 
-    @PatchMapping("/detail")
+    @PostMapping("/detail")
     public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1, @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
             if(!ValidCheck.isValidTitle(dto.getTitle())){
@@ -230,8 +230,10 @@ public class MypageController {
                     .title(dto.getTitle())
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
-                    .scriptPrice(dto.getScriptPrice())
-                    .performancePrice(dto.getPerformancePrice())
+//                    .scriptPrice(dto.getScriptPrice())
+                    .scriptPrice(0)
+//                    .performancePrice(dto.getPerformancePrice())
+                    .performancePrice(0)
                     .descriptionPath(descriptionFilePath)
                     .build();
 
