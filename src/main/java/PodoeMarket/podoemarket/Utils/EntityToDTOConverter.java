@@ -5,8 +5,10 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
@@ -39,7 +41,7 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript, String bucketURL) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript, String bucketURL, InputStream fileStream) {
         try {
             ProductDTO productDTO = new ProductDTO();
             String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
@@ -49,7 +51,8 @@ public class EntityToDTOConverter {
             productDTO.setId(entity.getId());
             productDTO.setTitle(entity.getTitle());
             productDTO.setWriter(entity.getWriter());
-            productDTO.setFilePath(encodedFile);
+//            productDTO.setFilePath(encodedFile);
+            productDTO.setFilePath(new InputStreamResource(fileStream));
             productDTO.setImagePath(encodedScriptImage);
             productDTO.setScript(entity.isScript());
             productDTO.setScriptPrice(entity.getScriptPrice());

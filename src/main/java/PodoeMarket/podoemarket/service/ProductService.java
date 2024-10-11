@@ -20,7 +20,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
+    private final S3Service s3Service;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -92,9 +96,13 @@ public class ProductService {
         return false;
     }
 
-    public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
+    public ProductDTO productDetail(UUID productId, boolean isBuyScript) throws IOException {
         final ProductEntity script = product(productId);
+        log.info("script:{}", script);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
+        final String preSignedURL = s3Service.generatePreSignedURL(script.getFilePath());
+        final InputStream fileStream = new URL(preSignedURL).openStream();
+
+        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL, fileStream);
     }
 }
