@@ -133,16 +133,17 @@ public class MypageService {
     public void productUpdate(final UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
-        if(!product.isChecked()) {
+        if(!product.isChecked())
             throw new RuntimeException("등록 심사 중인 작품");
-        }
 
         product.setImagePath(productEntity.getImagePath());
         product.setTitle(productEntity.getTitle());
         product.setScript(productEntity.isScript());
         product.setPerformance(productEntity.isPerformance());
-        product.setScriptPrice(productEntity.getScriptPrice());
-        product.setPerformancePrice(productEntity.getPerformancePrice());
+//        product.setScriptPrice(productEntity.getScriptPrice());
+//        product.setPerformancePrice(productEntity.getPerformancePrice());
+        product.setScriptPrice(0);
+        product.setPerformancePrice(0);
         product.setDescriptionPath(productEntity.getDescriptionPath());
 
         productRepo.save(product);
