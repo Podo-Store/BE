@@ -6,11 +6,6 @@ import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,11 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,7 +24,6 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
-    private final S3Service s3Service;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -89,20 +78,15 @@ public class ProductService {
         final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userId);
 
         for(OrderItemEntity item : orderItems) {
-            if(item.isScript()) {
+            if(item.isScript())
                 return true;
-            }
         }
         return false;
     }
 
-    public ProductDTO productDetail(UUID productId, boolean isBuyScript) throws IOException {
+    public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
         final ProductEntity script = product(productId);
-        log.info("script:{}", script);
 
-        final String preSignedURL = s3Service.generatePreSignedURL(script.getFilePath());
-        final InputStream fileStream = new URL(preSignedURL).openStream();
-
-        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL, fileStream);
+        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
     }
 }

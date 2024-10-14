@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,8 +16,7 @@ public class ProductDTO {
     private UUID id;
     private String title;
     private String writer;
-//    private String filePath;
-    private InputStreamResource filePath;
+    private String filePath;
     private String imagePath;
     private boolean script;
     private int scriptPrice;
