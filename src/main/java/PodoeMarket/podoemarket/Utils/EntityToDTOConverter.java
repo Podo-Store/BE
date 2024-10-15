@@ -43,13 +43,11 @@ public class EntityToDTOConverter {
         try {
             ProductDTO productDTO = new ProductDTO();
             String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
-            String encodedFile = entity.getFilePath() != null ? bucketURL + URLEncoder.encode(entity.getFilePath(), "UTF-8") : "";
             String encodedDescription = entity.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(entity.getDescriptionPath(), "UTF-8") : "";
 
             productDTO.setId(entity.getId());
             productDTO.setTitle(entity.getTitle());
             productDTO.setWriter(entity.getWriter());
-            productDTO.setFilePath(encodedFile);
             productDTO.setImagePath(encodedScriptImage);
             productDTO.setScript(entity.isScript());
             productDTO.setScriptPrice(entity.getScriptPrice());

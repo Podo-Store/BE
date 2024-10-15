@@ -6,11 +6,6 @@ import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,9 +78,8 @@ public class ProductService {
         final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userId);
 
         for(OrderItemEntity item : orderItems) {
-            if(item.isScript()) {
+            if(item.isScript())
                 return true;
-            }
         }
         return false;
     }
