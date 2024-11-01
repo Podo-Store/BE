@@ -57,7 +57,7 @@ public class WebConfig implements WebMvcConfigurer {
         config.setAllowCredentials(true);
 //        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
 //        config.setAllowedOriginPatterns(Arrays.asList("http://13.125.61.13"));
-        config.setAllowedOriginPatterns(Arrays.asList("https://www.pipishortstocking.shop"));
+        config.setAllowedOriginPatterns(Arrays.asList("https://www.podo-store.com"));
         config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
 
