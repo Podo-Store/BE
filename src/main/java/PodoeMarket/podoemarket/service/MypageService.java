@@ -15,7 +15,6 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.properties.TextAlignment;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -191,6 +190,13 @@ public class MypageService {
 
         if(!Objects.equals(files[0].getContentType(), "application/pdf") && !Objects.equals(files[0].getContentType(), "application/pdf")) {
             throw new RuntimeException("Description file type is not PDF");
+        }
+
+        try (InputStream inputStream = files[0].getInputStream()) {
+            final PdfDocument doc = new PdfDocument(new PdfReader(inputStream));
+
+            if(doc.getNumberOfPages() > 5)
+                throw new RuntimeException("작품 설명 파일이 5페이지를 초과함");
         }
 
         // 파일 이름 가공
