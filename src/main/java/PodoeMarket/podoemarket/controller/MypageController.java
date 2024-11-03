@@ -189,7 +189,9 @@ public class MypageController {
     }
 
     @PostMapping("/detail")
-    public ResponseEntity<?> detailUpdate(ProductDTO dto, @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1, @RequestParam(value = "description", required = false) MultipartFile[] file2) {
+    public ResponseEntity<?> detailUpdate(ProductDTO dto,
+                                          @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
+                                          @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
             if(!ValidCheck.isValidTitle(dto.getTitle())){
                 ResponseDTO resDTO = ResponseDTO.builder()

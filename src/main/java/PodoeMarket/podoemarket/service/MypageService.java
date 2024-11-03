@@ -193,6 +193,13 @@ public class MypageService {
             throw new RuntimeException("Description file type is not PDF");
         }
 
+        try (InputStream inputStream = files[0].getInputStream()) {
+            final PdfDocument doc = new PdfDocument(new PdfReader(inputStream));
+
+            if(doc.getNumberOfPages() > 5)
+                throw new RuntimeException("작품 설명 파일이 5페이지를 초과함");
+        }
+
         // 파일 이름 가공
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final Date time = new Date();
