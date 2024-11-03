@@ -6,6 +6,10 @@ import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -88,5 +94,35 @@ public class ProductService {
         final ProductEntity script = product(productId);
 
         return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
+    }
+
+    // PDF의 특정 페이지까지 추출하는 함수
+    public PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) throws Exception {
+        try (PdfReader reader = new PdfReader(fileStream);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            final PdfDocument originalDoc = new PdfDocument(reader);
+            final int totalPageCount = originalDoc.getNumberOfPages();
+            final PdfWriter writer = new PdfWriter(outputStream);
+            final PdfDocument newDoc = new PdfDocument(writer);
+
+            final int endPage = Math.min(pagesToExtract, totalPageCount);
+            originalDoc.copyPagesTo(1, endPage, newDoc);
+            newDoc.close();
+
+            return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
+        }
+    }
+
+    // PDF 추출 결과를 저장할 클래스
+    @Getter
+    public static class PdfExtractionResult {
+        private final int totalPageCount;
+        private final byte[] extractedPdfBytes;
+
+        public PdfExtractionResult(int totalPageCount, byte[] extractedPdfBytes) {
+            this.totalPageCount = totalPageCount;
+            this.extractedPdfBytes = extractedPdfBytes;
+        }
     }
 }
