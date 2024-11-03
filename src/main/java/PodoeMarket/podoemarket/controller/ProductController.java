@@ -17,13 +17,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -88,19 +87,20 @@ public class ProductController {
     @GetMapping("/preview")
     public ResponseEntity<?> scriptPreview(@RequestParam("script") UUID productId) {
         try {
-            final String s3Key = productService.product(productId).getFilePath();
-
+            final ProductEntity product = productService.product(productId);
+            final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
-            final InputStream fileStream = new URL(preSignedURL).openStream();
 
-            // 파일 이름 추출 및 인코딩
-            String fileName = s3Key.substring(s3Key.lastIndexOf('/') + 1);
-            String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+            int pagesToExtract = (product.getPlayType() == 1) ? 3 : 1;
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF) // PDF 타입 명시
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + encodedFileName) // RFC 5987 형식
-                    .body(new InputStreamResource(fileStream));
+            try (InputStream fileStream = new URL(preSignedURL).openStream()) {
+                ProductService.PdfExtractionResult result = productService.extractPagesFromPdf(fileStream, pagesToExtract);
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_PDF) // PDF 타입 명시
+                        .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
+                        .body(new InputStreamResource(new ByteArrayInputStream(result.getExtractedPdfBytes())));
+            }
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
