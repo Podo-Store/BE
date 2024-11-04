@@ -39,7 +39,7 @@ public class EntityToDTOConverter {
         }
     }
 
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, boolean isBuyScript, String bucketURL) {
+    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, int buyStatus, String bucketURL) {
         try {
             ProductDTO productDTO = new ProductDTO();
             String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
@@ -58,7 +58,7 @@ public class EntityToDTOConverter {
             productDTO.setChecked(entity.isChecked());
             productDTO.setPlayType(entity.getPlayType());
 
-            productDTO.setBuyScript(isBuyScript);
+            productDTO.setBuyStatus(buyStatus);
 
             return productDTO;
         } catch (UnsupportedEncodingException e) {

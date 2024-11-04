@@ -27,5 +27,9 @@ public class ProductDTO {
     private boolean checked;
     private LocalDateTime date;
 
-    private boolean buyScript; // 대본 구매 여부
+    // 옵션 선택 드롭다운
+    // 0 : 아무것도 구매 X
+    // 1 : 대본 or 대본 + 공연권 (대본 권리 기간 유효 시)
+    // 2 : 공연권만 보유
+    private int buyStatus;
 }

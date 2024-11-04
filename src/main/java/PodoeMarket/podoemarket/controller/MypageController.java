@@ -179,7 +179,7 @@ public class MypageController {
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId, false);
+            ProductDTO productInfo = productService.productDetail(productId, 0);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
