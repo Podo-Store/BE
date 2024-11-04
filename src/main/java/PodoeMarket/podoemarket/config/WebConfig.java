@@ -60,6 +60,7 @@ public class WebConfig implements WebMvcConfigurer {
         config.setAllowedOriginPatterns(Arrays.asList("https://www.podo-store.com"));
         config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList("X-Total-Pages"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config); // 모든 경로에 대해서 CORS 설정 적용
