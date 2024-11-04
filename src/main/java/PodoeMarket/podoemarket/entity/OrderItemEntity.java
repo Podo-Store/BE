@@ -41,10 +41,6 @@ public class OrderItemEntity {
     private int performancePrice;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private int contractStatus; // 0: 공연권 판매 안함, 1: 공연권 구매, 2: 계약 완료
-
-    @Column(nullable = false)
     private int totalPrice;
 
     @Column(nullable = false)
@@ -62,6 +58,7 @@ public class OrderItemEntity {
         createdAt = now;
         updatedAt = now;
     }
+
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 

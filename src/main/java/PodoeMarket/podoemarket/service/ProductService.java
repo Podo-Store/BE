@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
+    private final ApplicantRepository applicantRepo;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -80,20 +83,34 @@ public class ProductService {
         return productRepo.findById(id);
     }
 
-    public boolean isBuyScript(UUID userId, UUID productId) {
-        final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userId);
+    public int buyStatus(UserEntity userInfo, UUID productId) {
+        if(userInfo == null)
+            return 0;
+
+        final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userInfo.getId());
 
         for(OrderItemEntity item : orderItems) {
-            if(item.isScript())
-                return true;
+            final boolean isBuyScript = item.isScript(); // 대본 구매 여부
+            final boolean isExpiryDate = LocalDateTime.now().isAfter(item.getCreatedAt().plusYears(1)); // 권리 기간 만료 여부
+            final boolean isBuyPerformance = applicantRepo.existsByOrderItemId(item.getId()); // 공연권 구매 여부
+
+            if(isBuyScript && !isExpiryDate) { // 대본 구매 (대본 권리 기간 유효)
+                return 1;
+            } else if(isBuyScript && !isExpiryDate && isBuyPerformance) { // 대본 + 공연권 구매 (대본 권리 기간 유효)
+                return 1;
+            }
+            else if(isBuyScript && isExpiryDate && isBuyPerformance) { // 공연권만 보유
+                return 2;
+            }
         }
-        return false;
+
+        return 0;
     }
 
-    public ProductDTO productDetail(UUID productId, boolean isBuyScript) {
+    public ProductDTO productDetail(UUID productId, int buyStatus) {
         final ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script, isBuyScript, bucketURL);
+        return EntityToDTOConverter.convertToSingleProductDTO(script, buyStatus, bucketURL);
     }
 
     // PDF의 특정 페이지까지 추출하는 함수
