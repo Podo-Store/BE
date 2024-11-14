@@ -72,7 +72,6 @@ public class OrderService {
 
         ordersEntity.setOrderItem(orderItems);
         ordersEntity.setTotalPrice(orderItems.stream().mapToInt(OrderItemEntity::getTotalPrice).sum());
-        ordersEntity.setPaymentMethod(orderDTO.getPaymentMethod());
 
         return orderRepo.save(ordersEntity);
     }
