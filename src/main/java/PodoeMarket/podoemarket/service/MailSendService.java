@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ import java.util.Random;
 public class MailSendService {
     private final JavaMailSender mailSender;
     private final RedisUtil redisUtil;
-    private final AmazonS3 amazonS3;
     private int authNumber;
 
     @Value("${spring.mail.username}")
@@ -63,6 +61,30 @@ public class MailSendService {
         mailSend(setFrom, email, title, content);
 
         return Integer.toString(authNumber);
+    }
+
+    public void joinPaymentEmail(String email, String price) {
+        String setFrom = username;
+        String title = "안녕하세요 포도상점입니다. 주문하신 상품의 결제 요청드립니다.";
+        String content =
+                "안녕하세요 포도상점입니다." +
+                        "<br>" +
+                        "주문하신 상품의 결제 요청드립니다." +
+                        "<br><br>" +
+                        "결제 요청 금액" +
+                        "<br>" +
+                        price + "원" + // price 파싱 필요
+                        "<br><br>" +
+                        "이체 계좌" +
+                        "<br>" +
+                        "토스뱅크 1001-5507-3197" +
+                        "<br><br>" +
+                        "*알파 버전 기간동안 입금 금액은 전액 모두 작가님께 지급됩니다." +
+                        "<br>" +
+                        "*입금이 확인되면 마이페이지 > 구매한 작품 탭에서 작품 사용이 가능합니다." +
+                        "<br><br>" +
+                        "감사합니다.";
+        mailSend(setFrom, email, title, content);
     }
 
     //이메일을 전송합니다.
