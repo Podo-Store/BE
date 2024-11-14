@@ -25,4 +25,5 @@ public class OrderPerformanceDTO {
     private int possibleCount;
 
     private UUID productId;
+    private boolean paymentStatus;
 }

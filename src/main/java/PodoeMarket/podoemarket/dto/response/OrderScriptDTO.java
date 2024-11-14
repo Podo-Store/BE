@@ -24,4 +24,5 @@ public class OrderScriptDTO {
     private int scriptPrice;
 
     private UUID productId;
+    private boolean paymentStatus;
 }
