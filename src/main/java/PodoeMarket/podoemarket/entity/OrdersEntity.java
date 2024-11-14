@@ -25,8 +25,8 @@ public class OrdersEntity {
     @Column(nullable = false)
     private int totalPrice;
 
-//    @Column(nullable = false)
-//    private int paymentMethod;
+    @Column(nullable = false)
+    private int paymentMethod; // 1: 계좌이체
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
