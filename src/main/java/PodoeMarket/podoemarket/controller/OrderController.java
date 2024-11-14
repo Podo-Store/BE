@@ -2,12 +2,11 @@ package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
+import PodoeMarket.podoemarket.dto.response.OrderInfoDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.entity.ApplicantEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.OrderService;
 import PodoeMarket.podoemarket.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -29,6 +28,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final ProductService productService;
+    private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -57,7 +57,7 @@ public class OrderController {
             final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0);
             final String encodedScriptImage = orderProduct.getImagePath() != null ? bucketURL + URLEncoder.encode(orderProduct.getImagePath(), "UTF-8") : "";
 
-            OrderItemDTO item = OrderItemDTO.builder()
+            final OrderItemDTO item = OrderItemDTO.builder()
                     .title(orderProduct.getTitle())
                     .writer(orderProduct.getWriter())
                     .imagePath(encodedScriptImage)
@@ -100,6 +100,33 @@ public class OrderController {
             }
 
             final List<OrderCompleteDTO> resDTO = orderService.orderResult(orders);
+
+            return ResponseEntity.ok().body(resDTO);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/success")
+    public ResponseEntity<?> purchaseSuccess(@RequestParam Long orderId) {
+        try {
+            final OrdersEntity order = orderService.getOrderInfo(orderId);
+            final List<OrderItemEntity> orderItem = orderService.getOrderItem(orderId);
+
+            final OrderInfoDTO resDTO = OrderInfoDTO.builder()
+                    .orderId(orderId)
+                    .orderDate(order.getCreatedAt())
+                    .title(orderItem.get(0).getTitle())
+                    .script(orderItem.get(0).isScript())
+                    .scriptPrice(orderItem.get(0).getScriptPrice())
+                    .performanceAmount(orderItem.get(0).getPerformanceAmount())
+                    .performancePrice(orderItem.get(0).getPerformancePrice())
+                    .build();
+
+            String formatPrice = orderService.formatPrice(order.getTotalPrice());
+
+            mailSendService.joinPaymentEmail(order.getUser().getEmail(), formatPrice);
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {

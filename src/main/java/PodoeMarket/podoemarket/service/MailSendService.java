@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ import java.util.Random;
 public class MailSendService {
     private final JavaMailSender mailSender;
     private final RedisUtil redisUtil;
-    private final AmazonS3 amazonS3;
     private int authNumber;
 
     @Value("${spring.mail.username}")
@@ -37,7 +35,7 @@ public class MailSendService {
             return false;
     }
 
-    //임의의 6자리 양수를 반환합니다.
+    // 임의의 6자리 양수를 반환
     public void makeRandomNumber() {
         Random r = new Random();
         String randomNumber = "";
@@ -49,7 +47,7 @@ public class MailSendService {
     }
 
 
-    //mail을 어디서 보내는지, 어디로 보내는지 , 인증 번호를 html 형식으로 어떻게 보내는지 작성합니다.
+    // mail을 어디서 보내는지, 어디로 보내는지 , 어떻게 보내는지 작성
     public String joinEmail(String email) {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
@@ -65,7 +63,49 @@ public class MailSendService {
         return Integer.toString(authNumber);
     }
 
-    //이메일을 전송합니다.
+    // 결제 요청 이메일 전송
+    public void joinPaymentEmail(String email, String price) {
+        String setFrom = username;
+        String title = "안녕하세요 포도상점입니다. 주문하신 상품의 결제 요청드립니다.";
+        String content =
+                "안녕하세요 포도상점입니다." +
+                        "<br>" +
+                        "주문하신 상품의 결제 요청드립니다." +
+                        "<br><br>" +
+                        "결제 요청 금액" +
+                        "<br>" +
+                        price + "원" +
+                        "<br><br>" +
+                        "이체 계좌" +
+                        "<br>" +
+                        "토스뱅크 1001-5507-3197" +
+                        "<br><br>" +
+                        "*알파 버전 기간동안 입금 금액은 전액 모두 작가님께 지급됩니다." +
+                        "<br>" +
+                        "*입금이 확인되면 마이페이지 > 구매한 작품 탭에서 작품 사용이 가능합니다." +
+                        "<br><br>" +
+                        "감사합니다.";
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 작품 등록 신청 완료
+    public void joinRegisterEmail(String email) {
+        String setFrom = username;
+        String title = "작품 등록 신청 완료";
+        String content =
+                "안녕하세요 포도상점입니다." +
+                        "<br>" +
+                        "작품 등록 신청이 완료되었습니다." +
+                        "<br>" +
+                        "심사는 3~5일이 소요되며, 심사 완료 시 메일로 결과를 발송해드립니다." +
+                        "<br><br>" +
+                        "*알파 버전 기간동안 판매 금액은 전액 작가님께 지급됩니다." +
+                        "<br><br>" +
+                        "감사합니다.";
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 이메일 전송
     public void mailSend(String setFrom, String toMail, String title, String content) {
         MimeMessage message = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
         try {

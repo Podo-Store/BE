@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.controller;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.RegisterService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.apache.commons.io.FilenameUtils;
 public class RegisterController {
     private final RegisterService registerService;
     private final MypageService mypageService;
+    private final MailSendService mailSendService;
 
     @PostMapping("/register")
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile[] files) {
@@ -36,6 +38,8 @@ public class RegisterController {
                     .build();
 
             registerService.register(script);
+
+            mailSendService.joinRegisterEmail(user.getEmail());
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

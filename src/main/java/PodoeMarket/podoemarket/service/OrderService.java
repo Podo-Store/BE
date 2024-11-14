@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -106,5 +107,18 @@ public class OrderService {
             throw new RuntimeException("주소가 올바르지 않음");
 
         applicantRepo.save(applicant);
+    }
+
+    public List<OrderItemEntity> getOrderItem(final Long orderId) {
+        return orderItemRepo.findByOrderId(orderId);
+    }
+
+    public OrdersEntity getOrderInfo(final Long orderId) {
+        return orderRepo.findById(orderId).orElse(null);
+    }
+
+    public String formatPrice(int totalPrice) {
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        return formatter.format(totalPrice);
     }
 }
