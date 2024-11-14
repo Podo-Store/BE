@@ -43,8 +43,9 @@ public class ProductService {
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true, mainPage);
 
         return longPlays.stream()
-                .filter(entity -> entity.getUser() != null)
-                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
+                .filter(play -> play.getUser() != null)
+                .filter(play -> play.isScript() || play.isPerformance())
+                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
@@ -52,8 +53,9 @@ public class ProductService {
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true, mainPage);
 
         return shortPlays.stream()
-                .filter(entity -> entity.getUser() != null)
-                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
+                .filter(play -> play.getUser() != null)
+                .filter(play -> play.isScript() || play.isPerformance())
+                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
@@ -63,8 +65,9 @@ public class ProductService {
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, true, pageable);
 
         return longPlays.stream()
-                .filter(entity -> entity.getUser() != null)
-                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
+                .filter(play -> play.getUser() != null)
+                .filter(play -> play.isScript() || play.isPerformance())
+                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
@@ -74,8 +77,9 @@ public class ProductService {
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2, true, pageable);
 
         return shortPlays.stream()
-                .filter(entity -> entity.getUser() != null)
-                .map(entity -> EntityToDTOConverter.convertToProductList(entity, bucketURL))
+                .filter(play -> play.getUser() != null)
+                .filter(play -> play.isScript() || play.isPerformance())
+                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
