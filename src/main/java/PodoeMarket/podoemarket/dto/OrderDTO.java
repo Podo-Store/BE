@@ -16,4 +16,5 @@ public class OrderDTO {
     ApplicantDTO applicant;
     List<OrderItemDTO> orderItem;
     private int totalPrice;
+    private int paymentMethod;
 }

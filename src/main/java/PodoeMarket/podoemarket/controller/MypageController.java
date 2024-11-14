@@ -232,10 +232,8 @@ public class MypageController {
                     .title(dto.getTitle())
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
-//                    .scriptPrice(dto.getScriptPrice())
-                    .scriptPrice(0)
-//                    .performancePrice(dto.getPerformancePrice())
-                    .performancePrice(0)
+                    .scriptPrice(dto.getScriptPrice())
+                    .performancePrice(dto.getPerformancePrice())
                     .descriptionPath(descriptionFilePath)
                     .build();
 
@@ -294,6 +292,15 @@ public class MypageController {
     public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
             final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
+
+            if(!orderItem.getOrder().isPaymentStatus()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("결제되지 않았습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             final ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
             ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
@@ -354,6 +361,15 @@ public class MypageController {
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
+
+            if(!item.getOrder().isPaymentStatus()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("결제되지 않았습니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             mypageService.expire(item.getCreatedAt());
 
             byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());

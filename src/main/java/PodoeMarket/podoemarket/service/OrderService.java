@@ -49,8 +49,7 @@ public class OrderService {
                     if(orderItemDTO.isScript() && item.isScript())
                         throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
                 }
-            }
-            else {
+            } else {
                 if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
                     throw new RuntimeException("대본권을 구매해야 함");
             }

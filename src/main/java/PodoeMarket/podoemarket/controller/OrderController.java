@@ -83,6 +83,7 @@ public class OrderController {
         try {
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
+                    .paymentMethod(dto.getPaymentMethod())
                     .build();
 
             final OrdersEntity orders = orderService.orderCreate(order, dto, userInfo);
