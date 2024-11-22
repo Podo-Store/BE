@@ -134,6 +134,7 @@ public class EntityToDTOConverter {
     public static OrderCompleteDTO convertToOrderCompleteDTO(OrdersEntity ordersEntity, OrderItemEntity orderItem) {
         OrderCompleteDTO completeDTO = new OrderCompleteDTO();
 
+        completeDTO.setId(ordersEntity.getId());
         completeDTO.setOrderDate(ordersEntity.getCreatedAt());
         completeDTO.setOrderNum(ordersEntity.getId());
         completeDTO.setTitle(orderItem.getTitle());

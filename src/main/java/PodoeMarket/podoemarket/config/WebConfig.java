@@ -14,7 +14,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
@@ -56,7 +55,6 @@ public class WebConfig implements WebMvcConfigurer {
         // cors 설정
         config.setAllowCredentials(true);
         config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
-//        config.setAllowedOriginPatterns(Arrays.asList("http://13.125.61.13"));
 //        config.setAllowedOriginPatterns(Arrays.asList("https://www.podo-store.com"));
         config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
