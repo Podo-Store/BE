@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderCompleteDTO {
+    private Long Id;
     private LocalDateTime orderDate;
     private Long orderNum;
     private String title;
