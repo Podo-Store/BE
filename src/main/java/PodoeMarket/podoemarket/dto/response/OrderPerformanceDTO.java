@@ -26,5 +26,4 @@ public class OrderPerformanceDTO {
 
     private UUID productId;
     private boolean paymentStatus;
-    private boolean refund;
 }

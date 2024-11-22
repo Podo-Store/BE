@@ -119,12 +119,10 @@ public class EntityToDTOConverter {
                 itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                 itemDTO.setProductId(product.getId());
                 itemDTO.setPaymentStatus(orderItem.getOrder().isPaymentStatus());
-                itemDTO.setRefund(orderItem.getPerformanceAmount() - dateCount > 0);
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
                 itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                itemDTO.setRefund(orderItem.getPerformanceAmount() - dateCount > 0);
             }
 
             return itemDTO;
