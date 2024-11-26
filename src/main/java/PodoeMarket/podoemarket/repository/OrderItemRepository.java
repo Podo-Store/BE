@@ -16,7 +16,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findAllByUserIdAndScript(UUID id, boolean script, Sort sort);
 
-    List<OrderItemEntity> findAllByUserId(UUID id);
+    List<OrderItemEntity> findAllByUserId(UUID id, Sort sort);
 
     OrderItemEntity findById(UUID id);
 }

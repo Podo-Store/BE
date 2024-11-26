@@ -283,7 +283,7 @@ public class MypageService {
 
     public List<DatePerformanceOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
         // 각 주문의 주문 항목을 가져옴
-        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userId);
+        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userId, sort);
 
         // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
         final Map<LocalDate, List<OrderPerformanceDTO>> OrderItems = new HashMap<>();
