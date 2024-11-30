@@ -141,8 +141,8 @@ public class MypageService {
         product.setPerformance(productEntity.isPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
-        product.setScriptPrice(0);
-        product.setPerformancePrice(0);
+        product.setScriptPrice(productEntity.getScriptPrice());
+        product.setPerformancePrice(productEntity.getPerformancePrice());
         product.setDescriptionPath(productEntity.getDescriptionPath());
 
         productRepo.save(product);
