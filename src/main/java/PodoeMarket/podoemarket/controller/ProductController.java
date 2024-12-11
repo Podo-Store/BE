@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -85,7 +86,7 @@ public class ProductController {
     }
 
     @GetMapping("/preview")
-    public ResponseEntity<?> scriptPreview(@RequestParam("script") UUID productId) {
+    public ResponseEntity<StreamingResponseBody> scriptPreview(@RequestParam("script") UUID productId) {
         try {
             final ProductEntity product = productService.product(productId);
             final String s3Key = product.getFilePath();
@@ -93,17 +94,28 @@ public class ProductController {
 
             int pagesToExtract = (product.getPlayType() == 1) ? 3 : 1;
 
-            try (InputStream fileStream = new URL(preSignedURL).openStream()) {
+            try(InputStream fileStream = new URL(preSignedURL).openStream()) {
                 ProductService.PdfExtractionResult result = productService.extractPagesFromPdf(fileStream, pagesToExtract);
+
+                StreamingResponseBody streamingResponseBody = outputStream -> {
+                    try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = extractedPdfStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                            outputStream.flush();
+                        }
+                    }
+                };
 
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_PDF) // PDF 타입 명시
                         .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
-                        .body(new InputStreamResource(new ByteArrayInputStream(result.getExtractedPdfBytes())));
+                        .body(streamingResponseBody);
             }
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
+            return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
         }
     }
 }
