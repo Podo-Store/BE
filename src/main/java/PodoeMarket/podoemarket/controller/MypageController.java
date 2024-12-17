@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,9 @@ public class MypageController {
     private final TokenProvider tokenProvider;
 
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+
+    @Value("${cloud.aws.s3.url}")
+    private String bucketURL;
 
     @GetMapping("/confirm")
     public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
@@ -303,7 +307,7 @@ public class MypageController {
 
             final ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
 
-            ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant);
+            ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant, bucketURL);
 
             return ResponseEntity.ok().body(applyDTO);
         } catch (Exception e) {

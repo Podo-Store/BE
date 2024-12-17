@@ -146,11 +146,11 @@ public class EntityToDTOConverter {
         return completeDTO;
     }
 
-    public static ApplyDTO convertToApplyDTO(OrderItemEntity orderItemEntity, ApplicantEntity applicantEntity) {
+    public static ApplyDTO convertToApplyDTO(OrderItemEntity orderItemEntity, ApplicantEntity applicantEntity, String bucketURL) throws UnsupportedEncodingException {
       ApplyDTO applyDTO = new ApplyDTO();
 
       applyDTO.setOrderItemId(orderItemEntity.getId());
-      applyDTO.setImagePath(orderItemEntity.getProduct().getImagePath());
+      applyDTO.setImagePath(orderItemEntity.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItemEntity.getProduct().getImagePath(), "UTF-8"): "");
       applyDTO.setTitle(orderItemEntity.getTitle());
       applyDTO.setWriter(orderItemEntity.getProduct().getWriter());
       applyDTO.setPerformanceAmount(orderItemEntity.getPerformanceAmount());
