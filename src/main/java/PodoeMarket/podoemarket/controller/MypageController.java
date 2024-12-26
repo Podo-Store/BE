@@ -7,6 +7,7 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
+import com.amazonaws.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -213,6 +214,14 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
+            if(!ValidCheck.isValidPlot(dto.getPlot())){
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("줄거리 유효성 검사 실패")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             String scriptImageFilePath = null;
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
                 scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle(), dto.getId());
@@ -239,6 +248,7 @@ public class MypageController {
                     .scriptPrice(dto.getScriptPrice())
                     .performancePrice(dto.getPerformancePrice())
                     .descriptionPath(descriptionFilePath)
+                    .plot(dto.getPlot())
                     .build();
 
             mypageService.productUpdate(dto.getId(), product);

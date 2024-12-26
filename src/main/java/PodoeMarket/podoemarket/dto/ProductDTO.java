@@ -25,6 +25,7 @@ public class ProductDTO {
     private String descriptionPath;
     private int playType;
     private boolean checked;
+    private String plot;
     private LocalDateTime date;
 
     // 옵션 선택 드롭다운

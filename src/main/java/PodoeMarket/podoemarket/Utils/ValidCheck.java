@@ -115,4 +115,19 @@ public class ValidCheck {
             return true;
         }
     }
+
+    public static boolean isValidPlot(String plot) {
+        String regx_plot = "^.{1,80}$";
+
+        if(plot == null) {
+            log.warn("plot is null or empty");
+            return false;
+        } else if(!Pattern.matches(regx_plot, plot)) {
+            log.warn("plot is not fit in the rule");
+            return false;
+        } else {
+            log.info("plot valid checked");
+            return true;
+        }
+    }
 }

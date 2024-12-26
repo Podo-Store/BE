@@ -57,6 +57,9 @@ public class ProductEntity {
     @ColumnDefault("0")
     private int playType; // 0: default 1: 장편극, 2: 단편극
 
+    @Column(nullable = false)
+    private String plot;
+
     // 관리자(심사 주체) 확인 여부
     @Column(nullable = false)
     @ColumnDefault("0")
