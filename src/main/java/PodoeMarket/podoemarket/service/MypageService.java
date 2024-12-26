@@ -144,6 +144,7 @@ public class MypageService {
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
         product.setDescriptionPath(productEntity.getDescriptionPath());
+        product.setPlot(productEntity.getPlot());
 
         productRepo.save(product);
     }

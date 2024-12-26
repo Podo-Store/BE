@@ -57,6 +57,7 @@ public class EntityToDTOConverter {
             productDTO.setDate(entity.getCreatedAt());
             productDTO.setChecked(entity.isChecked());
             productDTO.setPlayType(entity.getPlayType());
+            productDTO.setPlot(entity.getPlot());
 
             productDTO.setBuyStatus(buyStatus);
 
