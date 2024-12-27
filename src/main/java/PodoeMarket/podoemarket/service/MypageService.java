@@ -462,7 +462,7 @@ public class MypageService {
     public RequestedPerformanceDTO.ProductInfo getProductInfo(final UUID productId, final UserEntity userInfo) throws UnsupportedEncodingException {
         final ProductEntity product = productRepo.findById(productId);
 
-        if(!product.getUser().equals(userInfo))
+        if(!product.getUser().getId().equals(userInfo.getId()))
             throw new RuntimeException("접근 권한이 없습니다.");
 
         final String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
