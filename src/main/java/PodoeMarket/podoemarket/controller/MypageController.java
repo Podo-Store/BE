@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -473,6 +474,24 @@ public class MypageController {
             mypageService.refundRegister(refund);
 
             return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/requested")
+    public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID scriptId) {
+        try {
+            final RequestedPerformanceDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId);
+            final List<RequestedPerformanceDTO.DateRequestedList> list = mypageService.getDateRequestedList(scriptId);
+
+            final RequestedPerformanceDTO performanceList = RequestedPerformanceDTO.builder()
+                    .productInfo(productInfo)
+                    .dateRequestedList(list)
+                    .build();
+
+            return ResponseEntity.ok().body(performanceList);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
