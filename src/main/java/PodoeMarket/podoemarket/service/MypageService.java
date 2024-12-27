@@ -154,8 +154,8 @@ public class MypageService {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
 
-        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg")) {
-            throw new RuntimeException("ScriptImage file type is not jpg");
+        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/png")) {
+            throw new RuntimeException("ScriptImage file type is only jpg and png");
         }
 
         // 파일 이름 가공
