@@ -117,7 +117,7 @@ public class ValidCheck {
     }
 
     public static boolean isValidPlot(String plot) {
-        String regx_plot = "^.{1,80}$";
+        String regx_plot = "^.{1,150}$";
 
         if(plot == null) {
             log.warn("plot is null or empty");

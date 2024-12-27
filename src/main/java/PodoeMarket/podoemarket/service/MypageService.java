@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -154,8 +155,8 @@ public class MypageService {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
         }
 
-        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg")) {
-            throw new RuntimeException("ScriptImage file type is not jpg");
+        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/png")) {
+            throw new RuntimeException("ScriptImage file type is only jpg and png");
         }
 
         // 파일 이름 가공
@@ -456,5 +457,66 @@ public class MypageService {
             moveFile(bucket, product.getDescriptionPath(), descriptionPath);
             deleteFile(bucket, product.getDescriptionPath());
         }
+    }
+
+    public RequestedPerformanceDTO.ProductInfo getProductInfo(final UUID productId, final UserEntity userInfo) throws UnsupportedEncodingException {
+        final ProductEntity product = productRepo.findById(productId);
+
+        if(!product.getUser().equals(userInfo))
+            throw new RuntimeException("접근 권한이 없습니다.");
+
+        final String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
+
+        return RequestedPerformanceDTO.ProductInfo.builder()
+                .imagePath(encodedScriptImage)
+                .title(product.getTitle())
+                .writer(product.getWriter())
+                .plot(product.getPlot())
+                .script(product.isScript())
+                .scriptPrice(product.getScriptPrice())
+                .scriptQuantity(orderItemRepo.sumScriptByProductId(productId))
+                .performance(product.isPerformance())
+                .performancePrice(product.getPerformancePrice())
+                .performanceQuantity(orderItemRepo.sumPerformanceAmountByProductId(productId))
+                .build();
+    }
+
+    public List<RequestedPerformanceDTO.DateRequestedList> getDateRequestedList (final UUID productId) {
+        // 모든 주문 데이터 가져오기
+        final List<OrderItemEntity> orderItems = orderItemRepo.findAllByProductId(productId);
+
+        List<OrderItemEntity> filteredOrderItems = orderItems.stream()
+                .filter(orderItem -> orderItem.getPerformanceAmount() >= 1)
+                .filter(orderItem -> orderItem.getApplicant() != null)
+                .toList();
+
+        // 날짜별 그룹화
+        Map<LocalDate, List<OrderItemEntity>> groupedByOrderDate = filteredOrderItems.stream()
+                .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
+
+        return groupedByOrderDate.entrySet().stream()
+                .map(entry -> {
+                    LocalDate date = entry.getKey();
+                    List<OrderItemEntity> orderItemList = entry.getValue();
+
+                    // 각 주문에 대한 신청자 정보
+                    List<RequestedPerformanceDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
+                            .map(orderItem -> RequestedPerformanceDTO.ApplicantInfo.builder()
+                                    .name(orderItem.getApplicant().getName())
+                                    .phoneNumber(orderItem.getApplicant().getPhoneNumber())
+                                    .address(orderItem.getApplicant().getAddress())
+                                    .performanceDateList(orderItem.getPerformanceDate().stream()
+                                            .map(performanceDate -> RequestedPerformanceDTO.PerformanceDate.builder()
+                                                    .date(performanceDate.getDate())
+                                                    .build())
+                                            .collect(Collectors.toList()))
+                                    .build())
+                            .toList();
+
+                    return RequestedPerformanceDTO.DateRequestedList.builder()
+                            .date(date)
+                            .requestedInfo(applicantInfoList)
+                            .build();
+                }).toList();
     }
 }
