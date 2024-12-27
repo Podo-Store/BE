@@ -459,8 +459,12 @@ public class MypageService {
         }
     }
 
-    public RequestedPerformanceDTO.ProductInfo getProductInfo(final UUID productId) throws UnsupportedEncodingException {
+    public RequestedPerformanceDTO.ProductInfo getProductInfo(final UUID productId, final UserEntity userInfo) throws UnsupportedEncodingException {
         final ProductEntity product = productRepo.findById(productId);
+
+        if(!product.getUser().equals(userInfo))
+            throw new RuntimeException("접근 권한이 없습니다.");
+
         final String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
 
         return RequestedPerformanceDTO.ProductInfo.builder()
@@ -486,6 +490,7 @@ public class MypageService {
                 .filter(orderItem -> orderItem.getApplicant() != null)
                 .toList();
 
+        // 날짜별 그룹화
         Map<LocalDate, List<OrderItemEntity>> groupedByOrderDate = filteredOrderItems.stream()
                 .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
 
@@ -494,6 +499,7 @@ public class MypageService {
                     LocalDate date = entry.getKey();
                     List<OrderItemEntity> orderItemList = entry.getValue();
 
+                    // 각 주문에 대한 신청자 정보
                     List<RequestedPerformanceDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
                             .map(orderItem -> RequestedPerformanceDTO.ApplicantInfo.builder()
                                     .name(orderItem.getApplicant().getName())

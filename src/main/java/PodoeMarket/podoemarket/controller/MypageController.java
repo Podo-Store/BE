@@ -481,9 +481,9 @@ public class MypageController {
     }
 
     @GetMapping("/requested")
-    public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID scriptId) {
+    public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID scriptId, @AuthenticationPrincipal UserEntity userInfo) {
         try {
-            final RequestedPerformanceDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId);
+            final RequestedPerformanceDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId, userInfo);
             final List<RequestedPerformanceDTO.DateRequestedList> list = mypageService.getDateRequestedList(scriptId);
 
             final RequestedPerformanceDTO performanceList = RequestedPerformanceDTO.builder()
