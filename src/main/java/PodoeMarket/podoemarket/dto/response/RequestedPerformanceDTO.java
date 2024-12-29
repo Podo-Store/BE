@@ -48,6 +48,7 @@ public class RequestedPerformanceDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ApplicantInfo {
+        private int amount;
         private String name;
         private String phoneNumber;
         private String address;

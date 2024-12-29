@@ -502,6 +502,7 @@ public class MypageService {
                     // 각 주문에 대한 신청자 정보
                     List<RequestedPerformanceDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
                             .map(orderItem -> RequestedPerformanceDTO.ApplicantInfo.builder()
+                                    .amount(orderItem.getPerformanceAmount())
                                     .name(orderItem.getApplicant().getName())
                                     .phoneNumber(orderItem.getApplicant().getPhoneNumber())
                                     .address(orderItem.getApplicant().getAddress())
