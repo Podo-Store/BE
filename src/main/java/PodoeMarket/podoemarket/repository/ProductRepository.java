@@ -19,5 +19,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     ProductEntity findById(UUID id);
 
-    List<ProductEntity> findAllByPlayTypeAndChecked(PlayType playType, ProductStatus checked, Pageable pageable); // checked는 ProductStatus.PASS로 고정
+    List<ProductEntity> findAllByPlayTypeAndChecked(PlayType playType, ProductStatus checked, Pageable pageable);
+
+    Long countAllByChecked(ProductStatus checked);
 }
