@@ -1,5 +1,7 @@
 package PodoeMarket.podoemarket.entity;
 
+import PodoeMarket.podoemarket.entity.type.PlayType;
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,18 +54,18 @@ public class ProductEntity {
 
     @Column
     private String descriptionPath;
-    
+
+    @Enumerated(EnumType.STRING)
     @Column
-    @ColumnDefault("0")
-    private int playType; // 0: default 1: 장편극, 2: 단편극
+    private PlayType playType;
 
     @Column(nullable = false)
     private String plot;
 
     // 관리자(심사 주체) 확인 여부
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private boolean checked;
+    private ProductStatus checked = ProductStatus.WAIT;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

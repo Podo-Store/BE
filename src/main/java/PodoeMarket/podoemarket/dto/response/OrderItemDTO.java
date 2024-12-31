@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.dto.response;
 
+import PodoeMarket.podoemarket.entity.type.PlayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +18,7 @@ public class OrderItemDTO {
     private String title;
     private String writer;
     private String imagePath;
-    private boolean checked;
-    private int playType;
+    private PlayType playType;
     private boolean script;
     private int scriptPrice;
     private int performanceAmount;

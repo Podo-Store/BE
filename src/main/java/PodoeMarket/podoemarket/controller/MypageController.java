@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import com.amazonaws.Response;
@@ -207,7 +208,7 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if(!(productService.product(dto.getId())).isChecked()) {
+            if((productService.product(dto.getId())).getChecked() == ProductStatus.WAIT) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("등록 심사 중인 작품")
                         .build();
