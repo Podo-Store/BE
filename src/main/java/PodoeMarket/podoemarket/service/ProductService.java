@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.repository.OrderItemRepository;
@@ -41,7 +42,7 @@ public class ProductService {
     private final Pageable mainPage = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
     public List<ProductListDTO> mainLongPlayList() {
-        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1, ProductStatus.PASS, mainPage);
+        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG, ProductStatus.PASS, mainPage);
 
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
@@ -51,7 +52,7 @@ public class ProductService {
     }
 
     public List<ProductListDTO> mainShortPlayList() {
-        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2,  ProductStatus.PASS, mainPage);
+        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, mainPage);
 
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)
@@ -63,7 +64,7 @@ public class ProductService {
     public List<ProductListDTO> longPlayList(int page) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(1,  ProductStatus.PASS, pageable);
+        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG,  ProductStatus.PASS, pageable);
 
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
@@ -75,7 +76,7 @@ public class ProductService {
     public List<ProductListDTO> shortPlayList(int page) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(2,  ProductStatus.PASS, pageable);
+        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, pageable);
 
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)

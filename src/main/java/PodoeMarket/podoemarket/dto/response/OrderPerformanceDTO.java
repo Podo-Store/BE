@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.dto.response;
 
+import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,7 @@ public class OrderPerformanceDTO {
     private String writer;
     private String imagePath;
     private ProductStatus checked;
-    private int playType;
+    private PlayType playType;
     private int performanceAmount;
     private int performancePrice;
     private int performanceTotalPrice;

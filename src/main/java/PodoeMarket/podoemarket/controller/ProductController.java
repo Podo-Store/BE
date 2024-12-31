@@ -5,12 +5,11 @@ import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.dto.response.ScriptListDTO;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.service.ProductService;
 import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,8 +20,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,7 +89,7 @@ public class ProductController {
             final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
-            int pagesToExtract = (product.getPlayType() == 1) ? 3 : 1;
+            int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 3 : 1;
 
             try(InputStream fileStream = new URL(preSignedURL).openStream()) {
                 ProductService.PdfExtractionResult result = productService.extractPagesFromPdf(fileStream, pagesToExtract);
