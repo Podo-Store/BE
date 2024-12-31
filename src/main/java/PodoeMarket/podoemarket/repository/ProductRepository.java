@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.repository;
 
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,5 +19,5 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     ProductEntity findById(UUID id);
 
-    List<ProductEntity> findAllByPlayTypeAndChecked(int playType, boolean checked, Pageable pageable); // checked는 true로 고정
+    List<ProductEntity> findAllByPlayTypeAndChecked(int playType, ProductStatus checked, Pageable pageable); // checked는 ProductStatus.PASS로 고정
 }

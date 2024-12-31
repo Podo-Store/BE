@@ -31,7 +31,7 @@ public class EntityToDTOConverter {
            productListDTO.setPerformance(entity.isPerformance());
            productListDTO.setPerformancePrice(entity.getPerformancePrice());
            productListDTO.setDate(entity.getCreatedAt());
-           productListDTO.setChecked(entity.isChecked());
+           productListDTO.setChecked(entity.getChecked());
 
            return productListDTO;
         } catch (UnsupportedEncodingException e) {
@@ -55,7 +55,7 @@ public class EntityToDTOConverter {
             productDTO.setPerformancePrice(entity.getPerformancePrice());
             productDTO.setDescriptionPath(encodedDescription);
             productDTO.setDate(entity.getCreatedAt());
-            productDTO.setChecked(entity.isChecked());
+            productDTO.setChecked(entity.getChecked());
             productDTO.setPlayType(entity.getPlayType());
             productDTO.setPlot(entity.getPlot());
 
@@ -81,7 +81,7 @@ public class EntityToDTOConverter {
                 itemDTO.setDelete(false);
                 itemDTO.setWriter(product.getWriter());
                 itemDTO.setImagePath(encodedScriptImage);
-                itemDTO.setChecked(product.isChecked());
+                itemDTO.setChecked(product.getChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
                 itemDTO.setProductId(product.getId());
                 itemDTO.setPaymentStatus(orderItem.getOrder().isPaymentStatus());
@@ -115,7 +115,7 @@ public class EntityToDTOConverter {
                 itemDTO.setDelete(false);
                 itemDTO.setWriter(product.getWriter());
                 itemDTO.setImagePath(encodedScriptImage);
-                itemDTO.setChecked(product.isChecked());
+                itemDTO.setChecked(product.getChecked());
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
                 itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                 itemDTO.setProductId(product.getId());

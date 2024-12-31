@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.dto;
 
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +25,7 @@ public class ProductDTO {
     private int performancePrice;
     private String descriptionPath;
     private int playType;
-    private boolean checked;
+    private ProductStatus checked;
     private String plot;
     private LocalDateTime date;
 

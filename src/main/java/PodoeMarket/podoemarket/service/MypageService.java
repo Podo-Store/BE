@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.entity.*;
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.repository.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -133,7 +134,7 @@ public class MypageService {
     public void productUpdate(final UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
-        if(!product.isChecked())
+        if(product.getChecked() == ProductStatus.WAIT)
             throw new RuntimeException("등록 심사 중인 작품");
 
         product.setImagePath(productEntity.getImagePath());
@@ -241,7 +242,7 @@ public class MypageService {
         if(!product.getUser().getId().equals(userId))
             throw new RuntimeException("작가가 아님");
 
-        if(!product.isChecked())
+        if(product.getChecked() == ProductStatus.WAIT)
             throw new RuntimeException("심사 중");
 
         // 탈퇴와 동일한 파일 삭제 처리 필요

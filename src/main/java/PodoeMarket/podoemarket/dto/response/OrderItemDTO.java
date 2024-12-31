@@ -17,7 +17,6 @@ public class OrderItemDTO {
     private String title;
     private String writer;
     private String imagePath;
-    private boolean checked;
     private int playType;
     private boolean script;
     private int scriptPrice;
