@@ -59,7 +59,7 @@ public class ProductEntity {
     @Column
     private PlayType playType;
 
-    @Column(nullable = false)
+    @Column
     private String plot;
 
     // 관리자(심사 주체) 확인 여부

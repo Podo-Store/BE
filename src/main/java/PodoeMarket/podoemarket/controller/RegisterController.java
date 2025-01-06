@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.controller;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
 import PodoeMarket.podoemarket.service.RegisterService;
@@ -34,6 +35,7 @@ public class RegisterController {
                     .title(FilenameUtils.getBaseName(files[0].getOriginalFilename()))
                     .writer(user.getNickname())
                     .filePath(filePath)
+                    .checked(ProductStatus.WAIT)
                     .user(userInfo)
                     .build();
 
