@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.repository;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findAllByPlayTypeAndChecked(PlayType playType, ProductStatus checked, Pageable pageable);
 
     Long countAllByChecked(ProductStatus checked);
+
+    Page<ProductEntity> findByTitleContainingOrWriterContaining(String title, String writer, Pageable pageable);
 }
