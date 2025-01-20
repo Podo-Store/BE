@@ -8,7 +8,6 @@ import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
-import com.amazonaws.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +26,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 @Slf4j
 @RequestMapping("/profile")
 public class MypageController {
