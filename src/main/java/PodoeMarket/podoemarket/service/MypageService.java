@@ -327,7 +327,7 @@ public class MypageService {
 
     public byte[] downloadFile(final String fileKey, final String email) {
         // S3에서 파일 객체 가져오기
-        final S3Object s3Object = amazonS3.getObject("podobucket", fileKey);
+        final S3Object s3Object = amazonS3.getObject(bucket, fileKey);
 
         try (InputStream inputStream = s3Object.getObjectContent();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -386,7 +386,6 @@ public class MypageService {
         }
     }
 
-    @Transactional
     public void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
         final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
 

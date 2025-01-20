@@ -2,14 +2,15 @@ package PodoeMarket.podoemarket.dto.response;
 
 import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.parameters.P;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -26,8 +27,9 @@ public class ProductManagementDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ProductDTO {
-        private Long id;
-        private Date createdAt;
+        private UUID id;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        private LocalDateTime createdAt;
         private String title;
         private String writer;
         private ProductStatus checked;

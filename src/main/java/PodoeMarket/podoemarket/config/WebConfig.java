@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -54,8 +56,8 @@ public class WebConfig implements WebMvcConfigurer {
 
         // cors 설정
         config.setAllowCredentials(true);
-//        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
-        config.setAllowedOriginPatterns(Arrays.asList("https://www.podo-store.com"));
+        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
+//        config.setAllowedOriginPatterns(Arrays.asList("https://www.podo-store.com"));
         config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setExposedHeaders(Arrays.asList("X-Total-Pages"));
