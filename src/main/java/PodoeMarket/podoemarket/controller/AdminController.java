@@ -25,7 +25,7 @@ public class AdminController {
 
     @GetMapping("/product")
     public ResponseEntity<?> productManage(@RequestParam(value = "page", defaultValue = "0") int page,
-                                           @RequestParam(value = "search", required = false) String search) {
+                                           @RequestParam(value = "search", required = false, defaultValue = "") String search) {
         try {
             final Long productPassCnt = adminService.getCheckedCount(ProductStatus.PASS);
             final Long productWaitCnt = adminService.getCheckedCount(ProductStatus.WAIT);

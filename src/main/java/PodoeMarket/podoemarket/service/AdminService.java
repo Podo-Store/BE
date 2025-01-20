@@ -26,12 +26,14 @@ public class AdminService {
     public Page<ProductEntity> getAllProducts(String search, int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10);
 
+        if (search == null || search.trim().isEmpty())
+            return productRepo.findAll(pageRequest);
+
         return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
     }
 
-    public List<ProductManagementDTO.ProductDTO> getProductList(Page<ProductEntity> productsPage) {
-        log.info("getProductList: {}", productsPage.getContent());
 
+    public List<ProductManagementDTO.ProductDTO> getProductList(Page<ProductEntity> productsPage) {
         return productsPage.getContent().stream()
                 .map(product -> ProductManagementDTO.ProductDTO.builder()
                         .id(product.getId())
