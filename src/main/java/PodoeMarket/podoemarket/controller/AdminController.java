@@ -25,12 +25,13 @@ public class AdminController {
 
     @GetMapping("/product")
     public ResponseEntity<?> productManage(@RequestParam(value = "page", defaultValue = "0") int page,
-                                           @RequestParam(value = "search", required = false, defaultValue = "") String search) {
+                                           @RequestParam(value = "search", required = false, defaultValue = "") String search,
+                                           @RequestParam(value = "status", required = false) ProductStatus status) {
         try {
             final Long productPassCnt = adminService.getCheckedCount(ProductStatus.PASS);
             final Long productWaitCnt = adminService.getCheckedCount(ProductStatus.WAIT);
 
-            final Page<ProductEntity> products = adminService.getAllProducts(search, page);
+            final Page<ProductEntity> products = adminService.getAllProducts(search, status, page);
             final Long productCnt = products.getTotalElements();
             final List<ProductManagementDTO.ProductDTO> productList = adminService.getProductList(products);
 

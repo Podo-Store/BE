@@ -23,13 +23,20 @@ public class AdminService {
         return productRepo.countAllByChecked(productStatus);
     }
 
-    public Page<ProductEntity> getAllProducts(String search, int page) {
+    public Page<ProductEntity> getAllProducts(String search, ProductStatus status, int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10);
 
-        if (search == null || search.trim().isEmpty())
-            return productRepo.findAll(pageRequest);
-
-        return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
+        if (search == null || search.trim().isEmpty()) {
+            if (status == null) // 검색어 X, 전체 O
+                return productRepo.findAll(pageRequest);
+            else // 검색어 X, 전체 X
+                return productRepo.findByChecked(status, pageRequest);
+        } else {
+            if (status == null) // 검색어 O, 전체 O
+                return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
+            else // 검색어 O, 전체 X
+                return productRepo.findByTitleContainingOrWriterContainingAndChecked(search, search, status, pageRequest);
+        }
     }
 
 
