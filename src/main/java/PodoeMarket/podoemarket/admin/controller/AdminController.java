@@ -4,16 +4,20 @@ import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,4 +80,28 @@ public class AdminController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @GetMapping(value = "/download/{id}", produces = "application/json; charset=UTF-8")
+    public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo,
+                                            @PathVariable("id") UUID productId) {
+        try {
+            // 거절 일주일 뒤부터 작품 삭제 - updateAt, REJECT 조합으로 결정
+            final ProductEntity product = adminService.getProduct(productId);
+
+            adminService.checkExpire(product.getUpdatedAt(), product.getChecked());
+
+            byte[] fileData = adminService.downloadFile(product.getFilePath());
+
+            String encodedFilename = URLEncoder.encode(product.getTitle(), "UTF-8");
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                    .body(fileData);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
 }

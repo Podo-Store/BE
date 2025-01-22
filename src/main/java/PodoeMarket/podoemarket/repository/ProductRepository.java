@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,4 +32,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     Page<ProductEntity> findByChecked(ProductStatus productStatus, Pageable pageable);
 
     Page<ProductEntity> findByTitleContainingOrWriterContainingAndChecked(String title, String writer, ProductStatus checked, Pageable pageable);
+
+    List<ProductEntity> findAllByCheckedAndUpdatedAt(ProductStatus checked, LocalDateTime updatedAt);
 }
