@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto.response;
+package PodoeMarket.podoemarket.admin.dto.response;
 
 import PodoeMarket.podoemarket.entity.type.PlayType;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductManagementDTO {
+public class ProductManagementResponseDTO {
     private Long passCnt;
     private Long waitCnt;
     private Long productCnt;

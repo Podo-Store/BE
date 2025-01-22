@@ -1,7 +1,8 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.admin.service;
 
-import PodoeMarket.podoemarket.dto.response.ProductManagementDTO;
+import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.entity.ProductEntity;
+import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -18,6 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
     private final ProductRepository productRepo;
+
+    public void checkAuth(UserEntity user) {
+        if (!user.isAuth())
+            throw new RuntimeException("어드민이 아닙니다.");
+    }
 
     public Long getCheckedCount(ProductStatus productStatus) {
         return productRepo.countAllByChecked(productStatus);
@@ -39,10 +46,9 @@ public class AdminService {
         }
     }
 
-
-    public List<ProductManagementDTO.ProductDTO> getProductList(Page<ProductEntity> productsPage) {
+    public List<ProductManagementResponseDTO.ProductDTO> getProductList(Page<ProductEntity> productsPage) {
         return productsPage.getContent().stream()
-                .map(product -> ProductManagementDTO.ProductDTO.builder()
+                .map(product -> ProductManagementResponseDTO.ProductDTO.builder()
                         .id(product.getId())
                         .createdAt(product.getCreatedAt())
                         .title(product.getTitle())
@@ -51,5 +57,13 @@ public class AdminService {
                         .playType(product.getPlayType())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public ProductEntity getProduct(UUID id) {
+        return productRepo.findById(id);
+    }
+
+    public void updateProduct(ProductEntity product) {
+        productRepo.save(product);
     }
 }
