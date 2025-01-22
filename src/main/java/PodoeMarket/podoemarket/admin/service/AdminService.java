@@ -78,9 +78,6 @@ public class AdminService {
 
     public void updateProduct(final ProductEntity product) {
         productRepo.save(product);
-
-        // 거절 설정 7일 이후 자동 삭제
-
     }
 
     public void checkExpire(final LocalDateTime updatedAt, final ProductStatus productStatus) {

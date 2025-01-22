@@ -85,6 +85,8 @@ public class AdminController {
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo,
                                             @PathVariable("id") UUID productId) {
         try {
+            adminService.checkAuth(userInfo);
+
             // 거절 일주일 뒤부터 작품 삭제 - updateAt, REJECT 조합으로 결정
             final ProductEntity product = adminService.getProduct(productId);
 
