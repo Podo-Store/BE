@@ -31,13 +31,13 @@ public class AdminController {
                                            @RequestParam(value = "search", required = false, defaultValue = "") String search,
                                            @RequestParam(value = "status", required = false) ProductStatus status) {
         try {
-//            if (!userInfo.isAuth()) {
-//                ResponseDTO resDTO = ResponseDTO.builder()
-//                        .error("어드민이 아닙니다.")
-//                        .build();
-//
-//                return ResponseEntity.badRequest().body(resDTO);
-//            }
+            if (!userInfo.isAuth()) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("어드민이 아닙니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
 
             final Long productPassCnt = adminService.getCheckedCount(ProductStatus.PASS);
             final Long productWaitCnt = adminService.getCheckedCount(ProductStatus.WAIT);
