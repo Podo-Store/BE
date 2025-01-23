@@ -197,6 +197,7 @@ public class UserController {
                         .email(user.getEmail())
                         .password(user.getPassword())
                         .nickname(user.getNickname())
+                        .auth(user.isAuth())
                         .accessToken(tokenProvider.createAccessToken(user))
                         .refreshToken(tokenProvider.createRefreshToken(user))
                         .build();

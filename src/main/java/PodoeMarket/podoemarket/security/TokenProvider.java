@@ -32,6 +32,7 @@ public class TokenProvider {
                 .claim("id", user.getId()) // 토큰에 사용자 아이디 추가하여 전달
                 .claim("nickname", user.getNickname())
                 .claim("email", user.getEmail())
+                .claim("auth", user.isAuth())
                 .compact(); // 토큰 생성
     }
 
@@ -50,6 +51,7 @@ public class TokenProvider {
                 .claim("id", user.getId())
                 .claim("nickname", user.getNickname())
                 .claim("email", user.getEmail())
+                .claim("auth", user.isAuth())
                 .compact();
     }
 
