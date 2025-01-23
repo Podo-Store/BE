@@ -1,19 +1,25 @@
 package PodoeMarket.podoemarket.admin.service;
 
+import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
+import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.repository.OrderItemRepository;
+import PodoeMarket.podoemarket.repository.OrderRepository;
 import PodoeMarket.podoemarket.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.Days;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +35,8 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
     private final ProductRepository productRepo;
+    private final OrderRepository orderRepo;
+    private final OrderItemRepository orderItemRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -44,7 +52,7 @@ public class AdminService {
     }
 
     public Page<ProductEntity> getAllProducts(final String search, final ProductStatus status, final int page) {
-        final PageRequest pageRequest = PageRequest.of(page, 10);
+        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
 
         if (search == null || search.trim().isEmpty()) {
             if (status == null) // 검색어 X, 전체 O
@@ -106,6 +114,60 @@ public class AdminService {
         }
     }
 
-    // =========== private method ============
+    public Long getOrderStatusCount(final Boolean paymentStatus) {
+        return orderRepo.countAllByPaymentStatus(paymentStatus);
+    }
+
+    // 검색어가 없을 경우
+    @Transactional
+    public List<OrderManagementResponseDTO.OrderDTO> getAllOrders(final Boolean checked, final int page) {
+        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        final Page<OrdersEntity> orders;
+
+        if (checked == null) // 검색어 X, 전체 O
+            orders = orderRepo.findAll(pageRequest);
+        else // 검색어 X, 전체 X
+            orders = orderRepo.findAllByPaymentStatus(checked, pageRequest);
+
+        return orders.getContent().stream()
+                .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
+                        .id(order.getId())
+                        .orderDate(order.getCreatedAt())
+                        .title(order.getOrderItem().getFirst().getTitle())
+                        .writer(order.getOrderItem().getFirst().getProduct().getWriter())
+                        .customer(order.getOrderItem().getFirst().getUser().getNickname())
+                        .paymentStatus(order.isPaymentStatus())
+                        .script(order.getOrderItem().getFirst().isScript())
+                        .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
+                        .totalPrice(order.getTotalPrice())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // 검색어가 있는 경우
+    @Transactional
+    public List<OrderManagementResponseDTO.OrderDTO> getAllOrderItems(final String search, final Boolean checked, final int page) {
+        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        final Page<OrderItemEntity> orders;
+
+        if (checked == null) // 검색어 O, 전체 O
+            orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
+        else // 검색어 O, 전체 X
+            orders = orderItemRepo.findOrderItemsByKeywordAndPaymentStatus(search, checked, pageRequest);
+
+        return orders.getContent().stream()
+                .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
+                        .id(orderItem.getOrder().getId())
+                        .orderDate(orderItem.getCreatedAt())
+                        .title(orderItem.getTitle())
+                        .writer(orderItem.getProduct().getWriter())
+                        .customer(orderItem.getUser().getNickname())
+                        .paymentStatus(orderItem.getOrder().isPaymentStatus())
+                        .script(orderItem.isScript())
+                        .performanceAmount(orderItem.getPerformanceAmount())
+                        .totalPrice(orderItem.getTotalPrice())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
 }

@@ -1,6 +1,8 @@
 package PodoeMarket.podoemarket.repository;
 
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +31,29 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     int sumPerformanceAmountByProductId(@Param("productId") UUID productId);
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
+
+    @Query(""" 
+    SELECT oi FROM OrderItemEntity oi
+    JOIN oi.product p
+    JOIN p.user u
+    WHERE p.title LIKE %:keyword%
+    OR p.writer LIKE %:keyword%
+    OR u.nickname LIKE %:keyword%
+    """)
+    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
+                                                  Pageable pageable);
+
+    @Query("""
+    SELECT oi FROM OrderItemEntity oi
+    JOIN oi.product p
+    JOIN p.user u
+    JOIN oi.order o
+    WHERE (p.title LIKE %:keyword%
+    OR p.writer LIKE %:keyword%
+    OR u.nickname LIKE %:keyword%)
+    AND(o.paymentStatus = :paymentStatus)
+    """)
+    Page<OrderItemEntity> findOrderItemsByKeywordAndPaymentStatus(@Param("keyword") String keyword,
+                                                                  @Param("paymentStatus") Boolean paymentStatus,
+                                                                  Pageable pageable);
 }

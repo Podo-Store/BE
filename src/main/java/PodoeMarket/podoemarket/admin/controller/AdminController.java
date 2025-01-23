@@ -1,10 +1,12 @@
 package PodoeMarket.podoemarket.admin.controller;
 
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
+import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.entity.OrdersEntity;
 import PodoeMarket.podoemarket.entity.ProductEntity;
 import PodoeMarket.podoemarket.entity.UserEntity;
 import PodoeMarket.podoemarket.entity.type.ProductStatus;
@@ -101,6 +103,41 @@ public class AdminController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                     .body(fileData);
         } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<?> orderManage(@AuthenticationPrincipal UserEntity userInfo,
+                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                         @RequestParam(value = "search", required = false, defaultValue = "") String search,
+                                         @RequestParam(value = "checked", required = false, defaultValue = "") Boolean checked) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            final Long doneCnt = adminService.getOrderStatusCount(true);
+            final Long waitingCnt = adminService.getOrderStatusCount(false);
+            long orderCnt = 0;
+            List<OrderManagementResponseDTO.OrderDTO> orders;
+
+            if (search == null || search.trim().isEmpty()) {
+                orders = adminService.getAllOrders(checked, page);
+                orderCnt = orders.size();
+            } else {
+                orders = adminService.getAllOrderItems(search, checked, page);
+                orderCnt = orders.size();
+            }
+
+            final OrderManagementResponseDTO management = OrderManagementResponseDTO.builder()
+                    .doneCnt(doneCnt)
+                    .waitingCnt(waitingCnt)
+                    .orderCnt(orderCnt)
+                    .orders(orders)
+                    .build();
+
+            return ResponseEntity.ok().body(management);
+        } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
