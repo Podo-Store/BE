@@ -1,7 +1,7 @@
 package PodoeMarket.podoemarket.admin.dto.response;
 
-import PodoeMarket.podoemarket.entity.type.PlayType;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

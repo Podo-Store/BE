@@ -1,7 +1,7 @@
 package PodoeMarket.podoemarket.dto;
 
-import PodoeMarket.podoemarket.entity.type.PlayType;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

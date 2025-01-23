@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.entity;
+package PodoeMarket.podoemarket.common.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

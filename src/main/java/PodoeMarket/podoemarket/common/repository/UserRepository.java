@@ -1,6 +1,6 @@
-package PodoeMarket.podoemarket.repository;
+package PodoeMarket.podoemarket.common.repository;
 
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
-package PodoeMarket.podoemarket.security;
+package PodoeMarket.podoemarket.common.security;
 
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,8 +1,8 @@
 package PodoeMarket.podoemarket.admin.scheduling;
 
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import jakarta.transaction.Transactional;

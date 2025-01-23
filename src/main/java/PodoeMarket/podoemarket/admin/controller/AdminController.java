@@ -1,13 +1,15 @@
 package PodoeMarket.podoemarket.admin.controller;
 
+import PodoeMarket.podoemarket.admin.dto.request.PaymentStatusRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
+import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
+import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -57,7 +59,7 @@ public class AdminController {
         }
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/products/{id}")
     public ResponseEntity<?> setProductInfo(@AuthenticationPrincipal UserEntity userInfo,
                                             @PathVariable("id") UUID productId,
                                             @RequestBody PlayTypeRequestDTO dto) {
@@ -106,4 +108,56 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/orders")
+    public ResponseEntity<?> orderManage(@AuthenticationPrincipal UserEntity userInfo,
+                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                         @RequestParam(value = "search", required = false, defaultValue = "") String search,
+                                         @RequestParam(value = "checked", required = false, defaultValue = "") Boolean checked) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            final Long doneCnt = adminService.getOrderStatusCount(true);
+            final Long waitingCnt = adminService.getOrderStatusCount(false);
+            OrderManagementResponseDTO orders;
+
+            if (search == null || search.trim().isEmpty()) {
+                orders = adminService.getAllOrders(checked, page);
+            } else {
+                orders = adminService.getAllOrderItems(search, checked, page);
+            }
+
+            final OrderManagementResponseDTO management = OrderManagementResponseDTO.builder()
+                    .doneCnt(doneCnt)
+                    .waitingCnt(waitingCnt)
+                    .orderCnt(orders.getOrderCnt())
+                    .orders(orders.getOrders())
+                    .build();
+
+            return ResponseEntity.ok().body(management);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PatchMapping("/orders/{id}")
+    public ResponseEntity<?> setPaymentStatus(@AuthenticationPrincipal UserEntity userInfo,
+                                              @PathVariable("id") Long orderId,
+                                              @RequestBody PaymentStatusRequestDTO dto ) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            OrdersEntity order = adminService.orders(orderId);
+
+            if (dto.getChecked() != null)
+                order.setPaymentStatus(dto.getChecked());
+
+            adminService.updateOrder(order);
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

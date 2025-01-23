@@ -1,14 +1,16 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
-import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.entity.type.PlayType;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.repository.ApplicantRepository;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
+import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
+import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;

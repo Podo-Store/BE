@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.entity.type;
+package PodoeMarket.podoemarket.common.entity.type;
 
 public enum ProductStatus {
     WAIT,

@@ -2,11 +2,11 @@ package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
+import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
-import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.security.TokenProvider;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

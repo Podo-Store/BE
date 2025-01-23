@@ -1,7 +1,7 @@
-package PodoeMarket.podoemarket.security;
+package PodoeMarket.podoemarket.common.security;
 
-import PodoeMarket.podoemarket.config.jwt.JwtProperties;
-import PodoeMarket.podoemarket.entity.UserEntity;
+import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
