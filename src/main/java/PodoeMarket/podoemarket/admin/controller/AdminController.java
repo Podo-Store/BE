@@ -1,15 +1,15 @@
 package PodoeMarket.podoemarket.admin.controller;
 
+import PodoeMarket.podoemarket.admin.dto.request.PaymentStatusRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
+import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -59,7 +59,7 @@ public class AdminController {
         }
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/products/{id}")
     public ResponseEntity<?> setProductInfo(@AuthenticationPrincipal UserEntity userInfo,
                                             @PathVariable("id") UUID productId,
                                             @RequestBody PlayTypeRequestDTO dto) {
@@ -140,4 +140,24 @@ public class AdminController {
         }
     }
 
+    @PatchMapping("/orders/{id}")
+    public ResponseEntity<?> setPaymentStatus(@AuthenticationPrincipal UserEntity userInfo,
+                                              @PathVariable("id") Long orderId,
+                                              @RequestBody PaymentStatusRequestDTO dto ) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            OrdersEntity order = adminService.orders(orderId);
+
+            if (dto.getChecked() != null)
+                order.setPaymentStatus(dto.getChecked());
+
+            adminService.updateOrder(order);
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

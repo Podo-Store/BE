@@ -1,13 +1,13 @@
 package PodoeMarket.podoemarket.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
-import PodoeMarket.podoemarket.config.jwt.JwtProperties;
+import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.security.TokenProvider;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;

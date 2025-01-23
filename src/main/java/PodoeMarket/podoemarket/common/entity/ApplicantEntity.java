@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.entity;
+package PodoeMarket.podoemarket.common.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,25 +6,30 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "performanceDate")
+@Table(name = "applicant")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PerformanceDateEntity {
+public class ApplicantEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column
-    private LocalDateTime date;
+    private String name;
 
-    // orderItem : performanceDate = 1 : N
-    @ManyToOne(targetEntity = OrderItemEntity.class)
-    @JoinColumn(name  = "orderItem_id", nullable = false)
+    @Column
+    private String phoneNumber;
+
+    @Column
+    private String address;
+
+    // orderItem : applicant = 1 : 1
+    @OneToOne(targetEntity = OrderItemEntity.class)
+    @JoinColumn(name = "orderItem_id")
     private OrderItemEntity orderItem;
 }

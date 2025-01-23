@@ -1,9 +1,9 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.dto.response.*;
-import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.repository.*;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;

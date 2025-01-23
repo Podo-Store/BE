@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.config;
+package PodoeMarket.podoemarket.common.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

@@ -1,11 +1,11 @@
 package PodoeMarket.podoemarket.controller;
 
+import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.dto.response.OrderInfoDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.entity.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.OrderService;
 import PodoeMarket.podoemarket.service.ProductService;

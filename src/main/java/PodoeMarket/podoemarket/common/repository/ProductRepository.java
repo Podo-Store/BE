@@ -1,14 +1,12 @@
-package PodoeMarket.podoemarket.repository;
+package PodoeMarket.podoemarket.common.repository;
 
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.type.PlayType;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;

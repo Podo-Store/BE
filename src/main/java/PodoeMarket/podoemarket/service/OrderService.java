@@ -1,13 +1,13 @@
 package PodoeMarket.podoemarket.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
+import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.entity.*;
-import PodoeMarket.podoemarket.repository.ApplicantRepository;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.OrderRepository;
-import PodoeMarket.podoemarket.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
+import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
+import PodoeMarket.podoemarket.common.repository.OrderRepository;
+import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

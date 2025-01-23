@@ -2,14 +2,14 @@ package PodoeMarket.podoemarket.admin.service;
 
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.entity.OrdersEntity;
-import PodoeMarket.podoemarket.entity.ProductEntity;
-import PodoeMarket.podoemarket.entity.UserEntity;
-import PodoeMarket.podoemarket.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.repository.OrderRepository;
-import PodoeMarket.podoemarket.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.OrdersEntity;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
+import PodoeMarket.podoemarket.common.repository.OrderRepository;
+import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
@@ -178,5 +178,13 @@ public class AdminService {
                 .orderCnt(orders.getTotalElements())
                 .orders(orderList)
                 .build();
+    }
+
+    public OrdersEntity orders(final Long orderId) {
+        return orderRepo.findById(orderId).orElse(null);
+    }
+
+    public void updateOrder(final OrdersEntity order) {
+        orderRepo.save(order);
     }
 }

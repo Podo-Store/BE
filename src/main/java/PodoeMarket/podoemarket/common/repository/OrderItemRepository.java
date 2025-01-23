@@ -1,6 +1,6 @@
-package PodoeMarket.podoemarket.repository;
+package PodoeMarket.podoemarket.common.repository;
 
-import PodoeMarket.podoemarket.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

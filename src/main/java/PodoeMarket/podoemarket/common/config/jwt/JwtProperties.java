@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.config.jwt;
+package PodoeMarket.podoemarket.common.config.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

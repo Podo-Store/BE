@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.dto.response;
 
-import PodoeMarket.podoemarket.entity.type.PlayType;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,8 +1,11 @@
 package PodoeMarket.podoemarket.Utils;
 
+import PodoeMarket.podoemarket.common.entity.ApplicantEntity;
+import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.OrdersEntity;
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
-import PodoeMarket.podoemarket.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
