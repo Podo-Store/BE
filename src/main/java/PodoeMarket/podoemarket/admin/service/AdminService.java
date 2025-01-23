@@ -120,7 +120,7 @@ public class AdminService {
 
     // 검색어가 없을 경우
     @Transactional
-    public List<OrderManagementResponseDTO.OrderDTO> getAllOrders(final Boolean checked, final int page) {
+    public OrderManagementResponseDTO getAllOrders(final Boolean checked, final int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         final Page<OrdersEntity> orders;
 
@@ -129,7 +129,7 @@ public class AdminService {
         else // 검색어 X, 전체 X
             orders = orderRepo.findAllByPaymentStatus(checked, pageRequest);
 
-        return orders.getContent().stream()
+        List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                 .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
                         .id(order.getId())
                         .orderDate(order.getCreatedAt())
@@ -141,12 +141,17 @@ public class AdminService {
                         .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
                         .totalPrice(order.getTotalPrice())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
+
+        return OrderManagementResponseDTO.builder()
+                .orderCnt(orders.getTotalElements())
+                .orders(orderList)
+                .build();
     }
 
     // 검색어가 있는 경우
     @Transactional
-    public List<OrderManagementResponseDTO.OrderDTO> getAllOrderItems(final String search, final Boolean checked, final int page) {
+    public OrderManagementResponseDTO getAllOrderItems(final String search, final Boolean checked, final int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         final Page<OrderItemEntity> orders;
 
@@ -155,7 +160,7 @@ public class AdminService {
         else // 검색어 O, 전체 X
             orders = orderItemRepo.findOrderItemsByKeywordAndPaymentStatus(search, checked, pageRequest);
 
-        return orders.getContent().stream()
+        List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                 .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
                         .id(orderItem.getOrder().getId())
                         .orderDate(orderItem.getCreatedAt())
@@ -167,7 +172,11 @@ public class AdminService {
                         .performanceAmount(orderItem.getPerformanceAmount())
                         .totalPrice(orderItem.getTotalPrice())
                         .build())
-                .collect(Collectors.toList());
-    }
+                .toList();
 
+        return OrderManagementResponseDTO.builder()
+                .orderCnt(orders.getTotalElements())
+                .orders(orderList)
+                .build();
+    }
 }

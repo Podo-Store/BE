@@ -118,22 +118,19 @@ public class AdminController {
 
             final Long doneCnt = adminService.getOrderStatusCount(true);
             final Long waitingCnt = adminService.getOrderStatusCount(false);
-            long orderCnt = 0;
-            List<OrderManagementResponseDTO.OrderDTO> orders;
+            OrderManagementResponseDTO orders;
 
             if (search == null || search.trim().isEmpty()) {
                 orders = adminService.getAllOrders(checked, page);
-                orderCnt = orders.size();
             } else {
                 orders = adminService.getAllOrderItems(search, checked, page);
-                orderCnt = orders.size();
             }
 
             final OrderManagementResponseDTO management = OrderManagementResponseDTO.builder()
                     .doneCnt(doneCnt)
                     .waitingCnt(waitingCnt)
-                    .orderCnt(orderCnt)
-                    .orders(orders)
+                    .orderCnt(orders.getOrderCnt())
+                    .orders(orders.getOrders())
                     .build();
 
             return ResponseEntity.ok().body(management);
