@@ -155,10 +155,12 @@ public class AdminService {
         final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         final Page<OrderItemEntity> orders;
 
-        if (checked == null) // 검색어 O, 전체 O
+        if (checked == null) {// 검색어 O, 전체 O
             orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
-        else // 검색어 O, 전체 X
+        }
+        else {// 검색어 O, 전체 X
             orders = orderItemRepo.findOrderItemsByKeywordAndPaymentStatus(search, checked, pageRequest);
+        }
 
         List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                 .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()

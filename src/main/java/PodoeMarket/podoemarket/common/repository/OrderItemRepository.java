@@ -32,16 +32,26 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
 
-    @Query(""" 
+//    @Query("""
+//    SELECT oi FROM OrderItemEntity oi
+//    JOIN oi.product p
+//    JOIN p.user u
+//    WHERE p.title LIKE %:keyword%
+//    OR p.writer LIKE %:keyword%
+//    OR u.nickname LIKE %:keyword%
+//    """)
+//    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
+//                                                  Pageable pageable);
+
+    @Query("""
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
     JOIN p.user u
-    WHERE p.title LIKE %:keyword%
-    OR p.writer LIKE %:keyword%
-    OR u.nickname LIKE %:keyword%
+    WHERE (LOWER(oi.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(p.writer) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
     """)
-    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
-                                                  Pageable pageable);
+    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("""
     SELECT oi FROM OrderItemEntity oi
