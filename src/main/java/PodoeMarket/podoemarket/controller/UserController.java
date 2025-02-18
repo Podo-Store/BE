@@ -8,7 +8,7 @@ import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.service.UserService;
 import io.jsonwebtoken.Claims;
