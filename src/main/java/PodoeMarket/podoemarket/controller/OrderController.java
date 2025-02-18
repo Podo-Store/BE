@@ -6,7 +6,7 @@ import PodoeMarket.podoemarket.dto.OrderDTO;
 import PodoeMarket.podoemarket.dto.response.OrderInfoDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.OrderService;
 import PodoeMarket.podoemarket.service.ProductService;
 import jakarta.transaction.Transactional;
