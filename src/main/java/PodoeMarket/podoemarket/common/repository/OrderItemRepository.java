@@ -32,11 +32,11 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
 
-    @Query(""" 
+    @Query("""
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
     JOIN p.user u
-    WHERE p.title LIKE %:keyword%
+    WHERE oi.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
     """)
@@ -48,7 +48,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     JOIN oi.product p
     JOIN p.user u
     JOIN oi.order o
-    WHERE (p.title LIKE %:keyword%
+    WHERE (oi.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%)
     AND(o.paymentStatus = :paymentStatus)

@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.text.Normalizer;
 
 @RequiredArgsConstructor
 @RestController
@@ -198,7 +199,10 @@ public class MypageController {
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
-            if(!ValidCheck.isValidTitle(dto.getTitle())){
+            // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
+            String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
+
+            if(!ValidCheck.isValidTitle(normalizedTitle)){
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("제목 유효성 검사 실패")
                         .build();
@@ -242,7 +246,7 @@ public class MypageController {
 
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)
-                    .title(dto.getTitle())
+                    .title(normalizedTitle)
                     .script(dto.isScript())
                     .performance(dto.isPerformance())
                     .scriptPrice(dto.getScriptPrice())

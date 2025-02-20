@@ -1,19 +1,22 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.register.controller;
 
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.register.service.RegisterService;
 import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.MypageService;
-import PodoeMarket.podoemarket.service.RegisterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.commons.io.FilenameUtils;
+
+import java.text.Normalizer;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,15 +26,16 @@ public class RegisterController {
     private final MypageService mypageService;
     private final MailSendService mailSendService;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") MultipartFile[] files) {
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestPart("script") MultipartFile[] files) {
         try{
             UserEntity user = mypageService.originalUser(userInfo.getId());
 
             String filePath = registerService.uploadScript(files, userInfo.getNickname());
+            String normalizedTitle = Normalizer.normalize(FilenameUtils.getBaseName(files[0].getOriginalFilename()), Normalizer.Form.NFKC);
 
             ProductEntity script = ProductEntity.builder()
-                    .title(FilenameUtils.getBaseName(files[0].getOriginalFilename()))
+                    .title(normalizedTitle)
                     .writer(user.getNickname())
                     .filePath(filePath)
                     .checked(ProductStatus.WAIT)
