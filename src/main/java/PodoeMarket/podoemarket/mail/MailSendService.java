@@ -1,5 +1,6 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.mail;
 
+import PodoeMarket.podoemarket.service.RedisUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,6 @@ public class MailSendService {
     @Value("${spring.mail.username}")
     private String username;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucketName;
-
     public boolean CheckAuthNum(String email,String authNum){
         if(redisUtil.getData(authNum) == null)
             return false;
@@ -47,7 +45,7 @@ public class MailSendService {
     }
 
 
-    // mail을 어디서 보내는지, 어디로 보내는지 , 어떻게 보내는지 작성
+    // 인증번호
     public String joinEmail(String email) {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
@@ -63,7 +61,7 @@ public class MailSendService {
         return Integer.toString(authNumber);
     }
 
-    // 결제 요청 이메일 전송
+    // 결제 요청
     public void joinPaymentEmail(String email, String price) {
         String setFrom = username;
         String title = "안녕하세요 포도상점입니다. 주문하신 상품의 결제 요청드립니다.";
@@ -102,6 +100,24 @@ public class MailSendService {
                         "*알파 버전 기간동안 판매 금액은 전액 작가님께 지급됩니다." +
                         "<br><br>" +
                         "감사합니다.";
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 결제 취소
+    public void joinCancelEmail(String email, String productTitle) {
+        String setFrom = username;
+        String title = "결제 취소";
+        String content =
+                "안녕하세요 포도상점입니다." +
+                        "<br>" +
+                        "주문하신 상품의 결제가 확인되지 않아 취소되었습니다." +
+                        "<br><br>" +
+                        "취소 상품 명 :" + productTitle +
+                        "<br><br>" +
+                        "문제가 있으실 경우 포도상점 메일을 통해 문의주시면 감사하겠습니다." +
+                        "<br>" +
+                        "podostore1111@gmail.com";
+
         mailSend(setFrom, email, title, content);
     }
 

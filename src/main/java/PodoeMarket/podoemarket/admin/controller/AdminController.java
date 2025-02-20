@@ -10,6 +10,7 @@ import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.mail.MailSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @RestController
 public class AdminController {
     private final AdminService adminService;
+    private final MailSendService mailSendService;
 
     @GetMapping("/products")
     public ResponseEntity<?> productManage(@AuthenticationPrincipal UserEntity userInfo,
@@ -149,8 +151,12 @@ public class AdminController {
 
             OrdersEntity order = adminService.orders(orderId);
 
-            if (dto.getChecked() != null)
+            if (dto.getChecked() != null) {
+                if (!dto.getChecked())
+                    mailSendService.joinCancelEmail(userInfo.getEmail(), order.getOrderItem().getFirst().getTitle());
+
                 order.setPaymentStatus(dto.getChecked());
+            }
 
             adminService.updateOrder(order);
 
