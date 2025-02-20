@@ -32,33 +32,23 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
 
-//    @Query("""
-//    SELECT oi FROM OrderItemEntity oi
-//    JOIN oi.product p
-//    JOIN p.user u
-//    WHERE p.title LIKE %:keyword%
-//    OR p.writer LIKE %:keyword%
-//    OR u.nickname LIKE %:keyword%
-//    """)
-//    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
-//                                                  Pageable pageable);
-
     @Query("""
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
     JOIN p.user u
-    WHERE (LOWER(oi.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    OR LOWER(p.writer) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    WHERE oi.title LIKE %:keyword%
+    OR p.writer LIKE %:keyword%
+    OR u.nickname LIKE %:keyword%
     """)
-    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
+    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
+                                                  Pageable pageable);
 
     @Query("""
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
     JOIN p.user u
     JOIN oi.order o
-    WHERE (p.title LIKE %:keyword%
+    WHERE (oi.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%)
     AND(o.paymentStatus = :paymentStatus)

@@ -92,7 +92,7 @@ public class OrderController {
                         .name(dto.getApplicant().getName())
                         .phoneNumber(dto.getApplicant().getPhoneNumber())
                         .address(dto.getApplicant().getAddress())
-                        .orderItem(orders.getOrderItem().get(0))
+                        .orderItem(orders.getOrderItem().getFirst())
                         .build();
 
                 orderService.createApplicant(applicant);
@@ -116,11 +116,11 @@ public class OrderController {
             final OrderInfoDTO resDTO = OrderInfoDTO.builder()
                     .orderId(orderId)
                     .orderDate(order.getCreatedAt())
-                    .title(orderItem.get(0).getTitle())
-                    .script(orderItem.get(0).isScript())
-                    .scriptPrice(orderItem.get(0).getScriptPrice())
-                    .performanceAmount(orderItem.get(0).getPerformanceAmount())
-                    .performancePrice(orderItem.get(0).getPerformancePrice())
+                    .title(orderItem.getFirst().getTitle())
+                    .script(orderItem.getFirst().isScript())
+                    .scriptPrice(orderItem.getFirst().getScriptPrice())
+                    .performanceAmount(orderItem.getFirst().getPerformanceAmount())
+                    .performancePrice(orderItem.getFirst().getPerformancePrice())
                     .build();
 
             String formatPrice = orderService.formatPrice(order.getTotalPrice());
