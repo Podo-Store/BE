@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
@@ -114,18 +115,18 @@ public class AdminController {
     public ResponseEntity<?> orderManage(@AuthenticationPrincipal UserEntity userInfo,
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(value = "search", required = false, defaultValue = "") String search,
-                                         @RequestParam(value = "checked", required = false, defaultValue = "") Boolean checked) {
+                                         @RequestParam(value = "status", required = false, defaultValue = "") OrderStatus orderStatus) {
         try {
             adminService.checkAuth(userInfo);
 
-            final Long doneCnt = adminService.getOrderStatusCount(true);
-            final Long waitingCnt = adminService.getOrderStatusCount(false);
+            final Long doneCnt = adminService.getOrderStatusCount(OrderStatus.PASS);
+            final Long waitingCnt = adminService.getOrderStatusCount(OrderStatus.WAIT);
             OrderManagementResponseDTO orders;
 
             if (search == null || search.trim().isEmpty()) {
-                orders = adminService.getAllOrders(checked, page);
+                orders = adminService.getAllOrders(orderStatus, page);
             } else {
-                orders = adminService.getAllOrderItems(search, checked, page);
+                orders = adminService.getAllOrderItems(search, orderStatus, page);
             }
 
             final OrderManagementResponseDTO management = OrderManagementResponseDTO.builder()
@@ -151,11 +152,11 @@ public class AdminController {
 
             OrdersEntity order = adminService.orders(orderId);
 
-            if (dto.getChecked() != null) {
-                if (!dto.getChecked())
+            if (dto.getOrderStatus() != null) {
+                if (dto.getOrderStatus() == OrderStatus.REJECT)
                     mailSendService.joinCancelEmail(userInfo.getEmail(), order.getOrderItem().getFirst().getTitle());
 
-                order.setPaymentStatus(dto.getChecked());
+                order.setOrderStatus(dto.getOrderStatus());
             }
 
             adminService.updateOrder(order);
