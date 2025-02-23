@@ -87,7 +87,7 @@ public class EntityToDTOConverter {
                 itemDTO.setChecked(product.getChecked());
                 itemDTO.setScriptPrice(orderItem.isScript() ? product.getScriptPrice() : 0);
                 itemDTO.setProductId(product.getId());
-                itemDTO.setPaymentStatus(orderItem.getOrder().isPaymentStatus());
+                itemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setScriptPrice(orderItem.isScript() ? orderItem.getScriptPrice() : 0);
@@ -122,7 +122,7 @@ public class EntityToDTOConverter {
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);
                 itemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                 itemDTO.setProductId(product.getId());
-                itemDTO.setPaymentStatus(orderItem.getOrder().isPaymentStatus());
+                itemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
             } else { // 삭제된 작품일 경우
                 itemDTO.setDelete(true);
                 itemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? product.getPerformancePrice() : 0);

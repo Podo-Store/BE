@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.common.entity;
 
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,9 +30,9 @@ public class OrdersEntity {
     @Column(nullable = false)
     private int paymentMethod; // 0: 0원, 1: 계좌이체
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private boolean paymentStatus;
+    private OrderStatus orderStatus = OrderStatus.WAIT;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

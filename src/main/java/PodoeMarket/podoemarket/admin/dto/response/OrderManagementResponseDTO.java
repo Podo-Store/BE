@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.admin.dto.response;
 
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,7 @@ public class OrderManagementResponseDTO {
         private String title;
         private String writer;
         private String customer;
-        private Boolean paymentStatus;
+        private OrderStatus orderStatus;
         private Boolean script; // 대본은 한 번에 1개만 구매 가능
         private int performanceAmount;
         private int totalPrice;

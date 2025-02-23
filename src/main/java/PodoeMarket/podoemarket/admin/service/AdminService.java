@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.OrderRepository;
@@ -114,20 +115,20 @@ public class AdminService {
         }
     }
 
-    public Long getOrderStatusCount(final Boolean paymentStatus) {
-        return orderRepo.countAllByPaymentStatus(paymentStatus);
+    public Long getOrderStatusCount(final OrderStatus orderStatus) {
+        return orderRepo.countAllByOrderStatus(orderStatus);
     }
 
     // 검색어가 없을 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrders(final Boolean checked, final int page) {
+    public OrderManagementResponseDTO getAllOrders(final OrderStatus orderStatus, final int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         final Page<OrdersEntity> orders;
 
-        if (checked == null) // 검색어 X, 전체 O
+        if (orderStatus == null) // 검색어 X, 전체 O
             orders = orderRepo.findAll(pageRequest);
         else // 검색어 X, 전체 X
-            orders = orderRepo.findAllByPaymentStatus(checked, pageRequest);
+            orders = orderRepo.findAllByOrderStatus(orderStatus, pageRequest);
 
         List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                 .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
@@ -136,7 +137,7 @@ public class AdminService {
                         .title(order.getOrderItem().getFirst().getTitle())
                         .writer(order.getOrderItem().getFirst().getProduct().getWriter())
                         .customer(order.getOrderItem().getFirst().getUser().getNickname())
-                        .paymentStatus(order.isPaymentStatus())
+                        .orderStatus(order.getOrderStatus())
                         .script(order.getOrderItem().getFirst().isScript())
                         .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
                         .totalPrice(order.getTotalPrice())
@@ -151,14 +152,14 @@ public class AdminService {
 
     // 검색어가 있는 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrderItems(final String search, final Boolean checked, final int page) {
+    public OrderManagementResponseDTO getAllOrderItems(final String search, final OrderStatus orderStatus, final int page) {
         final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         final Page<OrderItemEntity> orders;
 
-        if (checked == null) // 검색어 O, 전체 O
+        if (orderStatus == null) // 검색어 O, 전체 O
             orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
         else // 검색어 O, 전체 X
-            orders = orderItemRepo.findOrderItemsByKeywordAndPaymentStatus(search, checked, pageRequest);
+            orders = orderItemRepo.findOrderItemsByKeywordAndOrderStatus(search, orderStatus, pageRequest);
 
         List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                 .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
@@ -167,7 +168,7 @@ public class AdminService {
                         .title(orderItem.getTitle())
                         .writer(orderItem.getProduct().getWriter())
                         .customer(orderItem.getUser().getNickname())
-                        .paymentStatus(orderItem.getOrder().isPaymentStatus())
+                        .orderStatus(orderItem.getOrder().getOrderStatus())
                         .script(orderItem.isScript())
                         .performanceAmount(orderItem.getPerformanceAmount())
                         .totalPrice(orderItem.getTotalPrice())

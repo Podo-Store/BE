@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.controller;
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
@@ -311,9 +312,9 @@ public class MypageController {
         try {
             final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
 
-            if(!orderItem.getOrder().isPaymentStatus()) {
+            if(orderItem.getOrder().getOrderStatus() != OrderStatus.PASS) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("결제되지 않았습니다.")
+                        .error("결제 상태를 확인해주십시오.")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
@@ -380,9 +381,9 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if(!item.getOrder().isPaymentStatus()) {
+            if(item.getOrder().getOrderStatus() != OrderStatus.PASS) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("결제되지 않았습니다.")
+                        .error("결제 상태를 확인해주십시오.")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);

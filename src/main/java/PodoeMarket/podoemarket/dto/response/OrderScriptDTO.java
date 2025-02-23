@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.dto.response;
 
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
@@ -26,5 +27,5 @@ public class OrderScriptDTO {
     private int scriptPrice;
 
     private UUID productId;
-    private boolean paymentStatus;
+    private OrderStatus orderStatus;
 }
