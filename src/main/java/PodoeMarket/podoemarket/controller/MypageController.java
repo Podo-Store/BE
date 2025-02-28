@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
+import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

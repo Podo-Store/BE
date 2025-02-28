@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
@@ -10,7 +10,8 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
-import PodoeMarket.podoemarket.service.UserService;
+import PodoeMarket.podoemarket.user.dto.SignInRequestDTO;
+import PodoeMarket.podoemarket.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
@@ -186,7 +187,7 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticate(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> authenticate(@RequestBody SignInRequestDTO dto) {
         try{
             UserEntity user = userService.getByCredentials(dto.getUserId(), dto.getPassword(), pwdEncoder);
 
