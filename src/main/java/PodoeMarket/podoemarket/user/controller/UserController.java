@@ -125,7 +125,9 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            return ResponseEntity.ok().body(mailService.joinEmail(dto.getEmail()));
+            mailService.joinEmail(dto.getEmail());
+
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
