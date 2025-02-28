@@ -25,7 +25,7 @@ public class WorkService {
     private String bucketURL;
 
     public List<WorkListResponseDTO.DateWorkDTO> getDateWorks(final UUID userId) throws UnsupportedEncodingException {
-        final List<ProductEntity> products = productRepo.findAllByUserId(userId, Sort.by(Sort.Direction.DESC, "createdAt"));
+        final List<ProductEntity> products = productRepo.findAllByUserId(userId);
 
         if (products.isEmpty())
             return Collections.emptyList();
@@ -50,6 +50,7 @@ public class WorkService {
         }
 
         return works.entrySet().stream()
+                .sorted(Map.Entry.<LocalDate, List<WorkListResponseDTO.DateWorkDTO.WorksDTO>>comparingByKey().reversed()) // 최신 날짜부터 정렬
                 .map(entry -> new WorkListResponseDTO.DateWorkDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
