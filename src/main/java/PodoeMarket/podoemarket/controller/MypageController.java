@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.service.*;
+import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -162,21 +163,6 @@ public class MypageController {
                     .build();
 
             return ResponseEntity.ok().body(resUserDTO);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/scripts")
-    public ResponseEntity<?> scriptList(@AuthenticationPrincipal UserEntity userInfo) {
-        try{
-            ProductListPageDTO result = ProductListPageDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .productList(mypageService.getAllMyProducts(userInfo.getId()))
-                    .build();
-
-            return ResponseEntity.ok().body(result);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

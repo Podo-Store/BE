@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;

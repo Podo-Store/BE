@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkController {
     private final WorkService workService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> getWorks(@AuthenticationPrincipal UserEntity userInfo) {
         try {
             final WorkListResponseDTO resDTO = WorkListResponseDTO.builder()

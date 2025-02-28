@@ -15,8 +15,6 @@ import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
-    List<ProductEntity> findAllByUserId(UUID id, Sort sort);
-
     List<ProductEntity> findAllByUserId(UUID id);
 
     ProductEntity findById(UUID id);
