@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final String[] swaggerPath = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/error"};
     private final String[] permitPath = {"/", "/auth/**", "/scripts/**"};
 
-    @Bean // 이 메소드가 생성하는 객체를 스프링이 관리
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http 객체를 이용해서 http 요청에 대한 보안 설정
         http
