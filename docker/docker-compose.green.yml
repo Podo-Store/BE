@@ -1,0 +1,11 @@
+#docker-compose.green.yml
+
+#green
+services:
+  backend:
+    build: .
+    ports:
+      - "8082:8080"
+    container_name: spring-green
+    environment:
+      - TZ=Asia/Seoul

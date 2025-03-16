@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+## 환경변수 설정
+*.yml
+*.properties
+src/main/resources/application.properties
+src/main/resources/application.yml
