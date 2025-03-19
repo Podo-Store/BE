@@ -9,3 +9,7 @@ services:
     container_name: spring-green
     environment:
       - TZ=Asia/Seoul
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
