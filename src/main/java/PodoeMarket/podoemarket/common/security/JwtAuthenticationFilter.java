@@ -84,6 +84,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }else{
                 log.warn("Token is null");
+                filterChain.doFilter(request, response);
+                return;
             }
         }catch (Exception e){
             logger.error("Could not set user authentication in security context", e);
