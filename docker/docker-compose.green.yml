@@ -9,8 +9,16 @@ services:
     container_name: spring-green
     environment:
       - TZ=Asia/Seoul
+      - SPRING_DATA_REDIS_HOST=redis-green
+      - SPRING_DATA_REDIS_PORT=6379
+    depends_on:
+      - redis
   redis:
     image: redis
     container_name: redis-green
     ports:
       - "6381:6379"
+networks:
+  default:
+    name: green-network
+
