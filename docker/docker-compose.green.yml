@@ -10,6 +10,6 @@ services:
     environment:
       - TZ=Asia/Seoul
   redis:
-    image: redis
+    image: app-redis-1
     ports:
-      - "6381:6379"
+      - "6379"
