@@ -16,5 +16,7 @@ services:
       - TZ=Asia/Seoul
   redis:
     image: redis
+    container_name: redis-blue
     ports:
       - "6380:6379"
+

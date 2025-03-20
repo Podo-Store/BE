@@ -11,5 +11,6 @@ services:
       - TZ=Asia/Seoul
   redis:
     image: redis
+    container_name: redis-green
     ports:
       - "6381:6379"
