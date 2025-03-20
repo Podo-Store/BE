@@ -10,6 +10,7 @@ services:
     environment:
       - TZ=Asia/Seoul
   redis:
-    image: app-redis-1
+    image: redis
+    container_name: redis-green
     ports:
-      - "6379"
+      - "6381:6379"
