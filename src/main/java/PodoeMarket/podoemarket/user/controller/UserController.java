@@ -10,7 +10,8 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
-import PodoeMarket.podoemarket.user.dto.SignInRequestDTO;
+import PodoeMarket.podoemarket.user.dto.request.SignInRequestDTO;
+import PodoeMarket.podoemarket.user.dto.response.KakaoUserInfoResponseDTO;
 import PodoeMarket.podoemarket.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -214,6 +215,22 @@ public class UserController {
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/kakao")
+    public ResponseEntity<?> getKakao(@RequestParam("code") String code) {
+        try {
+            String accessToken = userService.getAccessTokenFromKakao(code);
+
+            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
+
+            log.info(userInfo.toString());
+
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
