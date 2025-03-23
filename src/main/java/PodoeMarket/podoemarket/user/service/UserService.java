@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -28,6 +29,9 @@ public class UserService {
 
     @Value("${kakao.client_id}")
     private String clientId;
+
+    @Value("${kakao.redirect_uri}")
+    private String redirectUri;
 
     private final String KAUTH_TOKEN_URL_HOST = "https://kauth.kakao.com";
     private final String KAUTH_USER_URL_HOST = "https://kapi.kakao.com";
@@ -146,18 +150,30 @@ public class UserService {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             conn.setDoOutput(true);
 
-            final String params = "grant_type=authorization_code" + "&client_id=" + clientId + "&code=" + code;
+            final String params = "grant_type=authorization_code" + "&client_id=" + clientId + "&code=" + code +
+                    "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(params.getBytes(StandardCharsets.UTF_8));
                 os.flush();
             }
 
-            StringBuilder res =  new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = br.readLine()) != null)
-                    res.append(line);
+            StringBuilder res = new StringBuilder();
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        res.append(line);
+                }
+            } else {
+                // 오류 응답 읽기
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        res.append(line);
+                }
+                throw new RuntimeException("카카오 API 오류: " + res);
             }
 
             KakaoTokenResponseDTO tokenResponseDTO = objectMapper.readValue(res.toString(), KakaoTokenResponseDTO.class);
