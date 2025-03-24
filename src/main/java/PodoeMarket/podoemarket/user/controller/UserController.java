@@ -394,33 +394,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newToken fail");
         }
     }
-
-    // refreshToken 재발급
-    @PostMapping("/newRefreshToken")
-    public ResponseEntity<?> createNewRefreshToken(HttpServletRequest request){
-        try {
-            String token = request.getHeader("Authorization").substring(7);
-            log.info("create new refresh Token from : {}", token);
-
-            Claims claims = Jwts.parser()
-                    .setSigningKey(jwtProperties.getSecretKey())
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            UUID id = UUID.fromString(claims.getSubject());
-
-            UserEntity user = userService.getById(id);
-            final UserDTO resUserDTO = UserDTO.builder()
-                    .userId(user.getUserId())
-                    .nickname(user.getNickname())
-                    .refreshToken(tokenProvider.createRefreshToken(user))
-                    .email(user.getEmail())
-                    .build();
-
-            return ResponseEntity.ok().body(resUserDTO);
-        }catch (Exception e){
-            log.error("/auth/newrefreshToken 실행 중 예외 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newRefreshToken fail");
-        }
-    }
 }
