@@ -199,11 +199,13 @@ public class UserService {
                     res.append(line);
             }
 
-            KakaoUserInfoResponseDTO userInfo = objectMapper.readValue(res.toString(), KakaoUserInfoResponseDTO.class);
-
-            return userInfo;
+            return objectMapper.readValue(res.toString(), KakaoUserInfoResponseDTO.class);
         } catch (Exception e) {
             throw new RuntimeException("카카오 사용자 정보 요청 중 오류 발생", e);
         }
+    }
+
+    public void createSocialUser(final UserEntity userEntity) {
+        userRepo.save(userEntity);
     }
 }

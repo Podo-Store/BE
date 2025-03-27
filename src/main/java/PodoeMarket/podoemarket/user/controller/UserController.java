@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
+import PodoeMarket.podoemarket.common.entity.type.SignUpType;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
@@ -227,8 +228,25 @@ public class UserController {
             String accessToken = userService.getAccessTokenFromKakao(code);
 
             KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
+//            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(code);
 
-            log.info(userInfo.toString());
+            // 회원가입 여부 확인
+            if (userService.checkEmail(userInfo.kakaoAccount.email)) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("이메일 중복")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            } else {
+                final UserEntity user = UserEntity.builder()
+                        .userId(String.valueOf(userInfo.id))
+                        .email(userInfo.kakaoAccount.email)
+                        .nickname(userInfo.kakaoAccount.profile.nickName)
+                        .signUpType(SignUpType.KAKAO)
+                        .build();
+
+                userService.createSocialUser(user);
+            }
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

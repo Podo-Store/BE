@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -44,7 +45,7 @@ public class KakaoUserInfoResponseDTO {
     @Getter
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public class KakaoAccount {
+    public static class KakaoAccount {
 
         //프로필 정보 제공 동의 여부
         @JsonProperty("profile_needs_agreement")
@@ -150,7 +151,7 @@ public class KakaoUserInfoResponseDTO {
         @Getter
         @NoArgsConstructor
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public class Profile {
+        public static class Profile {
 
             //닉네임
             @JsonProperty("nickname")
@@ -180,9 +181,9 @@ public class KakaoUserInfoResponseDTO {
     @Getter
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public class Partner {
+    public static class Partner {
         //고유 ID
         @JsonProperty("uuid")
-        public String uuid;
+        public UUID uuid;
     }
 }

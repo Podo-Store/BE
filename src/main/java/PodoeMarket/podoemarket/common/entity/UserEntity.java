@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.common.entity;
 
+import PodoeMarket.podoemarket.common.entity.type.SignUpType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -27,7 +28,6 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -36,6 +36,10 @@ public class UserEntity {
     @Column(nullable = false)
     @ColumnDefault("false")
     private boolean auth;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private SignUpType signUpType;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
