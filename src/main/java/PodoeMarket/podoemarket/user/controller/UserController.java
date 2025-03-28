@@ -226,17 +226,26 @@ public class UserController {
     public ResponseEntity<?> getKakao(@RequestParam("code") String code) {
         try {
             String accessToken = userService.getAccessTokenFromKakao(code);
-
+//
             KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
 //            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(code);
 
             // 회원가입 여부 확인
             if (userService.checkEmail(userInfo.kakaoAccount.email)) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 중복")
+                UserEntity user = userService.getByUserId(String.valueOf(userInfo.id));
+
+                final UserDTO resUserDTO = UserDTO.builder()
+                        .id(user.getId())
+                        .userId(user.getUserId())
+                        .email(user.getEmail())
+                        .password(user.getPassword())
+                        .nickname(user.getNickname())
+                        .auth(user.isAuth())
+                        .accessToken(tokenProvider.createAccessToken(user))
+                        .refreshToken(tokenProvider.createRefreshToken(user))
                         .build();
 
-                return ResponseEntity.badRequest().body(resDTO);
+                return ResponseEntity.ok().body(resUserDTO);
             } else {
                 final UserEntity user = UserEntity.builder()
                         .userId(String.valueOf(userInfo.id))
@@ -246,9 +255,9 @@ public class UserController {
                         .build();
 
                 userService.createSocialUser(user);
-            }
 
-            return ResponseEntity.ok().body(true);
+                return ResponseEntity.ok().body(true);
+            }
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
