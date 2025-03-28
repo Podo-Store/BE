@@ -35,33 +35,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("Filter is running...");
             String token = parseBearerToken(request);
 
-            log.info("doFilter token value : {}", token);
-
             if(token != null && !token.equalsIgnoreCase("null")){
-                Claims claims = tokenProvider.validateAndGetClaims(token);
+                // 소셜 로그인 토큰 처리 추가
+                if (isSocialLoginToken(token)) {
+                    log.info("Social login token detected, skipping JWT validation");
 
-                log.info("claims : {}", claims);
-                log.info("expire Time: {}", claims.getExpiration());
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                Claims claims = tokenProvider.validateAndGetClaims(token);
 
                 if(Objects.equals(claims.getIssuer(), "Token error")){
                     log.info("Token error from filter");
 
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("false(토큰 에러 발생)");
-
+                    sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "false(토큰 에러 발생)");
                     return;
                 }else if(Objects.equals(claims.getIssuer(), "Expired")){
                     // 엑세스 토큰이 유효시간이 지난 경우
                     log.info("Token is expired");
-                    log.info("req url: {}", request.getContextPath());
 
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("false(토큰 재발급을 받으세요)");
-
+                    sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "false(토큰 재발급을 받으세요)");
                     return;
                 }else {
                     // 토큰의 유효기간이 안지난 경우
@@ -104,5 +98,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7); // Bearer 6글자 + 공백 1글자
 
         return null;
+    }
+
+    private boolean isSocialLoginToken(String token) {
+        // 소셜 로그인 토큰 형식 확인 (예: 카카오 토큰은 점이 없음)
+        return !token.contains(".");
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(message);
     }
 }

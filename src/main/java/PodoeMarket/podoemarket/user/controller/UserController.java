@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
+import PodoeMarket.podoemarket.common.entity.type.SignUpType;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
@@ -10,7 +11,8 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
-import PodoeMarket.podoemarket.user.dto.SignInRequestDTO;
+import PodoeMarket.podoemarket.user.dto.request.SignInRequestDTO;
+import PodoeMarket.podoemarket.user.dto.response.KakaoUserInfoResponseDTO;
 import PodoeMarket.podoemarket.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -220,6 +222,48 @@ public class UserController {
         }
     }
 
+    @GetMapping("/kakao")
+    public ResponseEntity<?> getKakao(@RequestParam("code") String code) {
+        try {
+            String accessToken = userService.getAccessTokenFromKakao(code);
+//
+            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
+//            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(code);
+
+            // 회원가입 여부 확인
+            if (userService.checkEmail(userInfo.kakaoAccount.email)) {
+                UserEntity user = userService.getByUserId(String.valueOf(userInfo.id));
+
+                final UserDTO resUserDTO = UserDTO.builder()
+                        .id(user.getId())
+                        .userId(user.getUserId())
+                        .email(user.getEmail())
+                        .password(user.getPassword())
+                        .nickname(user.getNickname())
+                        .auth(user.isAuth())
+                        .accessToken(tokenProvider.createAccessToken(user))
+                        .refreshToken(tokenProvider.createRefreshToken(user))
+                        .build();
+
+                return ResponseEntity.ok().body(resUserDTO);
+            } else {
+                final UserEntity user = UserEntity.builder()
+                        .userId(String.valueOf(userInfo.id))
+                        .email(userInfo.kakaoAccount.email)
+                        .nickname(userInfo.kakaoAccount.profile.nickName)
+                        .signUpType(SignUpType.KAKAO)
+                        .build();
+
+                userService.createSocialUser(user);
+
+                return ResponseEntity.ok().body(true);
+            }
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/find/mailSend")
     public ResponseEntity<?> findMailSend(@RequestBody EmailRequestDTO dto) {
         try {
@@ -375,35 +419,6 @@ public class UserController {
         }catch (Exception e){
             log.error("/auth/newToken 실행 중 예외 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newToken fail");
-        }
-    }
-
-    // refreshToken 재발급
-    @PostMapping("/newRefreshToken")
-    public ResponseEntity<?> createNewRefreshToken(HttpServletRequest request){
-        try {
-            String token = request.getHeader("Authorization").substring(7);
-            log.info("create new refresh Token from : {}", token);
-
-            Claims claims = Jwts.parser()
-                    .setSigningKey(jwtProperties.getSecretKey())
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            UUID id = UUID.fromString(claims.getSubject());
-
-            UserEntity user = userService.getById(id);
-            final UserDTO resUserDTO = UserDTO.builder()
-                    .userId(user.getUserId())
-                    .nickname(user.getNickname())
-                    .refreshToken(tokenProvider.createRefreshToken(user))
-                    .email(user.getEmail())
-                    .build();
-
-            return ResponseEntity.ok().body(resUserDTO);
-        }catch (Exception e){
-            log.error("/auth/newrefreshToken 실행 중 예외 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("newRefreshToken fail");
         }
     }
 }
