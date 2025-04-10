@@ -10,6 +10,8 @@ name: BackEnd - CI/CD - deploy
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch: # 수동 실행을 위한 설정
+
 
 permissions:
   contents: read
