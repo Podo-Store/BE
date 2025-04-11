@@ -97,8 +97,6 @@ public class MailSendService {
                         "<br>" +
                         "심사는 3~5일이 소요되며, 심사 완료 시 메일로 결과를 발송해드립니다." +
                         "<br><br>" +
-                        "*알파 버전 기간동안 판매 금액은 전액 작가님께 지급됩니다." +
-                        "<br><br>" +
                         "감사합니다.";
         mailSend(setFrom, email, title, content);
     }
