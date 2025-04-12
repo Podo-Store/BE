@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.common.entity.type;
 
-public enum SignUpType {
+public enum SocialLoginType {
     KAKAO,
     GOOGLE,
     NAVER

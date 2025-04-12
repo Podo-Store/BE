@@ -2,7 +2,7 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
-import PodoeMarket.podoemarket.common.entity.type.SignUpType;
+import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
@@ -13,6 +13,7 @@ import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.user.dto.request.SignInRequestDTO;
 import PodoeMarket.podoemarket.user.dto.response.KakaoUserInfoResponseDTO;
+import PodoeMarket.podoemarket.user.service.OAuthService;
 import PodoeMarket.podoemarket.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -36,6 +37,7 @@ import java.util.*;
 @RequestMapping("/auth")
 public class UserController {
     private final UserService userService;
+    private final OAuthService oauthService;
     private final TokenProvider tokenProvider;
     private final MailSendService mailService;
     private final RedisUtil redisUtil;
@@ -226,7 +228,7 @@ public class UserController {
     public ResponseEntity<?> getKakao(@RequestParam("code") String code) {
         try {
             String accessToken = userService.getAccessTokenFromKakao(code);
-//
+
             KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
 //            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(code);
 
@@ -251,7 +253,7 @@ public class UserController {
                         .userId(String.valueOf(userInfo.id))
                         .email(userInfo.kakaoAccount.email)
                         .nickname(userInfo.kakaoAccount.profile.nickName)
-                        .signUpType(SignUpType.KAKAO)
+                        .socialLoginType(SocialLoginType.KAKAO)
                         .build();
 
                 userService.createSocialUser(user);
@@ -262,6 +264,19 @@ public class UserController {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
+    }
+
+    @GetMapping(value = "/{socialLoginType}")
+    public void socialLoginType(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
+        log.info(">> 사용자로부터 SNS 로그인 요청을 받음 :: {} Social Login", socialLoginType);
+        oauthService.request(socialLoginType);
+    }
+
+    @GetMapping(value = "/{socialLoginType}/callback")
+    public String callback(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
+                           @RequestParam(name = "code") String code) {
+        log.info(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
+        return oauthService.requestAccessToken(socialLoginType, code);
     }
 
     @PostMapping("/find/mailSend")

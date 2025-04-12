@@ -76,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     securityContext.setAuthentication(authentication); // context에 인증 정보 설정
                     SecurityContextHolder.setContext(securityContext); // SecurityContextHolder 저장
                 }
-            }else{
+            } else {
                 log.warn("Token is null");
                 filterChain.doFilter(request, response);
                 return;
