@@ -27,10 +27,7 @@ public class MailSendService {
     public boolean CheckAuthNum(String email,String authNum){
         if(redisUtil.getData(authNum) == null)
             return false;
-        else if(redisUtil.getData(authNum).equals(email))
-            return true;
-        else
-            return false;
+        else return redisUtil.getData(authNum).equals(email);
     }
 
     // 임의의 6자리 양수를 반환
@@ -49,7 +46,7 @@ public class MailSendService {
     public String joinEmail(String email) {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
-        String title = "인증 이메일"; // 이메일 제목
+        String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
         String content =
                 "포도 상점을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
                         "<br><br>" +
