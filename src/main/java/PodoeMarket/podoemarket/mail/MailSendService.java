@@ -47,12 +47,58 @@ public class MailSendService {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
+//        String content =
+//                "포도 상점을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
+//                        "<br><br>" +
+//                        "인증 번호는 " + authNumber + "입니다." +
+//                        "<br>" +
+//                        "인증번호를 제대로 입력해주세요"; //이메일 내용 삽입
         String content =
-                "포도 상점을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
-                        "<br><br>" +
-                        "인증 번호는 " + authNumber + "입니다." +
-                        "<br>" +
-                        "인증번호를 제대로 입력해주세요"; //이메일 내용 삽입
+                "<body style=\"margin: 0; padding: 0; font-family: 'Pretendard', Arial, sans-serif; background-color: #f5f0ff; color: #000;\">" +
+                        "<table align=\"center\" width=\"100%\" style=\"padding: 20px; background-color: #f5f0ff;\">" +
+                        "<tr>" +
+                        "<td align=\"center\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-bottom: 20px;\">" +
+                        "<img src=\"https://via.placeholder.com/100x100.png?text=로고\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 100px; height: auto;\" />" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; padding: 40px; border-radius: 8px;\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 18px; margin-bottom: 20px;\">" +
+                        "안녕하세요, 포도상점에서 요청하신 인증번호를 보내드립니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 32px; font-weight: bold; margin: 50px;\">" +
+                        authNumber +
+                        "</p>" +
+                        "<p style=\"font-size: 16px; margin-bottom: 20px;\">" +
+                        "위에 안내된 인증번호를 정확히 입력창에 입력해주세요." +
+                        "</p>" +
+                        "<p style=\"font-size: 14px; color: #777;\">" +
+                        "인증번호를 요청하지 않으신 경우 본 이메일을 무시해주세요.<br />" +
+                        "Please ignore this email if you did not request a verification code." +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"padding-top: 20px;\">" +
+                        "<div style=\"font-size: 14px; color: #555;\">" +
+                        "<p>Contact</p>" +
+                        "<p>Email: podostore1111@gmail.com</p>" +
+                        "<p>Instagram: @podosangjeom</p>" +
+                        "<p>Web: www.podo-store.com</p>" +
+                        "<br />" +
+                        "<p style=\"margin-top: 10px;\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>" +
+                        "</body>";
+
         mailSend(setFrom, email, title, content);
 
         return Integer.toString(authNumber);
