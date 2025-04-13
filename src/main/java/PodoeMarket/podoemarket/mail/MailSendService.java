@@ -27,10 +27,7 @@ public class MailSendService {
     public boolean CheckAuthNum(String email,String authNum){
         if(redisUtil.getData(authNum) == null)
             return false;
-        else if(redisUtil.getData(authNum).equals(email))
-            return true;
-        else
-            return false;
+        else return redisUtil.getData(authNum).equals(email);
     }
 
     // 임의의 6자리 양수를 반환
@@ -46,16 +43,58 @@ public class MailSendService {
 
 
     // 인증번호
-    public String joinEmail(String email) {
+    public String joinEmail(String email) throws Exception {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
-        String title = "인증 이메일"; // 이메일 제목
+        String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
         String content =
-                "포도 상점을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
-                        "<br><br>" +
-                        "인증 번호는 " + authNumber + "입니다." +
-                        "<br>" +
-                        "인증번호를 제대로 입력해주세요"; //이메일 내용 삽입
+                "<table align=\"center\" width=\"50%\">" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin: 50px\">" +
+                        "<img src=\"https://api.podo-store.com/images/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 100px; height: auto; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; padding: 40px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 18px; margin-bottom: 20px; color: black\">" +
+                        "안녕하세요, 포도상점에서 요청하신 인증번호를 보내드립니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 32px; font-weight: bold; margin: 50px\">" +
+                        authNumber +
+                        "</p>" +
+                        "<p style=\"font-size: 16px; margin-bottom: 20px; color: black\">" +
+                        "위에 안내된 인증번호를 정확히 입력창에 입력해주세요." +
+                        "</p>" +
+                        "<p style=\"font-size: 14px; color: #777\">" +
+                        "인증번호를 요청하지 않으신 경우 본 이메일을 무시해주세요.<br />" +
+                        "Please ignore this email if you did not request a verification code." +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"padding: 20px; background-color: #f5f0ff\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 14px; color: black\">" +
+                        "<p>Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: @podosangjeom" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 20px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
+
         mailSend(setFrom, email, title, content);
 
         return Integer.toString(authNumber);
@@ -64,7 +103,7 @@ public class MailSendService {
     // 결제 요청
     public void joinPaymentEmail(String email, String price) {
         String setFrom = username;
-        String title = "안녕하세요 포도상점입니다. 주문하신 상품의 결제 요청드립니다.";
+        String title = "[포도상점] 주문하신 상품의 결제 요청드립니다.";
         String content =
                 "안녕하세요 포도상점입니다." +
                         "<br>" +
@@ -89,7 +128,7 @@ public class MailSendService {
     // 작품 등록 신청 완료
     public void joinRegisterEmail(String email) {
         String setFrom = username;
-        String title = "작품 등록 신청 완료";
+        String title = "[포도상점] 작품 등록 신청이 완료되었습니다.";
         String content =
                 "안녕하세요 포도상점입니다." +
                         "<br>" +
@@ -104,7 +143,7 @@ public class MailSendService {
     // 결제 취소
     public void joinCancelEmail(String email, String productTitle) {
         String setFrom = username;
-        String title = "결제 취소";
+        String title = "[포도상점] 주문하신 상품의 결제가 취소되었습니다.";
         String content =
                 "안녕하세요 포도상점입니다." +
                         "<br>" +
