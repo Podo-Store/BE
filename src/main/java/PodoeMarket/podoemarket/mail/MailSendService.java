@@ -143,7 +143,7 @@ public class MailSendService {
     // 결제 취소
     public void joinCancelEmail(String email, String productTitle) {
         String setFrom = username;
-        String title = " [포도상점] 주문하신 상품의 결제가 취소되었습니다.";
+        String title = "[포도상점] 주문하신 상품의 결제가 취소되었습니다.";
         String content =
                 "안녕하세요 포도상점입니다." +
                         "<br>" +
