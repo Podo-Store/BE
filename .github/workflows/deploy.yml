@@ -82,7 +82,9 @@ jobs:
         ./spring-build.zip s3://backend-podostore
 
     - name: Code Deploy 배포 요청
-      run: aws deploy create-deployment --application-name deploy
-        --deployment-config-name CodeDeployDefault.OneAtATime
-        --deployment-group-name spring-deploy-group
-        --s3-location bucket=backend-podostore,bundleType=zip,key=spring-build.zip
+      run: |
+        aws deploy create-deployment \
+          --application-name deploy \
+          --deployment-config-name CodeDeployDefault.OneAtATime \
+          --deployment-group-name spring-deploy-group \
+          --s3-location bucket=backend-podostore,bundleType=zip,key=spring-build.zip
