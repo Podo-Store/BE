@@ -37,7 +37,6 @@ import java.util.*;
 @RequestMapping("/auth")
 public class UserController {
     private final UserService userService;
-    private final OAuthService oauthService;
     private final TokenProvider tokenProvider;
     private final MailSendService mailService;
     private final RedisUtil redisUtil;
@@ -264,19 +263,6 @@ public class UserController {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
-    }
-
-    @GetMapping(value = "/{socialLoginType}")
-    public void socialLoginType(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
-        log.info(">> 사용자로부터 SNS 로그인 요청을 받음 :: {} Social Login", socialLoginType);
-        oauthService.request(socialLoginType);
-    }
-
-    @GetMapping(value = "/{socialLoginType}/callback")
-    public String callback(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
-                           @RequestParam(name = "code") String code) {
-        log.info(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
-        return oauthService.requestAccessToken(socialLoginType, code);
     }
 
     @PostMapping("/find/mailSend")
