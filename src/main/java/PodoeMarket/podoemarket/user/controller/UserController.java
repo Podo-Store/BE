@@ -2,7 +2,6 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
-import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.dto.EmailCheckDTO;
 import PodoeMarket.podoemarket.dto.EmailRequestDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
@@ -12,8 +11,8 @@ import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.service.RedisUtil;
 import PodoeMarket.podoemarket.user.dto.request.SignInRequestDTO;
-import PodoeMarket.podoemarket.user.dto.response.KakaoUserInfoResponseDTO;
-import PodoeMarket.podoemarket.user.service.OAuthService;
+import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenResponseDTO;
 import PodoeMarket.podoemarket.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -197,11 +196,7 @@ public class UserController {
             UserEntity user = userService.getByCredentials(dto.getUserId(), dto.getPassword(), pwdEncoder);
 
             if(user.getId() != null) {
-                final UserDTO resUserDTO = UserDTO.builder()
-                        .id(user.getId())
-                        .userId(user.getUserId())
-                        .email(user.getEmail())
-                        .password(user.getPassword())
+                final SignInResponseDTO resUserDTO = SignInResponseDTO.builder()
                         .nickname(user.getNickname())
                         .auth(user.isAuth())
                         .accessToken(tokenProvider.createAccessToken(user))
@@ -216,48 +211,6 @@ public class UserController {
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
-            }
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/kakao")
-    public ResponseEntity<?> getKakao(@RequestParam("code") String code) {
-        try {
-            String accessToken = userService.getAccessTokenFromKakao(code);
-
-            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(accessToken);
-//            KakaoUserInfoResponseDTO userInfo = userService.getUserInfo(code);
-
-            // 회원가입 여부 확인
-            if (userService.checkEmail(userInfo.kakaoAccount.email)) {
-                UserEntity user = userService.getByUserId(String.valueOf(userInfo.id));
-
-                final UserDTO resUserDTO = UserDTO.builder()
-                        .id(user.getId())
-                        .userId(user.getUserId())
-                        .email(user.getEmail())
-                        .password(user.getPassword())
-                        .nickname(user.getNickname())
-                        .auth(user.isAuth())
-                        .accessToken(tokenProvider.createAccessToken(user))
-                        .refreshToken(tokenProvider.createRefreshToken(user))
-                        .build();
-
-                return ResponseEntity.ok().body(resUserDTO);
-            } else {
-                final UserEntity user = UserEntity.builder()
-                        .userId(String.valueOf(userInfo.id))
-                        .email(userInfo.kakaoAccount.email)
-                        .nickname(userInfo.kakaoAccount.profile.nickName)
-                        .socialLoginType(SocialLoginType.KAKAO)
-                        .build();
-
-                userService.createSocialUser(user);
-
-                return ResponseEntity.ok().body(true);
             }
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
@@ -409,7 +362,7 @@ public class UserController {
             UUID id = UUID.fromString(claims.getSubject());
 
             UserEntity user = userService.getById(id);
-            final UserDTO resUserDTO = UserDTO.builder()
+            final TokenResponseDTO resUserDTO = TokenResponseDTO.builder()
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
                     .email(user.getEmail())
