@@ -30,10 +30,8 @@ public class OauthController {
 
     @GetMapping(value = "/{socialLoginType}/callback")
     public ResponseEntity<?> callback(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
-                           @RequestParam(name = "code") String code) {
+                                      @RequestParam(name = "code") String code) {
         try {
-            log.info(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
-
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
             if (userService.checkUserId(user.getUserId())) {

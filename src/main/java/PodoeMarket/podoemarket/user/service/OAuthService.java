@@ -90,22 +90,19 @@ public class OAuthService {
     // 구글 API 호출
     public String googleApiCall(String accessToken) {
         try {
-            String encodedAccessToken = URLEncoder.encode(accessToken, "UTF-8");
-            log.debug("Encoded access token: {}", encodedAccessToken);
+            String url = "https://openidconnect.googleapis.com/v1/userinfo";
 
-            String url = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + encodedAccessToken;
-            log.debug("Google API URL: {}", url);
-
-            URL obj = (new URI(url)).toURL();
+            URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("GET");
+            con.setRequestProperty("Authorization", "Bearer " + accessToken);
             con.setRequestProperty("Content-Type", "application/json");
 
             int responseCode = con.getResponseCode();
             if (responseCode == 200) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
-                StringBuffer response = new StringBuffer();
+                StringBuilder response = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
                 }
@@ -115,7 +112,7 @@ public class OAuthService {
             } else {
                 throw new RuntimeException("Google API에서 사용자 정보를 가져오는데 실패. response code: " + responseCode);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Google API 호출 중 오류 발생", e);
         }
     }
@@ -133,7 +130,7 @@ public class OAuthService {
             if (responseCode == 200) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
-                StringBuffer response = new StringBuffer();
+                StringBuilder response = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
                 }
@@ -161,7 +158,7 @@ public class OAuthService {
             if (responseCode == 200) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
-                StringBuffer response = new StringBuffer();
+                StringBuilder response = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
                 }
@@ -185,6 +182,8 @@ public class OAuthService {
         SocialLoginType type = null;
 
         if (socialLoginType == SocialLoginType.GOOGLE) {
+            log.info("회원 정보 : {}", jsonObject);
+
             userId = jsonObject.get("sub").getAsString();
             nickname = jsonObject.get("name").getAsString();
             email = jsonObject.get("email").getAsString();
@@ -197,7 +196,7 @@ public class OAuthService {
         } else if (socialLoginType == SocialLoginType.NAVER) {
             JsonObject response = jsonObject.getAsJsonObject("response");
             userId = response.get("id").getAsString();
-            nickname = response.get("name").getAsString();
+            nickname = response.get("nickname").getAsString();
             email = response.get("email").getAsString();
             type = SocialLoginType.NAVER;
         }
