@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
+import PodoeMarket.podoemarket.common.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +10,7 @@ import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,12 +18,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.util.List;
+import java.util.Random;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class OAuthService {
     private final List<SocialOauth> socialOauthList; // 모든 SocialOauth 구현체가 자동으로 주입됨 (@RequiredArgsConstructor)
+    private final UserRepository userRepo;
 
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
@@ -53,6 +57,52 @@ public class OAuthService {
         return parseUserInfo(userInfo, socialLoginType);
     }
 
+    // 소셜 회원가입 DB create 메서드
+    public void create(final UserEntity userEntity) {
+        final String userId = userEntity.getUserId();
+        final String email = userEntity.getEmail();
+        final String nickname = userEntity.getNickname();
+
+        // 아이디
+        if(userId == null || userId.isBlank()) {
+            throw new RuntimeException("userId가 올바르지 않음");
+        }
+
+        if(userRepo.existsByUserId(userId)) {
+            throw new RuntimeException("이미 존재하는 UserId");
+        }
+
+        // 이메일
+        if(email == null || email.isBlank()) {
+            throw new RuntimeException("email이 올바르지 않음");
+        }
+
+        if(userRepo.existsByEmail(email)) {
+            throw new RuntimeException("이미 존재하는 email");
+        }
+
+        // 닉네임
+        if(nickname == null || nickname.isBlank()) {
+            throw new RuntimeException("nickname이 올바르지 않음");
+        }
+
+        // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
+        String createNickname = "";
+        do {
+            createNickname = nickname + createRandomNumber();
+
+        } while (userRepo.existsByNickname(createNickname));
+
+        if(userRepo.existsByNickname(createNickname)) {
+            throw new RuntimeException("이미 존재하는 nickname");
+        }
+
+        userEntity.setNickname(createNickname);
+
+        userRepo.save(userEntity);
+    }
+
+    // ================= private method =================
     private SocialOauth findSocialOauthByType(SocialLoginType socialLoginType) {
         return socialOauthList.stream()
                 .filter(x -> x.type() == socialLoginType)
@@ -88,7 +138,7 @@ public class OAuthService {
     }
 
     // 구글 API 호출
-    public String googleApiCall(String accessToken) {
+    private String googleApiCall(String accessToken) {
         try {
             String url = "https://openidconnect.googleapis.com/v1/userinfo";
 
@@ -182,8 +232,6 @@ public class OAuthService {
         SocialLoginType type = null;
 
         if (socialLoginType == SocialLoginType.GOOGLE) {
-            log.info("회원 정보 : {}", jsonObject);
-
             userId = jsonObject.get("sub").getAsString();
             nickname = jsonObject.get("name").getAsString();
             email = jsonObject.get("email").getAsString();
@@ -207,5 +255,16 @@ public class OAuthService {
                 .email(email)
                 .socialLoginType(type)
                 .build();
+    }
+
+    // 랜덤으로 6자리 숫자 생성
+    private String createRandomNumber() {
+        Random r = new Random();
+        StringBuilder randomNumber = new StringBuilder();
+
+        for(int i = 0; i < 6; i++)
+            randomNumber.append(r.nextInt(9) + 1);
+
+        return randomNumber.toString();
     }
 }

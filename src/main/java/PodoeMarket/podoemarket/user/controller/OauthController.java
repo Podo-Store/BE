@@ -45,7 +45,7 @@ public class OauthController {
                 return ResponseEntity.ok().body(resUserDTO);
             } else {
                 // 새 사용자는 저장
-                userService.create(user);
+                oauthService.create(user);
 
                 return ResponseEntity.ok().body(true);
             }
