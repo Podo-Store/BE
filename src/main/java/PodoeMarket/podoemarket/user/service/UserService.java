@@ -2,23 +2,11 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
-import PodoeMarket.podoemarket.user.dto.response.KakaoTokenResponseDTO;
-import PodoeMarket.podoemarket.user.dto.response.KakaoUserInfoResponseDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,16 +14,6 @@ import java.util.UUID;
 @Service
 public class UserService {
     private final UserRepository userRepo;
-
-    @Value("${kakao.client_id}")
-    private String clientId;
-
-    @Value("${kakao.redirect_uri}")
-    private String redirectUri;
-
-    private final String KAUTH_TOKEN_URL_HOST = "https://kauth.kakao.com";
-    private final String KAUTH_USER_URL_HOST = "https://kapi.kakao.com";
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void create(final UserEntity userEntity) {
         final String userId = userEntity.getUserId();
@@ -140,72 +118,5 @@ public class UserService {
 
     public UserEntity getByUserId(final String userId) {
         return userRepo.findByUserId(userId);
-    }
-
-    public String getAccessTokenFromKakao(final String code) {
-        try {
-            URL url = (new URI(KAUTH_TOKEN_URL_HOST + "/oauth/token")).toURL();
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-            conn.setDoOutput(true);
-
-            final String params = "grant_type=authorization_code" + "&client_id=" + clientId + "&code=" + code +
-                    "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(params.getBytes(StandardCharsets.UTF_8));
-                os.flush();
-            }
-
-            StringBuilder res = new StringBuilder();
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                    String line;
-                    while ((line = br.readLine()) != null)
-                        res.append(line);
-                }
-            } else {
-                // 오류 응답 읽기
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
-                    String line;
-                    while ((line = br.readLine()) != null)
-                        res.append(line);
-                }
-                throw new RuntimeException("카카오 API 오류: " + res);
-            }
-
-            KakaoTokenResponseDTO tokenResponseDTO = objectMapper.readValue(res.toString(), KakaoTokenResponseDTO.class);
-
-            return tokenResponseDTO.getAccessToken();
-        } catch (Exception e) {
-            throw new RuntimeException("카카오 토큰 요청 중 오류 발생", e);
-        }
-    }
-
-    public KakaoUserInfoResponseDTO getUserInfo(String accessToken) {
-        try {
-            URL url = (new URI(KAUTH_USER_URL_HOST + "/v2/user/me")).toURL();
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-
-            StringBuilder res =  new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while( (line = br.readLine()) != null)
-                    res.append(line);
-            }
-
-            return objectMapper.readValue(res.toString(), KakaoUserInfoResponseDTO.class);
-        } catch (Exception e) {
-            throw new RuntimeException("카카오 사용자 정보 요청 중 오류 발생", e);
-        }
-    }
-
-    public void createSocialUser(final UserEntity userEntity) {
-        userRepo.save(userEntity);
     }
 }
