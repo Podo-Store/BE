@@ -35,9 +35,11 @@ public class OauthController {
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
             if (userService.checkUserId(user.getUserId())) {
+                final UserEntity signInUser  = userService.getByUserId(user.getUserId());
+
                 final SignInResponseDTO resUserDTO = SignInResponseDTO.builder()
-                        .nickname(user.getNickname())
-                        .auth(user.isAuth())
+                        .nickname(signInUser.getNickname())
+                        .auth(signInUser.isAuth())
                         .accessToken(tokenProvider.createAccessToken(user))
                         .refreshToken(tokenProvider.createRefreshToken(user))
                         .build();
