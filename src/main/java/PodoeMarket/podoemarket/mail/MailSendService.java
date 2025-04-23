@@ -53,7 +53,7 @@ public class MailSendService {
                         "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
                         "<!-- 로고 영역 -->" +
                         "<div style=\"margin: 50px\">" +
-                        "<img src=\"mailLogo.png\" " +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
                         "alt=\"포도상점 로고\" " +
                         "style=\"width: 100px; height: auto; display: block\"/>" +
                         "</div>" +
