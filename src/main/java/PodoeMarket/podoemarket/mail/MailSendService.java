@@ -48,40 +48,40 @@ public class MailSendService {
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
         String content =
-                "<table align=\"center\" width=\"50%\">" +
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
                         "<tr>" +
                         "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
                         "<!-- 로고 영역 -->" +
-                        "<div style=\"margin: 50px\">" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
                         "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
                         "alt=\"포도상점 로고\" " +
-                        "style=\"width: 100px; height: auto; display: block\"/>" +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
                         "</div>" +
                         "</td>" +
                         "</tr>" +
                         "<tr>" +
-                        "<td align=\"left\" style=\"background-color: #ffffff; padding: 40px\">" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
                         "<!-- 본문 내용 -->" +
-                        "<p style=\"font-size: 18px; margin-bottom: 20px; color: black\">" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
                         "안녕하세요, 포도상점에서 요청하신 인증번호를 보내드립니다." +
                         "</p>" +
-                        "<p style=\"font-size: 32px; font-weight: bold; margin: 50px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
                         authNumber +
                         "</p>" +
-                        "<p style=\"font-size: 16px; margin-bottom: 20px; color: black\">" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
                         "위에 안내된 인증번호를 정확히 입력창에 입력해주세요." +
                         "</p>" +
-                        "<p style=\"font-size: 14px; color: #777\">" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
                         "인증번호를 요청하지 않으신 경우 본 이메일을 무시해주세요.<br />" +
                         "Please ignore this email if you did not request a verification code." +
                         "</p>" +
                         "</td>" +
                         "</tr>" +
                         "<tr>" +
-                        "<td align=\"left\" style=\"padding: 20px; background-color: #f5f0ff\">" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
                         "<!-- 연락처 정보 -->" +
-                        "<div style=\"font-size: 14px; color: black\">" +
-                        "<p>Contact" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
                         "<br />" +
                         "Email: podostore1111@gmail.com" +
                         "<br />" +
@@ -89,7 +89,7 @@ public class MailSendService {
                         "<br />" +
                         "Web: www.podo-store.com" +
                         "</p>" +
-                        "<p style=\"margin-top: 20px\">Podo Store © All Rights Reserved</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
                         "</div>" +
                         "</td>" +
                         "</tr>" +
