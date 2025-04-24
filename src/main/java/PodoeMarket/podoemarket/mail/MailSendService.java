@@ -216,7 +216,7 @@ public class MailSendService {
                         "</td>" +
                         "</tr>" +
                         "<tr>" +
-                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<td align=\"center\" style=\"background-color: #ffffff; height: 247px\">" +
                         "<!-- 본문 내용 -->" +
                         "<p style=\"font-size: 12.5px; margin-bottom: 54px; margin-top: 38px; color: black\">" +
                         "회원가입이 완료되었습니다." +
@@ -224,7 +224,7 @@ public class MailSendService {
                         "<p style=\"font-size: 15px; font-weight: 900; margin-top: 54px; margin-bottom: 54px\">" +
                         "포도상점에서 다양한 작품을 둘러보세요!" +
                         "</p>" +
-                        "<a href=\"https://podo-store.com/list\" style=\"width: 150px; height: 35px; padding: 3px 0; background: #6a39c0; border-radius: 4.5px; justify-content: center; align-items: center; display: inline-flex; font-size: 12.5px; color: #ffffff; text-decoration: none; font-weight: 400; margin-bottom: 38px\">" +
+                        "<a href=\"https://podo-store.com/list\" style=\"width: 150px; height: 35px; padding: 24.5px 34.5px; background: #6a39c0; border-radius: 4.5px; justify-content: center; align-items: center; display: inline-flex; font-size: 12.5px; color: #ffffff; text-decoration: none; font-weight: 400; margin-bottom: 38px\">" +
                         "작품 둘러보기" +
                         "</a>" +
                         "</td>" +
