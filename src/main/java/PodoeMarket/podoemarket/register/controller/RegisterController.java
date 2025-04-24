@@ -44,7 +44,7 @@ public class RegisterController {
 
             registerService.register(script);
 
-            mailSendService.joinRegisterEmail(user.getEmail());
+            mailSendService.joinRegisterEmail(user.getEmail(), normalizedTitle);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

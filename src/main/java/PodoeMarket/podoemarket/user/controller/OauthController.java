@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.mail.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import PodoeMarket.podoemarket.user.service.OAuthService;
 import PodoeMarket.podoemarket.user.service.UserService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class OauthController {
     private final OAuthService oauthService;
     private final UserService userService;
+    private final MailSendService mailService;
     private final TokenProvider tokenProvider;
 
     @GetMapping(value = "/{socialLoginType}")
@@ -35,7 +37,7 @@ public class OauthController {
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
             if (userService.checkUserId(user.getUserId())) {
-                final UserEntity signInUser  = userService.getByUserId(user.getUserId());
+                final UserEntity signInUser = userService.getByUserId(user.getUserId());
 
                 final SignInResponseDTO resUserDTO = SignInResponseDTO.builder()
                         .nickname(signInUser.getNickname())
@@ -43,6 +45,8 @@ public class OauthController {
                         .accessToken(tokenProvider.createAccessToken(user))
                         .refreshToken(tokenProvider.createRefreshToken(user))
                         .build();
+
+                mailService.joinSignupEmail(signInUser.getEmail());
 
                 return ResponseEntity.ok().body(resUserDTO);
             } else {

@@ -43,45 +43,45 @@ public class MailSendService {
 
 
     // 인증번호
-    public String joinEmail(String email) throws Exception {
+    public String joinEmail(String email) {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
         String content =
-                "<table align=\"center\" width=\"50%\">" +
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
                         "<tr>" +
                         "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
                         "<!-- 로고 영역 -->" +
-                        "<div style=\"margin: 50px\">" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
                         "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
                         "alt=\"포도상점 로고\" " +
-                        "style=\"width: 100px; height: auto; display: block\"/>" +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
                         "</div>" +
                         "</td>" +
                         "</tr>" +
                         "<tr>" +
-                        "<td align=\"left\" style=\"background-color: #ffffff; padding: 40px\">" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
                         "<!-- 본문 내용 -->" +
-                        "<p style=\"font-size: 18px; margin-bottom: 20px; color: black\">" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
                         "안녕하세요, 포도상점에서 요청하신 인증번호를 보내드립니다." +
                         "</p>" +
-                        "<p style=\"font-size: 32px; font-weight: bold; margin: 50px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
                         authNumber +
                         "</p>" +
-                        "<p style=\"font-size: 16px; margin-bottom: 20px; color: black\">" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
                         "위에 안내된 인증번호를 정확히 입력창에 입력해주세요." +
                         "</p>" +
-                        "<p style=\"font-size: 14px; color: #777\">" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
                         "인증번호를 요청하지 않으신 경우 본 이메일을 무시해주세요.<br />" +
                         "Please ignore this email if you did not request a verification code." +
                         "</p>" +
                         "</td>" +
                         "</tr>" +
                         "<tr>" +
-                        "<td align=\"left\" style=\"padding: 20px; background-color: #f5f0ff\">" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
                         "<!-- 연락처 정보 -->" +
-                        "<div style=\"font-size: 14px; color: black\">" +
-                        "<p>Contact" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
                         "<br />" +
                         "Email: podostore1111@gmail.com" +
                         "<br />" +
@@ -89,7 +89,7 @@ public class MailSendService {
                         "<br />" +
                         "Web: www.podo-store.com" +
                         "</p>" +
-                        "<p style=\"margin-top: 20px\">Podo Store © All Rights Reserved</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
                         "</div>" +
                         "</td>" +
                         "</tr>" +
@@ -122,21 +122,62 @@ public class MailSendService {
                         "*입금이 확인되면 마이페이지 > 구매한 작품 탭에서 작품 사용이 가능합니다." +
                         "<br><br>" +
                         "감사합니다.";
+
         mailSend(setFrom, email, title, content);
     }
 
     // 작품 등록 신청 완료
-    public void joinRegisterEmail(String email) {
+    public void joinRegisterEmail(String email, String scriptTitle) {
         String setFrom = username;
         String title = "[포도상점] 작품 등록 신청이 완료되었습니다.";
         String content =
-                "안녕하세요 포도상점입니다." +
-                        "<br>" +
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
                         "작품 등록 신청이 완료되었습니다." +
-                        "<br>" +
-                        "심사는 3~5일이 소요되며, 심사 완료 시 메일로 결과를 발송해드립니다." +
-                        "<br><br>" +
-                        "감사합니다.";
+                        "</p>" +
+                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
+                        scriptTitle +
+                        "</p>" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
+                        "심사는 3~5일 소요되며, 심사 완료 시 메일 결과를 발송해드립니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
+                        "작품 등록 신청을 취소하시려면 아래 이메일로 문의해주세요.<br />" +
+                        "If you wish to cancel your submission, please contact us via the email below." +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
+
         mailSend(setFrom, email, title, content);
     }
 
@@ -154,6 +195,57 @@ public class MailSendService {
                         "문제가 있으실 경우 포도상점 메일을 통해 문의주시면 감사하겠습니다." +
                         "<br>" +
                         "podostore1111@gmail.com";
+
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 회원가입 완료
+    public void joinSignupEmail(String email) {
+        String setFrom = username;
+        String title = "[포도상점] 회원가입이 완료되었습니다.";
+        String content =
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 54px; margin-top: 38px; color: black\">" +
+                        "회원가입이 완료되었습니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 15px; font-weight: 900; margin-top: 54px; margin-bottom: 54px\">" +
+                        "포도상점에서 다양한 작품을 둘러보세요!" +
+                        "</p>" +
+                        "<a href=\"https://podo-store.com/list\" style=\"width: 150px; height: 35px; padding: 3px 0; background: #6a39c0; border-radius: 4.5px; justify-content: center; align-items: center; display: inline-flex; font-size: 12.5px; color: #ffffff; text-decoration: none; font-weight: 400; margin-bottom: 38px\">" +
+                        "작품 둘러보기" +
+                        "</a>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
 
         mailSend(setFrom, email, title, content);
     }
