@@ -182,6 +182,7 @@ public class UserController {
 
             userService.create(user);
             redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            mailService.joinSignupEmail(user.getEmail());
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
