@@ -85,7 +85,7 @@ public class MailSendService {
                         "<br />" +
                         "Email: podostore1111@gmail.com" +
                         "<br />" +
-                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"color: black; text-decoration:none;\">@podosangjeom</a> +" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
                         "<br />" +
                         "Web: www.podo-store.com" +
                         "</p>" +
