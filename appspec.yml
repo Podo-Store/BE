@@ -15,7 +15,7 @@ permissions:
 
 hooks:
   BeforeInstall:
-    - location: scripts/clean.sh
+    - location: clean.sh
       timeout: 300
       runas: ubuntu
   ApplicationStart:
