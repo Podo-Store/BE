@@ -54,7 +54,15 @@ jobs:
 
     - name: Gradle로 빌드 실행
       run: ./gradlew bootjar
-
+      
+    - name: appspec.yml 존재 화인
+      run: |
+        if [ ! -f ./appspec.yml ]; then
+          echo "Error: appspec.yml file not found in the root directory"
+          exit 1
+        fi
+        echo "appspec.yml file found, contents:"
+        cat ./appspec.yml
 
     - name: zip file 생성
       run: |
