@@ -28,7 +28,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     @Query("SELECT COUNT(o) FROM OrderItemEntity o WHERE o.product.id = :productId AND o.script = true")
     int sumScriptByProductId(@Param("productId") UUID productId);
 
-    @Query("SELECT SUM(o.performanceAmount) FROM OrderItemEntity o WHERE o.product.id = :productId")
+    @Query("SELECT COALESCE(SUM(o.performanceAmount), 0) FROM OrderItemEntity o WHERE o.product.id = :productId")
     int sumPerformanceAmountByProductId(@Param("productId") UUID productId);
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
