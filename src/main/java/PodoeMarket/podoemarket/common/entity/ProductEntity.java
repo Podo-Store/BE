@@ -83,13 +83,17 @@ public class ProductEntity {
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
 
     // user : product = 1 : N
-    @ManyToOne(targetEntity = UserEntity.class)
+    @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private UserEntity user;
 
     // product : orderItem = 1 : N
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<OrderItemEntity> orderItem = new ArrayList<>();
+
+    // product : like = 1 : N
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductLikeEntity> like = new ArrayList<>();
 }

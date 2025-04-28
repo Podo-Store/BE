@@ -5,30 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
-@Table(name = "refund")
+@Table(name = "productLike")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefundEntity {
+public class ProductLikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
-    @Column(nullable = false)
-    private int quantity;
-
-    @Column(nullable = false)
-    private int price;
-
-    @Column(nullable = false, length = 51)
-    private String content;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -39,13 +31,15 @@ public class RefundEntity {
         createdAt = now;
     }
 
-    // order : refund = 1 : N
-    @ManyToOne(targetEntity = OrdersEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private OrdersEntity order;
-
-    // user : refund = 1 : N
+    // user : like = 1 : N
     @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private UserEntity user;
+
+    // product : like = 1 : N
+    @ManyToOne(targetEntity = ProductEntity.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    @JsonIgnore
+    private ProductEntity product;
 }
