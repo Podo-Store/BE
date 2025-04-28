@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.admin.controller;
 
 import PodoeMarket.podoemarket.admin.dto.request.PaymentStatusRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
+import PodoeMarket.podoemarket.admin.dto.request.UpdateTitleRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
@@ -146,7 +147,7 @@ public class AdminController {
     @PatchMapping("/orders/{id}")
     public ResponseEntity<?> setPaymentStatus(@AuthenticationPrincipal UserEntity userInfo,
                                               @PathVariable("id") Long orderId,
-                                              @RequestBody PaymentStatusRequestDTO dto ) {
+                                              @RequestBody PaymentStatusRequestDTO dto) {
         try {
             adminService.checkAuth(userInfo);
 
@@ -160,6 +161,24 @@ public class AdminController {
             }
 
             adminService.updateOrder(order);
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PatchMapping("/products/title")
+    public ResponseEntity<?> updateTitle(@AuthenticationPrincipal UserEntity userInfo,
+                                         @RequestBody UpdateTitleRequestDTO dto) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            ProductEntity product = adminService.getProduct(dto.getProductId());
+            product.setTitle(dto.getTitle());
+
+            adminService.updateProduct(product);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
