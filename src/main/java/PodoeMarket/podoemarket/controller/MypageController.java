@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.service.*;
 import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;

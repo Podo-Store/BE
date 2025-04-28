@@ -217,7 +217,7 @@ public class MypageService {
 
     @Transactional
     public void deleteProduct(final UUID productId, final UUID userId) {
-        final ProductEntity product =  productRepo.findById(productId);
+        final ProductEntity product = productRepo.findById(productId);
 
         if(!product.getUser().getId().equals(userId))
             throw new RuntimeException("작가가 아님");

@@ -1,9 +1,11 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.product.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.repository.ProductLikeRepository;
 import PodoeMarket.podoemarket.dto.ProductDTO;
 import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
@@ -37,6 +39,7 @@ public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
+    private final ProductLikeRepository productLikeRepo;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -149,5 +152,17 @@ public class ProductService {
             this.totalPageCount = totalPageCount;
             this.extractedPdfBytes = extractedPdfBytes;
         }
+    }
+
+    public boolean likeStatus(UserEntity userInfo, UUID productId) {
+        return productLikeRepo.existsByUserAndProductId(userInfo, productId);
+    }
+
+    public void deleteLike(UserEntity userInfo, UUID productId) {
+        productLikeRepo.delete(productLikeRepo.findByUserAndProductId(userInfo, productId));
+    }
+
+    public void createLike(ProductLikeEntity like) {
+        productLikeRepo.save(like);
     }
 }
