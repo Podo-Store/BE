@@ -72,7 +72,11 @@ public class ProductController {
         try{
             // 로그인한 유저의 해당 작품 구매 이력 확인
             final int buyStatus = productService.buyStatus(userInfo, productId);
-            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus);
+            // 로그인한 유저의 좋아요 여부 확인
+            final boolean likeStatus = productService.getLikeStatus(userInfo, productId);
+            // 총 좋아요 수
+            final int likeCount = productService.getLikeCount(productId);
+            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus, likeStatus, likeCount);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -118,7 +122,7 @@ public class ProductController {
     @PostMapping("/like/{id}")
     public ResponseEntity<?> productLike(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try{
-            final boolean likeStatus = productService.likeStatus(userInfo, id);
+            final boolean likeStatus = productService.getLikeStatus(userInfo, id);
 
             if (likeStatus) {
                 productService.deleteLike(userInfo, id);

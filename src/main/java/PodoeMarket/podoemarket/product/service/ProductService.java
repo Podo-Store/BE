@@ -15,6 +15,7 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,10 +120,32 @@ public class ProductService {
         return 0;
     }
 
-    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) {
-        final ProductEntity script = product(productId);
+    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus, boolean likeStatus, int likeCount) throws UnsupportedEncodingException {
+        final ProductEntity script = productRepo.findById(productId);
 
-        return convertToScriptDetail(script, buyStatus, bucketURL);
+        ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
+        String encodedScriptImage = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), "UTF-8") : "";
+        String encodedDescription = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), "UTF-8") : "";
+
+        scriptDetailDTO.setId(script.getId());
+        scriptDetailDTO.setTitle(script.getTitle());
+        scriptDetailDTO.setWriter(script.getWriter());
+        scriptDetailDTO.setImagePath(encodedScriptImage);
+        scriptDetailDTO.setScript(script.isScript());
+        scriptDetailDTO.setScriptPrice(script.getScriptPrice());
+        scriptDetailDTO.setPerformance(script.isPerformance());
+        scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
+        scriptDetailDTO.setDescriptionPath(encodedDescription);
+        scriptDetailDTO.setDate(script.getCreatedAt());
+        scriptDetailDTO.setChecked(script.getChecked());
+        scriptDetailDTO.setPlayType(script.getPlayType());
+        scriptDetailDTO.setPlot(script.getPlot());
+
+        scriptDetailDTO.setBuyStatus(buyStatus);
+        scriptDetailDTO.setLike(likeStatus);
+        scriptDetailDTO.setLikeCount(likeCount);
+
+        return scriptDetailDTO;
     }
 
     // PDF의 특정 페이지까지 추출하는 함수
@@ -155,15 +178,21 @@ public class ProductService {
         }
     }
 
-    public boolean likeStatus(UserEntity userInfo, UUID productId) {
+    public int getLikeCount(final UUID productId) {
+        return productLikeRepo.countByProductId(productId);
+    }
+
+    public boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
         return productLikeRepo.existsByUserAndProductId(userInfo, productId);
     }
 
-    public void deleteLike(UserEntity userInfo, UUID productId) {
+    @Transactional
+    public void deleteLike(final UserEntity userInfo, final UUID productId) {
         productLikeRepo.delete(productLikeRepo.findByUserAndProductId(userInfo, productId));
     }
 
-    public void createLike(ProductLikeEntity like) {
+    @Transactional
+    public void createLike(final ProductLikeEntity like) {
         productLikeRepo.save(like);
     }
 
@@ -185,34 +214,6 @@ public class ProductService {
             productListDTO.setChecked(entity.getChecked());
 
             return productListDTO;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ScriptDetailResponseDTO convertToScriptDetail(ProductEntity entity, int buyStatus, String bucketURL) {
-        try {
-            ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
-            String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
-            String encodedDescription = entity.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(entity.getDescriptionPath(), "UTF-8") : "";
-
-            scriptDetailDTO.setId(entity.getId());
-            scriptDetailDTO.setTitle(entity.getTitle());
-            scriptDetailDTO.setWriter(entity.getWriter());
-            scriptDetailDTO.setImagePath(encodedScriptImage);
-            scriptDetailDTO.setScript(entity.isScript());
-            scriptDetailDTO.setScriptPrice(entity.getScriptPrice());
-            scriptDetailDTO.setPerformance(entity.isPerformance());
-            scriptDetailDTO.setPerformancePrice(entity.getPerformancePrice());
-            scriptDetailDTO.setDescriptionPath(encodedDescription);
-            scriptDetailDTO.setDate(entity.getCreatedAt());
-            scriptDetailDTO.setChecked(entity.getChecked());
-            scriptDetailDTO.setPlayType(entity.getPlayType());
-            scriptDetailDTO.setPlot(entity.getPlot());
-
-            scriptDetailDTO.setBuyStatus(buyStatus);
-
-            return scriptDetailDTO;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

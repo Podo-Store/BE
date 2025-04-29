@@ -9,7 +9,7 @@ import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.dto.response.*;
-import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.service.MypageService;
@@ -176,7 +176,7 @@ public class MypageController {
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ScriptDetailResponseDTO productInfo = productService.productDetail(productId, 0);
+            ScriptDetailResponseDTO productInfo = mypageService.productDetail(productId, 0);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {

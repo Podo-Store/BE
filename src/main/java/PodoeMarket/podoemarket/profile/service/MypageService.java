@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -111,6 +112,7 @@ public class MypageService {
         productRepo.saveAll(products);
     }
 
+    @Transactional
     public void productUpdate(final UUID id, final ProductEntity productEntity) {
         final ProductEntity product = productRepo.findById(id);
 
@@ -131,6 +133,7 @@ public class MypageService {
         productRepo.save(product);
     }
 
+    @Transactional
     public String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         if(files.length > 1) {
             throw new RuntimeException("작품 이미지가 1개를 초과함");
@@ -390,11 +393,6 @@ public class MypageService {
         userRepo.delete(userEntity);
     }
 
-    public void deleteFile(final String bucket, final String sourceKey) {
-        if(amazonS3.doesObjectExist(bucket, sourceKey))
-            amazonS3.deleteObject(bucket, sourceKey);
-    }
-
     public ApplicantEntity getApplicant(final UUID orderItemId) {
         if(applicantRepo.findByOrderItemId(orderItemId) == null)
             throw new RuntimeException("일치하는 신청자 정보 없음");
@@ -402,6 +400,7 @@ public class MypageService {
         return applicantRepo.findByOrderItemId(orderItemId);
     }
 
+    @Transactional
     public void dateRegister(final PerformanceDateEntity performanceDateEntity) {
         performanceDateRepo.save(performanceDateEntity);
     }
@@ -410,6 +409,7 @@ public class MypageService {
         return performanceDateRepo.countByOrderItemId(orderItemId);
     }
 
+    @Transactional
     public void refundRegister(final RefundEntity refundEntity) {
         refundRepo.save(refundEntity);
     }
@@ -499,5 +499,37 @@ public class MypageService {
                             .requestedInfo(applicantInfoList)
                             .build();
                 }).toList();
+    }
+
+    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) throws UnsupportedEncodingException {
+        final ProductEntity script = productRepo.findById(productId);
+
+        ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
+        String encodedScriptImage = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), "UTF-8") : "";
+        String encodedDescription = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), "UTF-8") : "";
+
+        scriptDetailDTO.setId(script.getId());
+        scriptDetailDTO.setTitle(script.getTitle());
+        scriptDetailDTO.setWriter(script.getWriter());
+        scriptDetailDTO.setImagePath(encodedScriptImage);
+        scriptDetailDTO.setScript(script.isScript());
+        scriptDetailDTO.setScriptPrice(script.getScriptPrice());
+        scriptDetailDTO.setPerformance(script.isPerformance());
+        scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
+        scriptDetailDTO.setDescriptionPath(encodedDescription);
+        scriptDetailDTO.setDate(script.getCreatedAt());
+        scriptDetailDTO.setChecked(script.getChecked());
+        scriptDetailDTO.setPlayType(script.getPlayType());
+        scriptDetailDTO.setPlot(script.getPlot());
+
+        scriptDetailDTO.setBuyStatus(buyStatus);
+
+        return scriptDetailDTO;
+    }
+
+    // =========== private method =============
+    private void deleteFile(final String bucket, final String sourceKey) {
+        if(amazonS3.doesObjectExist(bucket, sourceKey))
+            amazonS3.deleteObject(bucket, sourceKey);
     }
 }
