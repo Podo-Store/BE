@@ -46,49 +46,14 @@ public class ProductService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    private final Pageable mainPage = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize) {
+        final Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        final List<ProductEntity> plays = productRepo.findAllByPlayTypeAndChecked(playType, ProductStatus.PASS, pageable);
 
-    public List<ScriptListResponseDTO.ProductListDTO> mainLongPlayList(UserEntity userInfo) {
-        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG, ProductStatus.PASS, mainPage);
-
-        return longPlays.stream()
+        return plays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL, userInfo))
-                .collect(Collectors.toList());
-    }
-
-    public List<ScriptListResponseDTO.ProductListDTO> mainShortPlayList(UserEntity userInfo) {
-        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, mainPage);
-
-        return shortPlays.stream()
-                .filter(play -> play.getUser() != null)
-                .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL, userInfo))
-                .collect(Collectors.toList());
-    }
-
-    public List<ScriptListResponseDTO.ProductListDTO> longPlayList(int page, UserEntity userInfo) {
-        final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG,  ProductStatus.PASS, pageable);
-
-        return longPlays.stream()
-                .filter(play -> play.getUser() != null)
-                .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL, userInfo))
-                .collect(Collectors.toList());
-    }
-
-    public List<ScriptListResponseDTO.ProductListDTO> shortPlayList(int page, UserEntity userInfo) {
-        final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, pageable);
-
-        return shortPlays.stream()
-                .filter(play -> play.getUser() != null)
-                .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL, userInfo))
+                .map(play -> convertToProductList(play, userInfo))
                 .collect(Collectors.toList());
     }
 
@@ -197,7 +162,7 @@ public class ProductService {
     }
 
     // =========== private method ============
-    private ScriptListResponseDTO.ProductListDTO convertToProductList(ProductEntity entity, String bucketURL, UserEntity userInfo) {
+    private ScriptListResponseDTO.ProductListDTO convertToProductList(ProductEntity entity, UserEntity userInfo) {
         try {
             ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
             String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";

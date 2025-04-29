@@ -1,10 +1,12 @@
 package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.ScriptListResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -21,6 +23,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +54,7 @@ public class MypageService {
     private final ApplicantRepository applicantRepo;
     private final PerformanceDateRepository performanceDateRepo;
     private final RefundRepository refundRepo;
+    private final ProductLikeRepository productLikeRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -527,9 +532,50 @@ public class MypageService {
         return scriptDetailDTO;
     }
 
+    public List<ScriptListResponseDTO.ProductListDTO> getLikePlayList(int page, UserEntity userInfo, PlayType playType, int pageSize) {
+        final Pageable mainLikePage = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        final List<ProductLikeEntity> plays = productLikeRepo.findAllByUserAndProduct_PlayType(userInfo, playType, mainLikePage);
+
+        return plays.stream()
+                .map(play -> convertToProductList(play, userInfo))
+                .collect(Collectors.toList());
+    }
+
+    public int getLikeCount(final ProductEntity product) {
+        return productLikeRepo.countByProduct(product);
+    }
+
+    public boolean getLikeStatus(final UserEntity userInfo, final ProductEntity product) {
+        return productLikeRepo.existsByUserAndProduct(userInfo, product);
+    }
+
     // =========== private method =============
     private void deleteFile(final String bucket, final String sourceKey) {
         if(amazonS3.doesObjectExist(bucket, sourceKey))
             amazonS3.deleteObject(bucket, sourceKey);
+    }
+
+    private ScriptListResponseDTO.ProductListDTO convertToProductList(ProductLikeEntity entity, UserEntity userInfo) {
+        try {
+            ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+            String encodedScriptImage = entity.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getProduct().getImagePath(), "UTF-8") : "";
+
+            productListDTO.setId(entity.getProduct().getId());
+            productListDTO.setTitle(entity.getProduct().getTitle());
+            productListDTO.setWriter(entity.getProduct().getWriter());
+            productListDTO.setImagePath(encodedScriptImage);
+            productListDTO.setScript(entity.getProduct().isScript());
+            productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
+            productListDTO.setPerformance(entity.getProduct().isPerformance());
+            productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
+            productListDTO.setDate(entity.getProduct().getCreatedAt());
+            productListDTO.setChecked(entity.getProduct().getChecked());
+            productListDTO.setLike(getLikeStatus(userInfo, entity.getProduct()));
+            productListDTO.setLikeCount(getLikeCount(entity.getProduct()));
+
+            return productListDTO;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
