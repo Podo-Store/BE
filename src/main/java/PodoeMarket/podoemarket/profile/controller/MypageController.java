@@ -1,14 +1,20 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
-import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.service.*;
+import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
+import PodoeMarket.podoemarket.dto.UserDTO;
+import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.product.service.ProductService;
+import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
+import PodoeMarket.podoemarket.profile.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.profile.service.MypageService;
 import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -172,7 +178,7 @@ public class MypageController {
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId, 0);
+            ScriptDetailResponseDTO productInfo = mypageService.productDetail(productId, 0);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -182,7 +188,7 @@ public class MypageController {
     }
 
     @PostMapping("/detail")
-    public ResponseEntity<?> detailUpdate(ProductDTO dto,
+    public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
@@ -482,6 +488,42 @@ public class MypageController {
                     .build();
 
             return ResponseEntity.ok().body(performanceList);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/like")
+    public ResponseEntity<?> getLikeList(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            final ScriptListResponseDTO lists = new ScriptListResponseDTO(mypageService.getLikePlayList(0, userInfo, PlayType.LONG, 4), mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 4));
+
+            return ResponseEntity.ok().body(lists);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/like/long")
+    public ResponseEntity<?> longLikeList(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
+        try {
+            final List<ScriptListResponseDTO.ProductListDTO> lists = mypageService.getLikePlayList(page, userInfo, PlayType.LONG, 10);
+
+            return ResponseEntity.ok().body(lists);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/like/short")
+    public ResponseEntity<?> shortLikeList(@AuthenticationPrincipal UserEntity userInfo,  @RequestParam(value = "page", defaultValue = "0") int page) {
+        try {
+            final List<ScriptListResponseDTO.ProductListDTO> lists = mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 10);
+
+            return ResponseEntity.ok().body(lists);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

@@ -82,7 +82,7 @@ public class OrderItemEntity {
     private UserEntity user;
 
     // orderItem : performanceDate = 1 : N
-    @OneToMany(mappedBy = "orderItem")
+    @OneToMany(mappedBy = "orderItem", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PerformanceDateEntity> performanceDate = new ArrayList<>();
 

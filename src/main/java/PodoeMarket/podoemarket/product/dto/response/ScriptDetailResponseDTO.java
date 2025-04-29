@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.product.dto.response;
 
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
@@ -14,11 +14,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDTO {
+public class ScriptDetailResponseDTO {
     private UUID id;
     private String title;
     private String writer;
-    private String filePath;
     private String imagePath;
     private boolean script;
     private int scriptPrice;
@@ -35,4 +34,6 @@ public class ProductDTO {
     // 1 : 대본 or 대본 + 공연권 (대본 권리 기간 유효 시)
     // 2 : 공연권만 보유
     private int buyStatus;
+    private boolean like;
+    private int likeCount;
 }

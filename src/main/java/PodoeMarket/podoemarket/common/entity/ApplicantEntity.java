@@ -29,7 +29,7 @@ public class ApplicantEntity {
     private String address;
 
     // orderItem : applicant = 1 : 1
-    @OneToOne(targetEntity = OrderItemEntity.class)
+    @OneToOne(targetEntity = OrderItemEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItem_id")
     private OrderItemEntity orderItem;
 }

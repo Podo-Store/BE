@@ -2,11 +2,10 @@ package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
-import PodoeMarket.podoemarket.profile.dto.WorkListResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;

@@ -1,13 +1,13 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.product.controller;
 
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.dto.response.ScriptListDTO;
+import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.service.ProductService;
+import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +32,9 @@ public class ProductController {
     private final S3Service s3Service;
 
     @GetMapping
-    public ResponseEntity<?> allProducts() {
+    public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            final ScriptListDTO lists = new ScriptListDTO(productService.mainLongPlayList(), productService.mainShortPlayList());
+            final ScriptListResponseDTO lists = new ScriptListResponseDTO(productService.getPlayList(0, userInfo, PlayType.LONG, 10), productService.getPlayList(0, userInfo, PlayType.SHORT, 20));
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -44,9 +44,9 @@ public class ProductController {
     }
 
     @GetMapping("/long")
-    public ResponseEntity<?> longProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> longProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ProductListDTO> lists = productService.longPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.LONG, 20);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -55,11 +55,10 @@ public class ProductController {
         }
     }
 
-
     @GetMapping("/short")
-    public ResponseEntity<?> shortProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> shortProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ProductListDTO> lists = productService.shortPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.SHORT, 20);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -73,7 +72,11 @@ public class ProductController {
         try{
             // 로그인한 유저의 해당 작품 구매 이력 확인
             final int buyStatus = productService.buyStatus(userInfo, productId);
-            final ProductDTO productInfo = productService.productDetail(productId, buyStatus);
+            // 로그인한 유저의 좋아요 여부 확인
+            final boolean likeStatus = productService.getLikeStatus(userInfo, productId);
+            // 총 좋아요 수
+            final int likeCount = productService.getLikeCount(productId);
+            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus, likeStatus, likeCount);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -113,6 +116,33 @@ public class ProductController {
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
+        }
+    }
+
+    @PostMapping("/like/{id}")
+    public ResponseEntity<?> productLike(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try{
+            final boolean likeStatus = productService.getLikeStatus(userInfo, id);
+
+            if (likeStatus) {
+                productService.deleteLike(userInfo, id);
+
+                return ResponseEntity.ok().body("cancel like");
+            } else {
+                final ProductEntity product = productService.product(id);
+
+                final ProductLikeEntity like = ProductLikeEntity.builder()
+                        .user(userInfo)
+                        .product(product)
+                        .build();
+
+                productService.createLike(like);
+
+                return ResponseEntity.ok().body("like");
+            }
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
         }
     }
 }

@@ -19,57 +19,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class EntityToDTOConverter {
-
-    public static ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
-       try {
-           ProductListDTO productListDTO = new ProductListDTO();
-           String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
-
-           productListDTO.setId(entity.getId());
-           productListDTO.setTitle(entity.getTitle());
-           productListDTO.setWriter(entity.getWriter());
-           productListDTO.setImagePath(encodedScriptImage);
-           productListDTO.setScript(entity.isScript());
-           productListDTO.setScriptPrice(entity.getScriptPrice());
-           productListDTO.setPerformance(entity.isPerformance());
-           productListDTO.setPerformancePrice(entity.getPerformancePrice());
-           productListDTO.setDate(entity.getCreatedAt());
-           productListDTO.setChecked(entity.getChecked());
-
-           return productListDTO;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static ProductDTO convertToSingleProductDTO(ProductEntity entity, int buyStatus, String bucketURL) {
-        try {
-            ProductDTO productDTO = new ProductDTO();
-            String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
-            String encodedDescription = entity.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(entity.getDescriptionPath(), "UTF-8") : "";
-
-            productDTO.setId(entity.getId());
-            productDTO.setTitle(entity.getTitle());
-            productDTO.setWriter(entity.getWriter());
-            productDTO.setImagePath(encodedScriptImage);
-            productDTO.setScript(entity.isScript());
-            productDTO.setScriptPrice(entity.getScriptPrice());
-            productDTO.setPerformance(entity.isPerformance());
-            productDTO.setPerformancePrice(entity.getPerformancePrice());
-            productDTO.setDescriptionPath(encodedDescription);
-            productDTO.setDate(entity.getCreatedAt());
-            productDTO.setChecked(entity.getChecked());
-            productDTO.setPlayType(entity.getPlayType());
-            productDTO.setPlot(entity.getPlot());
-
-            productDTO.setBuyStatus(buyStatus);
-
-            return productDTO;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static OrderScriptDTO convertToScriptOrderItemDTO(OrderItemEntity orderItem, ProductEntity product, String bucketURL) {
         try {
             OrderScriptDTO itemDTO = new OrderScriptDTO();

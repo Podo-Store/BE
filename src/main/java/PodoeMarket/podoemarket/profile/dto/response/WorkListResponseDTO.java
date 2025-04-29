@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.profile.dto;
+package PodoeMarket.podoemarket.profile.dto.response;
 
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
