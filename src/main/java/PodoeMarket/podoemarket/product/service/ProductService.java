@@ -48,27 +48,27 @@ public class ProductService {
 
     private final Pageable mainPage = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-    public List<ScriptListResponseDTO.ProductListDTO> mainLongPlayList() {
+    public List<ScriptListResponseDTO.ProductListDTO> mainLongPlayList(UserEntity userInfo) {
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG, ProductStatus.PASS, mainPage);
 
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL, userInfo))
                 .collect(Collectors.toList());
     }
 
-    public List<ScriptListResponseDTO.ProductListDTO> mainShortPlayList() {
+    public List<ScriptListResponseDTO.ProductListDTO> mainShortPlayList(UserEntity userInfo) {
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, mainPage);
 
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL, userInfo))
                 .collect(Collectors.toList());
     }
 
-    public List<ScriptListResponseDTO.ProductListDTO> longPlayList(int page) {
+    public List<ScriptListResponseDTO.ProductListDTO> longPlayList(int page, UserEntity userInfo) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG,  ProductStatus.PASS, pageable);
@@ -76,11 +76,11 @@ public class ProductService {
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL, userInfo))
                 .collect(Collectors.toList());
     }
 
-    public List<ScriptListResponseDTO.ProductListDTO> shortPlayList(int page) {
+    public List<ScriptListResponseDTO.ProductListDTO> shortPlayList(int page, UserEntity userInfo) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, pageable);
@@ -88,7 +88,7 @@ public class ProductService {
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL, userInfo))
                 .collect(Collectors.toList());
     }
 
@@ -197,7 +197,7 @@ public class ProductService {
     }
 
     // =========== private method ============
-    private static ScriptListResponseDTO.ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
+    private ScriptListResponseDTO.ProductListDTO convertToProductList(ProductEntity entity, String bucketURL, UserEntity userInfo) {
         try {
             ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
             String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
@@ -212,6 +212,8 @@ public class ProductService {
             productListDTO.setPerformancePrice(entity.getPerformancePrice());
             productListDTO.setDate(entity.getCreatedAt());
             productListDTO.setChecked(entity.getChecked());
+            productListDTO.setLike(getLikeStatus(userInfo, entity.getId()));
+            productListDTO.setLikeCount(getLikeCount(entity.getId()));
 
             return productListDTO;
         } catch (UnsupportedEncodingException e) {

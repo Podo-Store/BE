@@ -32,9 +32,9 @@ public class ProductController {
     private final S3Service s3Service;
 
     @GetMapping
-    public ResponseEntity<?> allProducts() {
+    public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            final ScriptListResponseDTO lists = new ScriptListResponseDTO(productService.mainLongPlayList(), productService.mainShortPlayList());
+            final ScriptListResponseDTO lists = new ScriptListResponseDTO(productService.mainLongPlayList(userInfo), productService.mainShortPlayList(userInfo));
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -44,9 +44,9 @@ public class ProductController {
     }
 
     @GetMapping("/long")
-    public ResponseEntity<?> longProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> longProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.longPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.longPlayList(page, userInfo);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -56,9 +56,9 @@ public class ProductController {
     }
 
     @GetMapping("/short")
-    public ResponseEntity<?> shortProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> shortProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.shortPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.shortPlayList(page, userInfo);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {

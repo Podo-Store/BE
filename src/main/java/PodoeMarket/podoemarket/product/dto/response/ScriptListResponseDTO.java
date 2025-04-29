@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.product.dto.response;
 
-import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +31,9 @@ public class ScriptListResponseDTO {
         private int scriptPrice;
         private boolean performance;
         private int performancePrice;
-        private PlayType playType;
         private ProductStatus checked;
         private LocalDateTime date;
+        private boolean like;
+        private int likeCount;
     }
 }
