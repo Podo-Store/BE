@@ -2,7 +2,7 @@ package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.profile.dto.WorkListResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
 import PodoeMarket.podoemarket.profile.service.WorkService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

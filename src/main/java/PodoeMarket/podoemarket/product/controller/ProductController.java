@@ -3,9 +3,8 @@ package PodoeMarket.podoemarket.product.controller;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.service.ProductService;
@@ -47,7 +46,7 @@ public class ProductController {
     @GetMapping("/long")
     public ResponseEntity<?> longProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ProductListDTO> lists = productService.longPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.longPlayList(page);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -59,7 +58,7 @@ public class ProductController {
     @GetMapping("/short")
     public ResponseEntity<?> shortProducts(@RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final List<ProductListDTO> lists = productService.shortPlayList(page);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.shortPlayList(page);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -73,7 +72,7 @@ public class ProductController {
         try{
             // 로그인한 유저의 해당 작품 구매 이력 확인
             final int buyStatus = productService.buyStatus(userInfo, productId);
-            final ProductDTO productInfo = productService.productDetail(productId, buyStatus);
+            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {

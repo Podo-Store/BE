@@ -1,15 +1,18 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
-import PodoeMarket.podoemarket.dto.*;
-import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
+import PodoeMarket.podoemarket.dto.UserDTO;
+import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
-import PodoeMarket.podoemarket.service.*;
+import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
+import PodoeMarket.podoemarket.profile.service.MypageService;
 import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -173,7 +176,7 @@ public class MypageController {
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ProductDTO productInfo = productService.productDetail(productId, 0);
+            ScriptDetailResponseDTO productInfo = productService.productDetail(productId, 0);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -183,7 +186,7 @@ public class MypageController {
     }
 
     @PostMapping("/detail")
-    public ResponseEntity<?> detailUpdate(ProductDTO dto,
+    public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{

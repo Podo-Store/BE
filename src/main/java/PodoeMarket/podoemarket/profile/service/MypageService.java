@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.repository.*;

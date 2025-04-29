@@ -6,7 +6,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.register.service.RegisterService;
 import PodoeMarket.podoemarket.mail.MailSendService;
-import PodoeMarket.podoemarket.service.MypageService;
+import PodoeMarket.podoemarket.profile.service.MypageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

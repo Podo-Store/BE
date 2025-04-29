@@ -1,18 +1,17 @@
 package PodoeMarket.podoemarket.product.service;
 
-import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.ProductLikeEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.ProductLikeRepository;
-import PodoeMarket.podoemarket.dto.ProductDTO;
-import PodoeMarket.podoemarket.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -27,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -46,27 +47,27 @@ public class ProductService {
 
     private final Pageable mainPage = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-    public List<ProductListDTO> mainLongPlayList() {
+    public List<ScriptListResponseDTO.ProductListDTO> mainLongPlayList() {
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG, ProductStatus.PASS, mainPage);
 
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
-    public List<ProductListDTO> mainShortPlayList() {
+    public List<ScriptListResponseDTO.ProductListDTO> mainShortPlayList() {
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, mainPage);
 
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
-    public List<ProductListDTO> longPlayList(int page) {
+    public List<ScriptListResponseDTO.ProductListDTO> longPlayList(int page) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         final List<ProductEntity> longPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.LONG,  ProductStatus.PASS, pageable);
@@ -74,11 +75,11 @@ public class ProductService {
         return longPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
-    public List<ProductListDTO> shortPlayList(int page) {
+    public List<ScriptListResponseDTO.ProductListDTO> shortPlayList(int page) {
         final Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         final List<ProductEntity> shortPlays = productRepo.findAllByPlayTypeAndChecked(PlayType.SHORT,  ProductStatus.PASS, pageable);
@@ -86,7 +87,7 @@ public class ProductService {
         return shortPlays.stream()
                 .filter(play -> play.getUser() != null)
                 .filter(play -> play.isScript() || play.isPerformance())
-                .map(play -> EntityToDTOConverter.convertToProductList(play, bucketURL))
+                .map(play -> convertToProductList(play, bucketURL))
                 .collect(Collectors.toList());
     }
 
@@ -118,10 +119,10 @@ public class ProductService {
         return 0;
     }
 
-    public ProductDTO productDetail(UUID productId, int buyStatus) {
+    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) {
         final ProductEntity script = product(productId);
 
-        return EntityToDTOConverter.convertToSingleProductDTO(script, buyStatus, bucketURL);
+        return convertToScriptDetail(script, buyStatus, bucketURL);
     }
 
     // PDF의 특정 페이지까지 추출하는 함수
@@ -164,5 +165,56 @@ public class ProductService {
 
     public void createLike(ProductLikeEntity like) {
         productLikeRepo.save(like);
+    }
+
+    // =========== private method ============
+    private static ScriptListResponseDTO.ProductListDTO convertToProductList(ProductEntity entity, String bucketURL) {
+        try {
+            ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+            String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
+
+            productListDTO.setId(entity.getId());
+            productListDTO.setTitle(entity.getTitle());
+            productListDTO.setWriter(entity.getWriter());
+            productListDTO.setImagePath(encodedScriptImage);
+            productListDTO.setScript(entity.isScript());
+            productListDTO.setScriptPrice(entity.getScriptPrice());
+            productListDTO.setPerformance(entity.isPerformance());
+            productListDTO.setPerformancePrice(entity.getPerformancePrice());
+            productListDTO.setDate(entity.getCreatedAt());
+            productListDTO.setChecked(entity.getChecked());
+
+            return productListDTO;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ScriptDetailResponseDTO convertToScriptDetail(ProductEntity entity, int buyStatus, String bucketURL) {
+        try {
+            ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
+            String encodedScriptImage = entity.getImagePath() != null ? bucketURL + URLEncoder.encode(entity.getImagePath(), "UTF-8") : "";
+            String encodedDescription = entity.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(entity.getDescriptionPath(), "UTF-8") : "";
+
+            scriptDetailDTO.setId(entity.getId());
+            scriptDetailDTO.setTitle(entity.getTitle());
+            scriptDetailDTO.setWriter(entity.getWriter());
+            scriptDetailDTO.setImagePath(encodedScriptImage);
+            scriptDetailDTO.setScript(entity.isScript());
+            scriptDetailDTO.setScriptPrice(entity.getScriptPrice());
+            scriptDetailDTO.setPerformance(entity.isPerformance());
+            scriptDetailDTO.setPerformancePrice(entity.getPerformancePrice());
+            scriptDetailDTO.setDescriptionPath(encodedDescription);
+            scriptDetailDTO.setDate(entity.getCreatedAt());
+            scriptDetailDTO.setChecked(entity.getChecked());
+            scriptDetailDTO.setPlayType(entity.getPlayType());
+            scriptDetailDTO.setPlot(entity.getPlot());
+
+            scriptDetailDTO.setBuyStatus(buyStatus);
+
+            return scriptDetailDTO;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
