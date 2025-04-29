@@ -85,6 +85,7 @@ public class AdminService {
         return productRepo.findById(id);
     }
 
+    @Transactional
     public void updateProduct(final ProductEntity product) {
         productRepo.save(product);
     }
