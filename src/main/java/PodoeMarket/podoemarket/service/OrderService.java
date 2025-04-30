@@ -39,7 +39,7 @@ public class OrderService {
                 throw new RuntimeException("본인 작품 구매 불가");
 
             // 대본권, 공연권 1일 때만 구매 가능
-            if ((!product.isScript() && orderItemDTO.isScript()) || (!product.isPerformance() && (orderItemDTO.getPerformanceAmount() > 0)))
+            if ((!product.getScript() && orderItemDTO.isScript()) || (!product.getPerformance() && (orderItemDTO.getPerformanceAmount() > 0)))
                 throw new RuntimeException("구매 조건 확인");
 
             if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
@@ -47,7 +47,7 @@ public class OrderService {
 
                 for(OrderItemEntity item : items) {
                     // 대본권 제한
-                    if(orderItemDTO.isScript() && item.isScript())
+                    if(orderItemDTO.isScript() && item.getScript())
                         throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
                 }
             } else {

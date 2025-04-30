@@ -25,10 +25,10 @@ public class OrdersEntity {
     private Long id;
 
     @Column(nullable = false)
-    private int totalPrice;
+    private Integer totalPrice;
 
     @Column(nullable = false)
-    private int paymentMethod; // 0: 0원, 1: 계좌이체
+    private Integer paymentMethod; // 0: 0원, 1: 계좌이체
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

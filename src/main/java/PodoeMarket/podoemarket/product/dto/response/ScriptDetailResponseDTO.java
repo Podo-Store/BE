@@ -19,10 +19,10 @@ public class ScriptDetailResponseDTO {
     private String title;
     private String writer;
     private String imagePath;
-    private boolean script;
-    private int scriptPrice;
-    private boolean performance;
-    private int performancePrice;
+    private Boolean script;
+    private Integer scriptPrice;
+    private Boolean performance;
+    private Integer performancePrice;
     private String descriptionPath;
     private PlayType playType;
     private ProductStatus checked;
@@ -33,7 +33,16 @@ public class ScriptDetailResponseDTO {
     // 0 : 아무것도 구매 X
     // 1 : 대본 or 대본 + 공연권 (대본 권리 기간 유효 시)
     // 2 : 공연권만 보유
-    private int buyStatus;
-    private boolean like;
-    private int likeCount;
+    private Integer buyStatus;
+    private Boolean like;
+    private Integer likeCount;
+
+    // 개요
+    private Integer any;
+    private Integer male;
+    private Integer female;
+    private String stageComment;
+    private Integer runningTime;
+    private Integer scene; // 장
+    private Integer act; // 막
 }

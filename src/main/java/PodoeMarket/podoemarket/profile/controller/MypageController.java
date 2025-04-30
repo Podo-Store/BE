@@ -365,7 +365,7 @@ public class MypageController {
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
         try {
             final OrderItemEntity item = mypageService.getOrderItem(orderId);
-            if(!item.isScript()) {
+            if(!item.getScript()) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("대본을 구매하세요.")
                         .build();

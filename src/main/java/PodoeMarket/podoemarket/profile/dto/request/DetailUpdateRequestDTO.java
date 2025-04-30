@@ -21,4 +21,13 @@ public class DetailUpdateRequestDTO {
     private int performancePrice;
     private String descriptionPath;
     private String plot;
+
+    // 개요
+    private int any;
+    private int male;
+    private int female;
+    private String stageComment;
+    private int runningTime;
+    private int scene; // 장
+    private int act; // 막
 }

@@ -52,7 +52,7 @@ public class ProductService {
 
         return plays.stream()
                 .filter(play -> play.getUser() != null)
-                .filter(play -> play.isScript() || play.isPerformance())
+                .filter(play -> play.getScript() || play.getPerformance())
                 .map(play -> convertToProductList(play, userInfo))
                 .collect(Collectors.toList());
     }
@@ -68,7 +68,7 @@ public class ProductService {
         final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userInfo.getId());
 
         for(OrderItemEntity item : orderItems) {
-            final boolean isBuyScript = item.isScript(); // 대본 구매 여부
+            final boolean isBuyScript = item.getScript(); // 대본 구매 여부
             final boolean isExpiryDate = LocalDateTime.now().isAfter(item.getCreatedAt().plusYears(1)); // 권리 기간 만료 여부
             final boolean isBuyPerformance = applicantRepo.existsByOrderItemId(item.getId()); // 공연권 구매 여부
 
@@ -96,15 +96,23 @@ public class ProductService {
         scriptDetailDTO.setTitle(script.getTitle());
         scriptDetailDTO.setWriter(script.getWriter());
         scriptDetailDTO.setImagePath(encodedScriptImage);
-        scriptDetailDTO.setScript(script.isScript());
+        scriptDetailDTO.setScript(script.getScript());
         scriptDetailDTO.setScriptPrice(script.getScriptPrice());
-        scriptDetailDTO.setPerformance(script.isPerformance());
+        scriptDetailDTO.setPerformance(script.getPerformance());
         scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
         scriptDetailDTO.setDescriptionPath(encodedDescription);
         scriptDetailDTO.setDate(script.getCreatedAt());
         scriptDetailDTO.setChecked(script.getChecked());
         scriptDetailDTO.setPlayType(script.getPlayType());
         scriptDetailDTO.setPlot(script.getPlot());
+
+        scriptDetailDTO.setAny(script.getAny());
+        scriptDetailDTO.setMale(script.getMale());
+        scriptDetailDTO.setFemale(script.getFemale());
+        scriptDetailDTO.setStageComment(script.getStageComment());
+        scriptDetailDTO.setRunningTime(script.getRunningTime());
+        scriptDetailDTO.setScene(script.getScene());
+        scriptDetailDTO.setAct(script.getAct());
 
         scriptDetailDTO.setBuyStatus(buyStatus);
         scriptDetailDTO.setLike(likeStatus);
@@ -171,9 +179,9 @@ public class ProductService {
             productListDTO.setTitle(entity.getTitle());
             productListDTO.setWriter(entity.getWriter());
             productListDTO.setImagePath(encodedScriptImage);
-            productListDTO.setScript(entity.isScript());
+            productListDTO.setScript(entity.getScript());
             productListDTO.setScriptPrice(entity.getScriptPrice());
-            productListDTO.setPerformance(entity.isPerformance());
+            productListDTO.setPerformance(entity.getPerformance());
             productListDTO.setPerformancePrice(entity.getPerformancePrice());
             productListDTO.setDate(entity.getCreatedAt());
             productListDTO.setChecked(entity.getChecked());
