@@ -22,10 +22,10 @@ public class RefundEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
 
     @Column(nullable = false, length = 51)
     private String content;

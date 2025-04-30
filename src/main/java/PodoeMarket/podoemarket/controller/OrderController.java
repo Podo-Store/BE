@@ -119,7 +119,7 @@ public class OrderController {
                     .orderId(orderId)
                     .orderDate(order.getCreatedAt())
                     .title(orderItem.getFirst().getTitle())
-                    .script(orderItem.getFirst().isScript())
+                    .script(orderItem.getFirst().getScript())
                     .scriptPrice(orderItem.getFirst().getScriptPrice())
                     .performanceAmount(orderItem.getFirst().getPerformanceAmount())
                     .performancePrice(orderItem.getFirst().getPerformancePrice())

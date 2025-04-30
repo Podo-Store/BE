@@ -27,22 +27,22 @@ public class OrderItemEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean script; // 대본권 구매 여부
+    private Boolean script; // 대본권 구매 여부
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int scriptPrice;
+    private Integer scriptPrice;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int performanceAmount;
+    private Integer performanceAmount;
 
     @Column
     @ColumnDefault("0")
-    private int performancePrice;
+    private Integer performancePrice;
 
     @Column(nullable = false)
-    private int totalPrice;
+    private Integer totalPrice;
 
     @Column(nullable = false)
     private String title;

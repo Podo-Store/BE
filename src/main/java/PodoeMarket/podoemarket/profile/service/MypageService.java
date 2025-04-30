@@ -126,8 +126,8 @@ public class MypageService {
 
         product.setImagePath(productEntity.getImagePath());
         product.setTitle(productEntity.getTitle());
-        product.setScript(productEntity.isScript());
-        product.setPerformance(productEntity.isPerformance());
+        product.setScript(productEntity.getScript());
+        product.setPerformance(productEntity.getPerformance());
         product.setScriptPrice(productEntity.getScriptPrice());
         product.setPerformancePrice(productEntity.getPerformancePrice());
         product.setScriptPrice(productEntity.getScriptPrice());
@@ -457,10 +457,10 @@ public class MypageService {
                 .title(product.getTitle())
                 .writer(product.getWriter())
                 .plot(product.getPlot())
-                .script(product.isScript())
+                .script(product.getScript())
                 .scriptPrice(product.getScriptPrice())
                 .scriptQuantity(orderItemRepo.sumScriptByProductId(productId))
-                .performance(product.isPerformance())
+                .performance(product.getPerformance())
                 .performancePrice(product.getPerformancePrice())
                 .performanceQuantity(orderItemRepo.sumPerformanceAmountByProductId(productId))
                 .build();
@@ -517,9 +517,9 @@ public class MypageService {
         scriptDetailDTO.setTitle(script.getTitle());
         scriptDetailDTO.setWriter(script.getWriter());
         scriptDetailDTO.setImagePath(encodedScriptImage);
-        scriptDetailDTO.setScript(script.isScript());
+        scriptDetailDTO.setScript(script.getScript());
         scriptDetailDTO.setScriptPrice(script.getScriptPrice());
-        scriptDetailDTO.setPerformance(script.isPerformance());
+        scriptDetailDTO.setPerformance(script.getPerformance());
         scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
         scriptDetailDTO.setDescriptionPath(encodedDescription);
         scriptDetailDTO.setDate(script.getCreatedAt());
@@ -564,9 +564,9 @@ public class MypageService {
             productListDTO.setTitle(entity.getProduct().getTitle());
             productListDTO.setWriter(entity.getProduct().getWriter());
             productListDTO.setImagePath(encodedScriptImage);
-            productListDTO.setScript(entity.getProduct().isScript());
+            productListDTO.setScript(entity.getProduct().getScript());
             productListDTO.setScriptPrice(entity.getProduct().getScriptPrice());
-            productListDTO.setPerformance(entity.getProduct().isPerformance());
+            productListDTO.setPerformance(entity.getProduct().getPerformance());
             productListDTO.setPerformancePrice(entity.getProduct().getPerformancePrice());
             productListDTO.setDate(entity.getProduct().getCreatedAt());
             productListDTO.setChecked(entity.getProduct().getChecked());

@@ -34,10 +34,10 @@ public class WorkListResponseDTO {
             private UUID id;
             private String title;
             private String imagePath;
-            private boolean script;
-            private int scriptPrice;
-            private boolean performance;
-            private int performancePrice;
+            private Boolean script;
+            private Integer scriptPrice;
+            private Boolean performance;
+            private Integer performancePrice;
             private ProductStatus checked;
         }
     }
