@@ -106,6 +106,14 @@ public class ProductService {
         scriptDetailDTO.setPlayType(script.getPlayType());
         scriptDetailDTO.setPlot(script.getPlot());
 
+        scriptDetailDTO.setAny(script.getAny());
+        scriptDetailDTO.setMale(script.getMale());
+        scriptDetailDTO.setFemale(script.getFemale());
+        scriptDetailDTO.setStageComment(script.getStageComment());
+        scriptDetailDTO.setRunningTime(script.getRunningTime());
+        scriptDetailDTO.setScene(script.getScene());
+        scriptDetailDTO.setAct(script.getAct());
+
         scriptDetailDTO.setBuyStatus(buyStatus);
         scriptDetailDTO.setLike(likeStatus);
         scriptDetailDTO.setLikeCount(likeCount);
