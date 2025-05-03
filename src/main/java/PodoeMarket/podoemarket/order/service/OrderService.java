@@ -8,7 +8,7 @@ import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.OrderRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

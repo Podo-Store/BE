@@ -10,7 +10,7 @@ import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.order.service.OrderService;
 import PodoeMarket.podoemarket.product.service.ProductService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

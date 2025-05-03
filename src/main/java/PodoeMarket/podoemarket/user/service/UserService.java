@@ -2,7 +2,7 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
