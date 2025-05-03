@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +29,12 @@ public class RegisterService {
     @Value("${cloud.aws.s3.folder.folderName1}")
     private String bucketFolder;
 
+    @Transactional
     public void register(ProductEntity scriptEntity) {
         fileRepo.save(scriptEntity);
     }
 
+    @Transactional
     public String uploadScript(MultipartFile[] files, String writer) throws IOException {
         if(files[0].isEmpty()) {
             throw new RuntimeException("선택된 파일이 없음");

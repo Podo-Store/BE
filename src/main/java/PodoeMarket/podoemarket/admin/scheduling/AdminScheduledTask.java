@@ -48,7 +48,6 @@ public class AdminScheduledTask {
     }
 
     // ============ private method ================
-
     private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
         final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
 

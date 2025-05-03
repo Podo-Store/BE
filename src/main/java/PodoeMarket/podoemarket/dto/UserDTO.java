@@ -18,9 +18,9 @@ public class UserDTO {
     private String password;
     private String confirmPassword;
     private String nickname;
-    private boolean auth;
+    private Boolean auth;
     private String authNum;
-    private boolean check; // 회원가입, 비밀번호 찾기 구분
+    private Boolean check; // 회원가입, 비밀번호 찾기 구분
     private String accessToken; // jwt 저장공간
     private String refreshToken; // jwt 저장공간
 }

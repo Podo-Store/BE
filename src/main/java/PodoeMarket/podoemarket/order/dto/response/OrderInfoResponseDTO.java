@@ -15,8 +15,8 @@ public class OrderInfoResponseDTO {
     private LocalDateTime orderDate;
     private Long orderId;
     private String title;
-    private boolean script;
-    private int scriptPrice;
-    private int performanceAmount;
-    private int performancePrice;
+    private Boolean script;
+    private Integer scriptPrice;
+    private Integer performanceAmount;
+    private Integer performancePrice;
 }

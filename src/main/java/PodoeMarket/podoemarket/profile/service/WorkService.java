@@ -1,10 +1,8 @@
 package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
-import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
-import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
@@ -36,7 +34,6 @@ import java.util.stream.Collectors;
 @Service
 public class WorkService {
     private final ProductRepository productRepo;
-    private final UserRepository userRepo;
 
     private final AmazonS3 amazonS3;
 

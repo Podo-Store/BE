@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepo;
 
+    @Transactional
     public void create(final UserEntity userEntity) {
         final String userId = userEntity.getUserId();
         final String email = userEntity.getEmail();
@@ -108,6 +110,7 @@ public class UserService {
         return userRepo.findById(id);
     }
 
+    @Transactional
     public void update(UUID id, final UserEntity userEntity) {
         final UserEntity user = userRepo.findById(id);
 

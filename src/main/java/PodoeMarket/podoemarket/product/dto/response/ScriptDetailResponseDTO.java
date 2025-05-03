@@ -36,6 +36,7 @@ public class ScriptDetailResponseDTO {
     private Integer buyStatus;
     private Boolean like;
     private Integer likeCount;
+    private Long viewCount;
 
     // 개요
     private Integer any;

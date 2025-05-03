@@ -27,13 +27,14 @@ public class ScriptListResponseDTO {
         private String title;
         private String writer;
         private String imagePath;
-        private boolean script;
-        private int scriptPrice;
-        private boolean performance;
-        private int performancePrice;
+        private Boolean script;
+        private Integer scriptPrice;
+        private Boolean performance;
+        private Integer performancePrice;
         private ProductStatus checked;
         private LocalDateTime date;
-        private boolean like;
-        private int likeCount;
+        private Boolean like;
+        private Integer likeCount;
+        private Long viewCount;
     }
 }

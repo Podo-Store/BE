@@ -186,6 +186,7 @@ public class AdminService {
         return orderRepo.findById(orderId).orElse(null);
     }
 
+    @Transactional
     public void updateOrder(final OrdersEntity order) {
         orderRepo.save(order);
     }

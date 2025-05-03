@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.OrderRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
 
+    @Transactional
     public OrdersEntity orderCreate(final OrdersEntity ordersEntity, final OrderDTO orderDTO, final UserEntity user) {
         // dto로 받은 주문 목록에서 item을 하나씩 뽑아서 가공
         final List<OrderItemEntity> orderItems = orderDTO.getOrderItem().stream().map(orderItemDTO -> {
@@ -94,6 +96,7 @@ public class OrderService {
         return false;
     }
 
+    @Transactional
     public void createApplicant(final ApplicantEntity applicant) {
         final String number_regex = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$";
 
