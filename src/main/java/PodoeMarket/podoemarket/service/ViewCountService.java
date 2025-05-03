@@ -100,11 +100,37 @@ public class ViewCountService {
 
                     // MySQL에 업데이트
                     ProductEntity product = productRepo.findById(productId);
-                    product.setViewCount(viewCount);
-                    productRepo.save(product);
+                    if (product != null) {
+                        product.setViewCount(viewCount);
+                        productRepo.save(product);
+
+                        // MySQL 업데이트 후 Redis 데이터 삭제
+                        redisTemplate.delete(key);
+                    }
                 }
             }
-            log.info("조회수 동기화 성공");
+
+            // 오래된 사용자 조회 기록 삭제 (30일 이상 된 기록)
+            Set<String> oldUserViewKeys = redisTemplate.keys("user:*:views:*");
+            if (oldUserViewKeys != null && !oldUserViewKeys.isEmpty()) {
+                for (String key : oldUserViewKeys) {
+                    String[] parts = key.split(":");
+
+                    if (parts.length >= 4) {
+                        String dateStr = parts[3];
+                        try {
+                            LocalDate keyDate = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+                            if (keyDate.isBefore(LocalDate.now().minusDays(30)))
+                                redisTemplate.delete(key);
+                        } catch (Exception e) {
+                            log.warn("날짜 파싱 오류: {}", key);
+                        }
+                    }
+                }
+            }
+
+            log.info("조회수 동기화 및 데이터 정리 성공");
         } catch (Exception e) {
             log.error("작품 조회수 동기화 중 오류 발생: ", e);
         }
