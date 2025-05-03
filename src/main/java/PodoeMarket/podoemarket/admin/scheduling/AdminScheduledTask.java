@@ -5,7 +5,7 @@ import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +48,6 @@ public class AdminScheduledTask {
     }
 
     // ============ private method ================
-
     private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
         final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
 

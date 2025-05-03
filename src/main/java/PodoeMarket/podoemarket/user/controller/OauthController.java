@@ -4,7 +4,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.mail.MailSendService;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import PodoeMarket.podoemarket.user.service.OAuthService;
 import PodoeMarket.podoemarket.user.service.UserService;

@@ -24,7 +24,7 @@ public class PerformanceDateEntity {
     private LocalDateTime date;
 
     // orderItem : performanceDate = 1 : N
-    @ManyToOne(targetEntity = OrderItemEntity.class)
+    @ManyToOne(targetEntity = OrderItemEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name  = "orderItem_id", nullable = false)
     private OrderItemEntity orderItem;
 }

@@ -2,15 +2,13 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
-import PodoeMarket.podoemarket.dto.EmailCheckDTO;
-import PodoeMarket.podoemarket.dto.EmailRequestDTO;
+import PodoeMarket.podoemarket.user.dto.request.*;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.mail.MailSendService;
-import PodoeMarket.podoemarket.service.RedisUtil;
-import PodoeMarket.podoemarket.user.dto.request.SignInRequestDTO;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.service.VerificationService;
 import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import PodoeMarket.podoemarket.user.dto.response.TokenResponseDTO;
 import PodoeMarket.podoemarket.user.service.UserService;
@@ -38,14 +36,14 @@ public class UserController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final MailSendService mailService;
-    private final RedisUtil redisUtil;
+    private final VerificationService verificationService;
     private final JwtProperties jwtProperties;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/checkUserId")
-    public ResponseEntity<?> duplicateUserId(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> duplicateUserId(@RequestBody UserIdCheckRequestDTO dto) {
         try {
-            if(dto.isCheck()) { // True : 회원가입, False : 비밀번호 찾기
+            if(dto.getCheck()) { // True : 회원가입, False : 비밀번호 찾기
                 if(userService.checkUserId(dto.getUserId())) {
                     ResponseDTO resDTO = ResponseDTO.builder()
                             .error("이미 존재하는 아이디")
@@ -73,7 +71,7 @@ public class UserController {
     }
 
     @PostMapping("/equalPw")
-    public ResponseEntity<?> equalPassword(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> equalPassword(@RequestBody PwCheckRequestDTO dto) {
         try{
             if(!dto.getPassword().equals(dto.getConfirmPassword())){
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -91,7 +89,7 @@ public class UserController {
     }
 
     @PostMapping("/checkNickname")
-    public ResponseEntity<?> duplicateNickname(@RequestBody UserDTO dto){
+    public ResponseEntity<?> duplicateNickname(@RequestBody NicknameCheckRequestDTO dto){
         try {
             if(userService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -137,7 +135,7 @@ public class UserController {
     }
 
     @PostMapping("/mailauthCheck")
-    public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckDTO dto){
+    public ResponseEntity<?> authCheck(@RequestBody @Valid EmailCheckRequestDTO dto){
         try{
             boolean Checked = mailService.CheckAuthNum(dto.getEmail(),dto.getAuthNum());
 
@@ -181,7 +179,7 @@ public class UserController {
                     .build();
 
             userService.create(user);
-            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             mailService.joinSignupEmail(user.getEmail());
 
             return ResponseEntity.ok().body(true);
@@ -271,7 +269,7 @@ public class UserController {
                     .data(userInfo)
                     .build();
 
-            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
@@ -310,7 +308,7 @@ public class UserController {
                     .refreshToken(tokenProvider.createRefreshToken(user))
                     .build();
 
-            redisUtil.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             return ResponseEntity.ok().body(resUserDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
