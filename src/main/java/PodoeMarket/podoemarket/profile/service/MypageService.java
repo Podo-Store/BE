@@ -7,6 +7,7 @@ import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.service.ViewCountService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -19,7 +20,7 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +57,7 @@ public class MypageService {
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
     private final AmazonS3 amazonS3;
+    private final ViewCountService viewCountService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -572,6 +574,7 @@ public class MypageService {
             productListDTO.setChecked(entity.getProduct().getChecked());
             productListDTO.setLike(getLikeStatus(userInfo, entity.getProduct()));
             productListDTO.setLikeCount(getLikeCount(entity.getProduct()));
+            productListDTO.setViewCount(viewCountService.getProductViewCount(entity.getProduct().getId()));
 
             return productListDTO;
         } catch (UnsupportedEncodingException e) {

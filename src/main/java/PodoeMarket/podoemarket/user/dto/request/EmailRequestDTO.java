@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.user.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;

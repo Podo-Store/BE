@@ -12,10 +12,11 @@ import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class ProductService {
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final ViewCountService viewCountService;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -85,7 +87,7 @@ public class ProductService {
         return 0;
     }
 
-    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus, boolean likeStatus, int likeCount) throws UnsupportedEncodingException {
+    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus, boolean likeStatus, int likeCount, long viewCount) throws UnsupportedEncodingException {
         final ProductEntity script = productRepo.findById(productId);
 
         ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
@@ -117,6 +119,7 @@ public class ProductService {
         scriptDetailDTO.setBuyStatus(buyStatus);
         scriptDetailDTO.setLike(likeStatus);
         scriptDetailDTO.setLikeCount(likeCount);
+        scriptDetailDTO.setViewCount(viewCount);
 
         return scriptDetailDTO;
     }
@@ -187,6 +190,7 @@ public class ProductService {
             productListDTO.setChecked(entity.getChecked());
             productListDTO.setLike(getLikeStatus(userInfo, entity.getId()));
             productListDTO.setLikeCount(getLikeCount(entity.getId()));
+            productListDTO.setViewCount(viewCountService.getProductViewCount(entity.getId()));
 
             return productListDTO;
         } catch (UnsupportedEncodingException e) {

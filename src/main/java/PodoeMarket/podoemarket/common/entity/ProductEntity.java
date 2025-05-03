@@ -62,6 +62,10 @@ public class ProductEntity {
     @Column
     private String plot;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long viewCount;
+
     // 관리자(심사 주체) 확인 여부
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -79,7 +83,7 @@ public class ProductEntity {
     @ColumnDefault("0")
     private Integer female;
 
-    @Column()
+    @Column
     private String stageComment;
 
     @Column(nullable = false)

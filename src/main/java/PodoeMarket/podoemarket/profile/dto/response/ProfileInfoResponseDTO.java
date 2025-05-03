@@ -1,17 +1,19 @@
-package PodoeMarket.podoemarket.dto.response;
+package PodoeMarket.podoemarket.profile.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderPerformanceListPageDTO {
+public class ProfileInfoResponseDTO {
+    private UUID id;
+    private String userId;
     private String nickname;
-    List<DatePerformanceOrderDTO> orderList;
+    private String email;
 }

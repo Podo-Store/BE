@@ -1,6 +1,5 @@
-package PodoeMarket.podoemarket.mail;
+package PodoeMarket.podoemarket.service;
 
-import PodoeMarket.podoemarket.service.RedisUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +17,16 @@ import java.util.Random;
 @Service
 public class MailSendService {
     private final JavaMailSender mailSender;
-    private final RedisUtil redisUtil;
+    private final VerificationService verificationService;
     private int authNumber;
 
     @Value("${spring.mail.username}")
     private String username;
 
     public boolean CheckAuthNum(String email,String authNum){
-        if(redisUtil.getData(authNum) == null)
+        if(verificationService.getData(authNum) == null)
             return false;
-        else return redisUtil.getData(authNum).equals(email);
+        else return verificationService.getData(authNum).equals(email);
     }
 
     // 임의의 6자리 양수를 반환
@@ -273,6 +272,6 @@ public class MailSendService {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        redisUtil.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
+        verificationService.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
     }
 }

@@ -1,16 +1,16 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.order.controller;
 
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.dto.response.OrderCompleteDTO;
 import PodoeMarket.podoemarket.dto.OrderDTO;
-import PodoeMarket.podoemarket.dto.response.OrderInfoDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import PodoeMarket.podoemarket.dto.response.ResponseDTO;
-import PodoeMarket.podoemarket.mail.MailSendService;
-import PodoeMarket.podoemarket.service.OrderService;
+import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.order.service.OrderService;
 import PodoeMarket.podoemarket.product.service.ProductService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,7 +115,7 @@ public class OrderController {
             final OrdersEntity order = orderService.getOrderInfo(orderId);
             final List<OrderItemEntity> orderItem = orderService.getOrderItem(orderId);
 
-            final OrderInfoDTO resDTO = OrderInfoDTO.builder()
+            final OrderInfoResponseDTO resDTO = OrderInfoResponseDTO.builder()
                     .orderId(orderId)
                     .orderDate(order.getCreatedAt())
                     .title(orderItem.getFirst().getTitle())

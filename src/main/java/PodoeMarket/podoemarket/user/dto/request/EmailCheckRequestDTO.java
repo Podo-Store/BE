@@ -1,11 +1,11 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.user.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-public class EmailCheckDTO {
+public class EmailCheckRequestDTO {
     @Email
     @NotEmpty(message = "이메일을 입력해 주세요")
     private String email;

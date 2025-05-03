@@ -8,12 +8,10 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
-import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.dto.response.*;
-import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.request.*;
+import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.product.service.ProductService;
-import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
-import PodoeMarket.podoemarket.profile.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.profile.service.MypageService;
 import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +58,7 @@ public class MypageController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto){
+    public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody EnterCheckRequestDTO dto){
         try{
             boolean confirm = mypageService.checkUser(userInfo.getId(), dto.getPassword(), pwdEncoder);
             if(confirm)
@@ -81,9 +79,9 @@ public class MypageController {
     @GetMapping("/account")
     public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
         try {
-            UserEntity user = mypageService.originalUser(userInfo.getId());
+            final UserEntity user = mypageService.originalUser(userInfo.getId());
 
-            UserDTO info = UserDTO.builder()
+            final ProfileInfoResponseDTO info = ProfileInfoResponseDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
                     .nickname(user.getNickname())
@@ -98,7 +96,7 @@ public class MypageController {
     }
 
     @PostMapping("/equalPw")
-    public ResponseEntity<?> equalPassword(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> equalPassword(@RequestBody PwCheckRequestDTO dto) {
         if(!dto.getPassword().equals(dto.getConfirmPassword())){
             ResponseDTO resDTO = ResponseDTO.builder()
                     .error("비밀번호 불일치")
@@ -111,7 +109,7 @@ public class MypageController {
     }
 
     @PostMapping("/checkNickname")
-    public ResponseEntity<?> checkNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
+    public ResponseEntity<?> checkNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody NicknameCheckRequestDTO dto) {
         // 기존의 닉네임과 다를 경우
         if(!Objects.equals(userInfo.getNickname(), dto.getNickname())) {
             if(userService.checkNickname(dto.getNickname())) {
@@ -127,7 +125,7 @@ public class MypageController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody UserDTO dto) {
+    public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProfileUpdateRequestDTO dto) {
         try{
             if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword())){
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -158,7 +156,7 @@ public class MypageController {
 
             UserEntity user = mypageService.updateUser(userInfo);
 
-            final UserDTO resUserDTO = UserDTO.builder()
+            final UserInfoResponseDTO resUserDTO = UserInfoResponseDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
                     .email(user.getEmail())
@@ -240,8 +238,8 @@ public class MypageController {
             ProductEntity product = ProductEntity.builder()
                     .imagePath(scriptImageFilePath)
                     .title(normalizedTitle)
-                    .script(dto.isScript())
-                    .performance(dto.isPerformance())
+                    .script(dto.getScript())
+                    .performance(dto.getPerformance())
                     .scriptPrice(dto.getScriptPrice())
                     .performancePrice(dto.getPerformancePrice())
                     .descriptionPath(descriptionFilePath)
@@ -272,7 +270,7 @@ public class MypageController {
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderScriptListPageDTO result = OrderScriptListPageDTO.builder()
+            OrderScriptsResponseDTO result = OrderScriptsResponseDTO.builder()
                     .nickname(userInfo.getNickname())
                     .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
                     .build();
@@ -287,7 +285,7 @@ public class MypageController {
     @GetMapping("/orderPerformances")
     public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderPerformanceListPageDTO result = OrderPerformanceListPageDTO.builder()
+            OrderPerformanceListPageResponseDTO result = OrderPerformanceListPageResponseDTO.builder()
                     .nickname(userInfo.getNickname())
                     .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
                     .build();
@@ -497,7 +495,8 @@ public class MypageController {
     @GetMapping("/like")
     public ResponseEntity<?> getLikeList(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            final ScriptListResponseDTO lists = new ScriptListResponseDTO(mypageService.getLikePlayList(0, userInfo, PlayType.LONG, 4), mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 4));
+            final ScriptListResponseDTO lists = new ScriptListResponseDTO(mypageService.getLikePlayList(0, userInfo, PlayType.LONG, 4),
+                    mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 4));
 
             return ResponseEntity.ok().body(lists);
         } catch (Exception e) {

@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.service.S3Service;
+import PodoeMarket.podoemarket.service.ViewCountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -30,11 +31,13 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
     private final S3Service s3Service;
+    private final ViewCountService viewCountService;
 
     @GetMapping
     public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo) {
         try{
-            final ScriptListResponseDTO lists = new ScriptListResponseDTO(productService.getPlayList(0, userInfo, PlayType.LONG, 10), productService.getPlayList(0, userInfo, PlayType.SHORT, 20));
+            final ScriptListResponseDTO lists = new ScriptListResponseDTO(productService.getPlayList(0, userInfo, PlayType.LONG, 10),
+                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20));
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -76,7 +79,17 @@ public class ProductController {
             final boolean likeStatus = productService.getLikeStatus(userInfo, productId);
             // 총 좋아요 수
             final int likeCount = productService.getLikeCount(productId);
-            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus, likeStatus, likeCount);
+
+            // 조회수 증가
+            if (userInfo != null) // 로그인
+                viewCountService.incrementViewForLogged(userInfo.getId(), productId);
+            else // 비로그인
+                viewCountService.incrementViewForProduct(productId);
+
+            // 총 조회수
+            long viewCount = viewCountService.getProductViewCount(productId);
+
+            final ScriptDetailResponseDTO productInfo = productService.productDetail(productId, buyStatus, likeStatus, likeCount, viewCount);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {

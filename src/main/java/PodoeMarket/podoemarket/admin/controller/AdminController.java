@@ -13,7 +13,7 @@ import PodoeMarket.podoemarket.dto.response.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.mail.MailSendService;
+import PodoeMarket.podoemarket.service.MailSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

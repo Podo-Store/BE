@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.controller;
+package PodoeMarket.podoemarket.healthCheck;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

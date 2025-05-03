@@ -15,19 +15,19 @@ public class DetailUpdateRequestDTO {
     private UUID id;
     private String title;
     private String imagePath;
-    private boolean script;
-    private int scriptPrice;
-    private boolean performance;
-    private int performancePrice;
+    private Boolean script;
+    private Integer scriptPrice;
+    private Boolean performance;
+    private Integer performancePrice;
     private String descriptionPath;
     private String plot;
 
     // 개요
-    private int any;
-    private int male;
-    private int female;
+    private Integer any;
+    private Integer male;
+    private Integer female;
     private String stageComment;
-    private int runningTime;
-    private int scene; // 장
-    private int act; // 막
+    private Integer runningTime;
+    private Integer scene; // 장
+    private Integer act; // 막
 }

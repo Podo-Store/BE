@@ -15,17 +15,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderPerformanceDTO {
-    private boolean delete;
+    private Boolean delete;
     private UUID id;
     private String title;
     private String writer;
     private String imagePath;
     private ProductStatus checked;
     private PlayType playType;
-    private int performanceAmount;
-    private int performancePrice;
-    private int performanceTotalPrice;
-    private int possibleCount;
+    private Integer performanceAmount;
+    private Integer performancePrice;
+    private Integer performanceTotalPrice;
+    private Integer possibleCount;
 
     private UUID productId;
     private OrderStatus orderStatus;
