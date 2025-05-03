@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto.response;
+package PodoeMarket.podoemarket.order.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderInfoDTO {
+public class OrderInfoResponseDTO {
     private LocalDateTime orderDate;
     private Long orderId;
     private String title;

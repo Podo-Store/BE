@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.service;
+package PodoeMarket.podoemarket.order.service;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
 import PodoeMarket.podoemarket.common.entity.*;

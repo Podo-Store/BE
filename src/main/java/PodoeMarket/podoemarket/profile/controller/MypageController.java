@@ -10,6 +10,7 @@ import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
 import PodoeMarket.podoemarket.dto.UserDTO;
 import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.profile.dto.response.OrderPerformanceListPageResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
@@ -287,7 +288,7 @@ public class MypageController {
     @GetMapping("/orderPerformances")
     public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderPerformanceListPageDTO result = OrderPerformanceListPageDTO.builder()
+            OrderPerformanceListPageResponseDTO result = OrderPerformanceListPageResponseDTO.builder()
                     .nickname(userInfo.getNickname())
                     .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
                     .build();
