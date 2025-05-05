@@ -25,21 +25,25 @@ public class OrderItemEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean script; // 대본권 구매 여부
+    private Boolean script = false; // 대본권 구매 여부
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer scriptPrice;
+    private Integer scriptPrice = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer performanceAmount;
+    private Integer performanceAmount = 0;
 
+    @Builder.Default
     @Column
     @ColumnDefault("0")
-    private Integer performancePrice;
+    private Integer performancePrice = 0;
 
     @Column(nullable = false)
     private Integer totalPrice;

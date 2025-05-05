@@ -30,6 +30,7 @@ public class OrdersEntity {
     @Column(nullable = false)
     private Integer paymentMethod; // 0: 0원, 1: 계좌이체
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus = OrderStatus.WAIT;

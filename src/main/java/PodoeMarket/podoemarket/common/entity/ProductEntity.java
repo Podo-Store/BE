@@ -36,21 +36,24 @@ public class ProductEntity {
     @Column
     private String imagePath;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean script; // 대본권 판매 여부
+    private Boolean script = false; // 대본권 판매 여부
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer scriptPrice;
+    private Integer scriptPrice = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean performance; // 공연권 판매 여부
+    private Boolean performance = false; // 공연권 판매 여부
 
     @Column
     @ColumnDefault("0")
-    private Integer performancePrice;
+    private Integer performancePrice = 0;
 
     @Column
     private String descriptionPath;
@@ -62,41 +65,48 @@ public class ProductEntity {
     @Column
     private String plot;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Long viewCount;
+    private Long viewCount = 0L;
 
     // 관리자(심사 주체) 확인 여부
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductStatus checked = ProductStatus.WAIT;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer any;
+    private Integer any = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer male;
+    private Integer male = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer female;
+    private Integer female = 0;
 
     @Column
     private String stageComment;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer runningTime;
+    private Integer runningTime = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer scene; // 장
+    private Integer scene = 0; // 장
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer act; // 막
+    private Integer act = 0; // 막
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
