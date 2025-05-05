@@ -135,6 +135,14 @@ public class ProductController {
     @PostMapping("/like/{id}")
     public ResponseEntity<?> productLike(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try{
+            if (userInfo == null) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("로그인이 필요한 서비스입니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
             final boolean likeStatus = productService.getLikeStatus(userInfo, id);
 
             if (likeStatus) {
