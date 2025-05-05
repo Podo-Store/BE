@@ -33,9 +33,10 @@ public class UserEntity {
     @Column(nullable = false)
     private String nickname;
 
+    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean auth;
+    private boolean auth = false;
 
     @Enumerated(EnumType.STRING)
     @Column
