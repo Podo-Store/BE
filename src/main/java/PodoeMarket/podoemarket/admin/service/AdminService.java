@@ -49,45 +49,65 @@ public class AdminService {
     }
 
     public Long getCheckedCount(final ProductStatus productStatus) {
-        return productRepo.countAllByChecked(productStatus);
+        try {
+            return productRepo.countAllByChecked(productStatus);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 상태 카운트 조회 실패", e);
+        }
     }
 
     public Page<ProductEntity> getAllProducts(final String search, final ProductStatus status, final int page) {
-        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        try {
+            final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
 
-        if (search == null || search.trim().isEmpty()) {
-            if (status == null) // 검색어 X, 전체 O
-                return productRepo.findAll(pageRequest);
-            else // 검색어 X, 전체 X
-                return productRepo.findByChecked(status, pageRequest);
-        } else {
-            if (status == null) // 검색어 O, 전체 O
-                return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
-            else // 검색어 O, 전체 X
-                return productRepo.findByTitleContainingOrWriterContainingAndChecked(search, search, status, pageRequest);
+            if (search == null || search.trim().isEmpty()) {
+                if (status == null) // 검색어 X, 전체 O
+                    return productRepo.findAll(pageRequest);
+                else // 검색어 X, 전체 X
+                    return productRepo.findByChecked(status, pageRequest);
+            } else {
+                if (status == null) // 검색어 O, 전체 O
+                    return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
+                else // 검색어 O, 전체 X
+                    return productRepo.findByTitleContainingOrWriterContainingAndChecked(search, search, status, pageRequest);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("상품 목록 조회 실패", e);
         }
     }
 
     public List<ProductManagementResponseDTO.ProductDTO> getProductList(Page<ProductEntity> productsPage) {
-        return productsPage.getContent().stream()
-                .map(product -> ProductManagementResponseDTO.ProductDTO.builder()
-                        .id(product.getId())
-                        .createdAt(product.getCreatedAt())
-                        .title(product.getTitle())
-                        .writer(product.getWriter())
-                        .checked(product.getChecked())
-                        .playType(product.getPlayType())
-                        .build())
-                .collect(Collectors.toList());
+        try {
+            return productsPage.getContent().stream()
+                    .map(product -> ProductManagementResponseDTO.ProductDTO.builder()
+                            .id(product.getId())
+                            .createdAt(product.getCreatedAt())
+                            .title(product.getTitle())
+                            .writer(product.getWriter())
+                            .checked(product.getChecked())
+                            .playType(product.getPlayType())
+                            .build())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("상품 DTO 변환 실패", e);
+        }
     }
 
     public ProductEntity getProduct(final UUID id) {
-        return productRepo.findById(id);
+        try {
+            return productRepo.findById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 조회 실패", e);
+        }
     }
 
     @Transactional
     public void updateProduct(final ProductEntity product) {
-        productRepo.save(product);
+        try {
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 업데이트 실패", e);
+        }
     }
 
     public void checkExpire(final LocalDateTime updatedAt, final ProductStatus productStatus) {
@@ -117,77 +137,97 @@ public class AdminService {
     }
 
     public Long getOrderStatusCount(final OrderStatus orderStatus) {
-        return orderRepo.countAllByOrderStatus(orderStatus);
+        try {
+            return orderRepo.countAllByOrderStatus(orderStatus);
+        } catch (Exception e) {
+            throw new RuntimeException("주문 상태 카운트 조회 실패", e);
+        }
     }
 
     // 검색어가 없을 경우
     @Transactional
     public OrderManagementResponseDTO getAllOrders(final OrderStatus orderStatus, final int page) {
-        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        final Page<OrdersEntity> orders;
+        try {
+            final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+            final Page<OrdersEntity> orders;
 
-        if (orderStatus == null) // 검색어 X, 전체 O
-            orders = orderRepo.findAll(pageRequest);
-        else // 검색어 X, 전체 X
-            orders = orderRepo.findAllByOrderStatus(orderStatus, pageRequest);
+            if (orderStatus == null) // 검색어 X, 전체 O
+                orders = orderRepo.findAll(pageRequest);
+            else // 검색어 X, 전체 X
+                orders = orderRepo.findAllByOrderStatus(orderStatus, pageRequest);
 
-        List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
-                .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
-                        .id(order.getId())
-                        .orderDate(order.getCreatedAt())
-                        .title(order.getOrderItem().getFirst().getTitle())
-                        .writer(order.getOrderItem().getFirst().getProduct().getWriter())
-                        .customer(order.getOrderItem().getFirst().getUser().getNickname())
-                        .orderStatus(order.getOrderStatus())
-                        .script(order.getOrderItem().getFirst().getScript())
-                        .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
-                        .totalPrice(order.getTotalPrice())
-                        .build())
-                .toList();
+            List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
+                    .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
+                            .id(order.getId())
+                            .orderDate(order.getCreatedAt())
+                            .title(order.getOrderItem().getFirst().getTitle())
+                            .writer(order.getOrderItem().getFirst().getProduct().getWriter())
+                            .customer(order.getOrderItem().getFirst().getUser().getNickname())
+                            .orderStatus(order.getOrderStatus())
+                            .script(order.getOrderItem().getFirst().getScript())
+                            .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
+                            .totalPrice(order.getTotalPrice())
+                            .build())
+                    .toList();
 
-        return OrderManagementResponseDTO.builder()
-                .orderCnt(orders.getTotalElements())
-                .orders(orderList)
-                .build();
+            return OrderManagementResponseDTO.builder()
+                    .orderCnt(orders.getTotalElements())
+                    .orders(orderList)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("주문 목록 조회 실패", e);
+        }
     }
 
     // 검색어가 있는 경우
     @Transactional
     public OrderManagementResponseDTO getAllOrderItems(final String search, final OrderStatus orderStatus, final int page) {
-        final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        final Page<OrderItemEntity> orders;
+        try {
+            final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+            final Page<OrderItemEntity> orders;
 
-        if (orderStatus == null) // 검색어 O, 전체 O
-            orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
-        else // 검색어 O, 전체 X
-            orders = orderItemRepo.findOrderItemsByKeywordAndOrderStatus(search, orderStatus, pageRequest);
+            if (orderStatus == null) // 검색어 O, 전체 O
+                orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
+            else // 검색어 O, 전체 X
+                orders = orderItemRepo.findOrderItemsByKeywordAndOrderStatus(search, orderStatus, pageRequest);
 
-        List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
-                .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
-                        .id(orderItem.getOrder().getId())
-                        .orderDate(orderItem.getCreatedAt())
-                        .title(orderItem.getTitle())
-                        .writer(orderItem.getProduct().getWriter())
-                        .customer(orderItem.getUser().getNickname())
-                        .orderStatus(orderItem.getOrder().getOrderStatus())
-                        .script(orderItem.getScript())
-                        .performanceAmount(orderItem.getPerformanceAmount())
-                        .totalPrice(orderItem.getTotalPrice())
-                        .build())
-                .toList();
+            List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
+                    .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
+                            .id(orderItem.getOrder().getId())
+                            .orderDate(orderItem.getCreatedAt())
+                            .title(orderItem.getTitle())
+                            .writer(orderItem.getProduct().getWriter())
+                            .customer(orderItem.getUser().getNickname())
+                            .orderStatus(orderItem.getOrder().getOrderStatus())
+                            .script(orderItem.getScript())
+                            .performanceAmount(orderItem.getPerformanceAmount())
+                            .totalPrice(orderItem.getTotalPrice())
+                            .build())
+                    .toList();
 
-        return OrderManagementResponseDTO.builder()
-                .orderCnt(orders.getTotalElements())
-                .orders(orderList)
-                .build();
+            return OrderManagementResponseDTO.builder()
+                    .orderCnt(orders.getTotalElements())
+                    .orders(orderList)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("주문 항목 검색 실패", e);
+        }
     }
 
     public OrdersEntity orders(final Long orderId) {
-        return orderRepo.findById(orderId).orElse(null);
+        try {
+            return orderRepo.findById(orderId).orElse(null);
+        } catch (Exception e) {
+            throw new RuntimeException("주문 조회 실패", e);
+        }
     }
 
     @Transactional
     public void updateOrder(final OrdersEntity order) {
-        orderRepo.save(order);
+        try {
+            orderRepo.save(order);
+        } catch (Exception e) {
+            throw new RuntimeException("주문 업데이트 실패", e);
+        }
     }
 }
