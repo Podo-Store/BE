@@ -72,7 +72,7 @@ public class WorkController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if((productService.product(dto.getId())).getChecked() == ProductStatus.WAIT) {
+            if((productService.getProduct(dto.getId())).getChecked() == ProductStatus.WAIT) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("등록 심사 중인 작품")
                         .build();

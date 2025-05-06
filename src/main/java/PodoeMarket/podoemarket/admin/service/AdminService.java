@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class AdminService {
     private final ProductRepository productRepo;
     private final OrderRepository orderRepo;

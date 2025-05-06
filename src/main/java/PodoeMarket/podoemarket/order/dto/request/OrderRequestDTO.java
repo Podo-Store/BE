@@ -1,5 +1,6 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.order.dto.request;
 
+import PodoeMarket.podoemarket.dto.ApplicantDTO;
 import PodoeMarket.podoemarket.dto.response.OrderItemDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDTO {
+public class OrderRequestDTO {
     ApplicantDTO applicant;
     List<OrderItemDTO> orderItem;
     private int totalPrice;

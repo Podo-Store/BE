@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.dto.*;
 import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -82,21 +83,6 @@ public class EntityToDTOConverter {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static OrderCompleteDTO convertToOrderCompleteDTO(OrdersEntity ordersEntity, OrderItemEntity orderItem) {
-        OrderCompleteDTO completeDTO = new OrderCompleteDTO();
-
-        completeDTO.setId(ordersEntity.getId());
-        completeDTO.setOrderDate(ordersEntity.getCreatedAt());
-        completeDTO.setOrderNum(ordersEntity.getId());
-        completeDTO.setTitle(orderItem.getTitle());
-        completeDTO.setScriptPrice(orderItem.getScriptPrice());
-        completeDTO.setPerformancePrice(orderItem.getPerformancePrice());
-        completeDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
-        completeDTO.setTotalPrice(ordersEntity.getTotalPrice());
-
-        return completeDTO;
     }
 
     public static ApplyDTO convertToApplyDTO(OrderItemEntity orderItemEntity, ApplicantEntity applicantEntity, String bucketURL) throws UnsupportedEncodingException {

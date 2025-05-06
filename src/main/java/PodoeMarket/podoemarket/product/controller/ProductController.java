@@ -98,7 +98,7 @@ public class ProductController {
     @GetMapping("/preview")
     public ResponseEntity<StreamingResponseBody> scriptPreview(@RequestParam("script") UUID productId) {
         try {
-            final ProductEntity product = productService.product(productId);
+            final ProductEntity product = productService.getProduct(productId);
             final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
@@ -147,7 +147,7 @@ public class ProductController {
 
                 return ResponseEntity.ok().body("cancel like");
             } else {
-                final ProductEntity product = productService.product(id);
+                final ProductEntity product = productService.getProduct(id);
 
                 final ProductLikeEntity like = ProductLikeEntity.builder()
                         .user(userInfo)

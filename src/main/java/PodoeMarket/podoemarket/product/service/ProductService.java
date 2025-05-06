@@ -59,7 +59,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public ProductEntity product(UUID id) {
+    public ProductEntity getProduct(UUID id) {
         return productRepo.findById(id);
     }
 
