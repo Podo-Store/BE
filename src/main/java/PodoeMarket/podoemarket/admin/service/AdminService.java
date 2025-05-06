@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.admin.service;
 
+import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
@@ -102,8 +103,16 @@ public class AdminService {
     }
 
     @Transactional
-    public void updateProduct(final ProductEntity product) {
+    public void updateProduct(final UUID productId, final PlayTypeRequestDTO dto) {
         try {
+            ProductEntity product = getProduct(productId);
+
+            if (dto.getPlayType() != null)
+                product.setPlayType(dto.getPlayType());
+
+            if (dto.getProductStatus() != null)
+                product.setChecked(dto.getProductStatus());
+
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("상품 업데이트 실패", e);
@@ -228,6 +237,36 @@ public class AdminService {
             orderRepo.save(order);
         } catch (Exception e) {
             throw new RuntimeException("주문 업데이트 실패", e);
+        }
+    }
+
+    @Transactional
+    public void updateTitle(UUID productId, String title) {
+        try {
+            ProductEntity product = productRepo.findById(productId);
+
+            if (product == null)
+                throw new RuntimeException("상품을 찾을 수 없습니다: " + productId);
+
+            product.setTitle(title);
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 제목 업데이트 실패", e);
+        }
+    }
+
+    @Transactional
+    public void updateWriter(UUID productId, String writer) {
+        try {
+            ProductEntity product = productRepo.findById(productId);
+
+            if (product == null)
+                throw new RuntimeException("상품을 찾을 수 없습니다: " + productId);
+
+            product.setWriter(writer);
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 제목 업데이트 실패", e);
         }
     }
 }

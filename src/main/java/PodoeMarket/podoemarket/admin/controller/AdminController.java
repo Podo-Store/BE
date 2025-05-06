@@ -71,15 +71,7 @@ public class AdminController {
         try {
             adminService.checkAuth(userInfo);
 
-            ProductEntity product = adminService.getProduct(productId);
-
-            if (dto.getPlayType() != null)
-                product.setPlayType(dto.getPlayType());
-
-            if (dto.getProductStatus() != null)
-                product.setChecked(dto.getProductStatus());
-
-            adminService.updateProduct(product);
+            adminService.updateProduct(productId, dto);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -96,12 +88,13 @@ public class AdminController {
 
             // 거절 일주일 뒤부터 작품 삭제 - updateAt, REJECT 조합으로 결정
             final ProductEntity product = adminService.getProduct(productId);
-
             adminService.checkExpire(product.getUpdatedAt(), product.getChecked());
 
-            byte[] fileData = adminService.downloadFile(product.getFilePath());
+            final String filePath = product.getFilePath();
+            final String title = product.getTitle();
 
-            String encodedFilename = URLEncoder.encode(product.getTitle(), "UTF-8");
+            byte[] fileData = adminService.downloadFile(filePath);
+            String encodedFilename = URLEncoder.encode(title, "UTF-8");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
@@ -175,11 +168,7 @@ public class AdminController {
                                          @RequestBody UpdateTitleRequestDTO dto) {
         try {
             adminService.checkAuth(userInfo);
-
-            ProductEntity product = adminService.getProduct(dto.getProductId());
-            product.setTitle(dto.getTitle());
-
-            adminService.updateProduct(product);
+            adminService.updateTitle(dto.getProductId(), dto.getTitle());
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -193,11 +182,7 @@ public class AdminController {
                                           @RequestBody UpdateWriterRequestDTO dto) {
         try {
             adminService.checkAuth(userInfo);
-
-            ProductEntity product = adminService.getProduct(dto.getProductId());
-            product.setWriter(dto.getWriter());
-
-            adminService.updateProduct(product);
+            adminService.updateWriter(dto.getProductId(), dto.getWriter());
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
