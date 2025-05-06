@@ -142,7 +142,7 @@ public class OAuthService {
         try {
             String url = "https://openidconnect.googleapis.com/v1/userinfo";
 
-            URL obj = new URL(url);
+            URL obj = (new URI(url)).toURL();
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Authorization", "Bearer " + accessToken);
@@ -164,6 +164,8 @@ public class OAuthService {
             }
         } catch (IOException e) {
             throw new RuntimeException("Google API 호출 중 오류 발생", e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 

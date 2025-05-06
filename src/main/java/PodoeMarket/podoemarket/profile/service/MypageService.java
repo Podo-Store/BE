@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -220,7 +221,7 @@ public class MypageService {
 
     public String extractS3KeyFromURL(final String S3URL) throws Exception {
         String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
-        final URL url = new URL(decodedUrl);
+        final URL url = (new URI(decodedUrl)).toURL();
 
         return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
     }
