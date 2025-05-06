@@ -9,10 +9,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,27 +18,6 @@ import java.util.UUID;
 public class ViewCountService {
     private final StringRedisTemplate redisTemplate;
     private final ProductRepository productRepo;
-
-     // 로그인한 사용자의 조회수 증가 처리
-    public void incrementViewForLogged(UUID userId, UUID productId) {
-        final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        final String key = String.format("user:%s:views:%s", userId.toString(), today);
-
-        // 이미 조회한 상품인지 확인 (NullPointerException 방지)
-        Long result = redisTemplate.opsForSet().add(key, productId.toString());
-        boolean isView = result != null && result == 1;
-
-        // 키 만료 시간 설정(당일 자정까지)
-        LocalDateTime midnight = LocalDate.now().plusDays(1).atStartOfDay();
-        Duration timeUntilMidnight = Duration.between(LocalDateTime.now(), midnight);
-        redisTemplate.expire(key, timeUntilMidnight);
-
-        if(isView) {
-            // 조회수 증가
-            String viewCountkey = "product:views:" + productId;
-            redisTemplate.opsForValue().increment(viewCountkey);
-        }
-    }
 
     // 비로그인 사용자의 조회 확인 (쿠키는 컨트롤러에서 처리)
     public void incrementViewForProduct(UUID productId) {
@@ -106,26 +81,6 @@ public class ViewCountService {
 
                         // MySQL 업데이트 후 Redis 데이터 삭제
                         redisTemplate.delete(key);
-                    }
-                }
-            }
-
-            // 오래된 사용자 조회 기록 삭제 (30일 이상 된 기록)
-            Set<String> oldUserViewKeys = redisTemplate.keys("user:*:views:*");
-            if (oldUserViewKeys != null && !oldUserViewKeys.isEmpty()) {
-                for (String key : oldUserViewKeys) {
-                    String[] parts = key.split(":");
-
-                    if (parts.length >= 4) {
-                        String dateStr = parts[3];
-                        try {
-                            LocalDate keyDate = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-                            if (keyDate.isBefore(LocalDate.now().minusDays(30)))
-                                redisTemplate.delete(key);
-                        } catch (Exception e) {
-                            log.warn("날짜 파싱 오류: {}", key);
-                        }
                     }
                 }
             }
