@@ -1,7 +1,9 @@
 package PodoeMarket.podoemarket.register.service;
 
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.repository.UserRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +17,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class RegisterService {
     private final ProductRepository fileRepo;
+    private final UserRepository userRepo;
     private final AmazonS3 amazonS3;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -32,6 +36,10 @@ public class RegisterService {
     @Transactional
     public void register(ProductEntity scriptEntity) {
         fileRepo.save(scriptEntity);
+    }
+
+    public UserEntity originalUser(final UUID id) {
+        return userRepo.findById(id);
     }
 
     @Transactional

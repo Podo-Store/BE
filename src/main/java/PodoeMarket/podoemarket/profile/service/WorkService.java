@@ -256,6 +256,14 @@ public class WorkService {
         }
     }
 
+    public ProductEntity getProduct(UUID id) {
+        try {
+            return productRepo.findById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 조회 실패", e);
+        }
+    }
+
     // ============= private method ===============
     public String extractS3KeyFromURL(final String S3URL) throws Exception {
         String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);

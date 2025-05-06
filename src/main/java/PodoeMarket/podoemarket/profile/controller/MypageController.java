@@ -1,14 +1,12 @@
 package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
 import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.product.service.ProductService;
@@ -21,8 +19,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,7 +26,6 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.text.Normalizer;
 
 @RequiredArgsConstructor
 @RestController
@@ -40,9 +35,6 @@ public class MypageController {
     private final MypageService mypageService;
     private final UserService userService;
     private final ProductService productService;
-    private final TokenProvider tokenProvider;
-
-    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -60,8 +52,7 @@ public class MypageController {
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody EnterCheckRequestDTO dto){
         try{
-            boolean confirm = mypageService.checkUser(userInfo.getId(), dto.getPassword(), pwdEncoder);
-            if(confirm)
+            if(mypageService.checkUser(userInfo.getId(), dto.getPassword()))
                 return ResponseEntity.ok().body(true);
             else{
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -127,44 +118,7 @@ public class MypageController {
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProfileUpdateRequestDTO dto) {
         try{
-            if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("비밀번호가 일치하지 않음")
-                        .build();
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(!dto.getPassword().isBlank()) {
-                if(!ValidCheck.isValidPw(dto.getPassword())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("비밀번호 유효성 검사 실패")
-                            .build();
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-                userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
-            }
-
-            if(!dto.getNickname().isBlank()) {
-                if(!ValidCheck.isValidNickname(dto.getNickname())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("닉네임 유효성 검사 실패")
-                            .build();
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-                userInfo.setNickname(dto.getNickname());
-            }
-
-            UserEntity user = mypageService.updateUser(userInfo);
-
-            final UserInfoResponseDTO resUserDTO = UserInfoResponseDTO.builder()
-                    .id(user.getId())
-                    .userId(user.getUserId())
-                    .email(user.getEmail())
-                    .password(user.getPassword())
-                    .nickname(user.getNickname())
-                    .accessToken(tokenProvider.createAccessToken(user))
-                    .refreshToken(tokenProvider.createRefreshToken(user))
-                    .build();
+            UserInfoResponseDTO resUserDTO = mypageService.updateUserAccount(userInfo, dto);
 
             return ResponseEntity.ok().body(resUserDTO);
         } catch(Exception e) {
@@ -190,63 +144,7 @@ public class MypageController {
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
-            // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
-            String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
-
-            if(!ValidCheck.isValidTitle(normalizedTitle)){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("제목 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if((productService.getProduct(dto.getId())).getChecked() == ProductStatus.WAIT) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("등록 심사 중인 작품")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(!ValidCheck.isValidPlot(dto.getPlot())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("줄거리 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            String scriptImageFilePath = null;
-            if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
-                scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle(), dto.getId());
-            } else if (dto.getImagePath() != null) {
-                scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
-            } else if (dto.getImagePath() == null) {
-                mypageService.setScriptImageDefault(dto.getId());
-            }
-
-            String descriptionFilePath = null;
-            if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
-                descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle(), dto.getId());
-            } else if (dto.getDescriptionPath() != null) {
-                descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
-            } else if (dto.getDescriptionPath() == null) {
-                mypageService.setDescriptionDefault(dto.getId());
-            }
-
-            ProductEntity product = ProductEntity.builder()
-                    .imagePath(scriptImageFilePath)
-                    .title(normalizedTitle)
-                    .script(dto.getScript())
-                    .performance(dto.getPerformance())
-                    .scriptPrice(dto.getScriptPrice())
-                    .performancePrice(dto.getPerformancePrice())
-                    .descriptionPath(descriptionFilePath)
-                    .plot(dto.getPlot())
-                    .build();
-
-            mypageService.productUpdate(dto.getId(), product);
+            mypageService.updateProductDetail(dto, file1, file2);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -270,10 +168,7 @@ public class MypageController {
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderScriptsResponseDTO result = OrderScriptsResponseDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
-                    .build();
+            OrderScriptsResponseDTO result = mypageService.getUserOrderScripts(userInfo);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -285,10 +180,7 @@ public class MypageController {
     @GetMapping("/orderPerformances")
     public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderPerformanceListPageResponseDTO result = OrderPerformanceListPageResponseDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
-                    .build();
+            OrderPerformanceResponseDTO result = mypageService.getUserOrderPerformances(userInfo);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -477,10 +369,10 @@ public class MypageController {
     @GetMapping("/requested")
     public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID scriptId, @AuthenticationPrincipal UserEntity userInfo) {
         try {
-            final RequestedPerformanceDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId, userInfo);
-            final List<RequestedPerformanceDTO.DateRequestedList> list = mypageService.getDateRequestedList(scriptId);
+            final RequestedPerformanceResponseDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId, userInfo);
+            final List<RequestedPerformanceResponseDTO.DateRequestedList> list = mypageService.getDateRequestedList(scriptId);
 
-            final RequestedPerformanceDTO performanceList = RequestedPerformanceDTO.builder()
+            final RequestedPerformanceResponseDTO performanceList = RequestedPerformanceResponseDTO.builder()
                     .productInfo(productInfo)
                     .dateRequestedList(list)
                     .build();

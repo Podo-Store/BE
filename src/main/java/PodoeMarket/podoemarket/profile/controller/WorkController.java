@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
+import PodoeMarket.podoemarket.profile.service.MypageService;
 import PodoeMarket.podoemarket.profile.service.WorkService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class WorkController {
     private final WorkService workService;
     private final ProductService productService;
+    private final MypageService mypageService;
 
     @GetMapping("")
     public ResponseEntity<?> getWorks(@AuthenticationPrincipal UserEntity userInfo) {
@@ -72,7 +74,7 @@ public class WorkController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            if((productService.getProduct(dto.getId())).getChecked() == ProductStatus.WAIT) {
+            if((workService.getProduct(dto.getId())).getChecked() == ProductStatus.WAIT) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("등록 심사 중인 작품")
                         .build();

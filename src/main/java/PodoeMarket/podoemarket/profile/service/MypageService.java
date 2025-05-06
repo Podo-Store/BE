@@ -1,12 +1,16 @@
 package PodoeMarket.podoemarket.profile.service;
 
+import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
+import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.dto.response.*;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
-import PodoeMarket.podoemarket.profile.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
+import PodoeMarket.podoemarket.profile.dto.request.ProfileUpdateRequestDTO;
+import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -20,6 +24,7 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +42,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +55,7 @@ import static PodoeMarket.podoemarket.Utils.EntityToDTOConverter.*;
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class MypageService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
@@ -59,6 +66,9 @@ public class MypageService {
     private final ProductLikeRepository productLikeRepo;
     private final AmazonS3 amazonS3;
     private final ViewCountService viewCountService;
+    private final TokenProvider tokenProvider;
+
+    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -74,31 +84,59 @@ public class MypageService {
 
     private final Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
 
+    // 사용자 계정 정보 업데이트
     @Transactional
-    public UserEntity updateUser(final UserEntity userEntity) {
-        final UserEntity user = userRepo.findById(userEntity.getId());
+    public UserInfoResponseDTO updateUserAccount(UserEntity userInfo, ProfileUpdateRequestDTO dto) {
+        if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword()))
+            throw new RuntimeException("비밀번호가 일치하지 않음");
 
-        if(userEntity.getPassword() != null && !userEntity.getPassword().isBlank())
-            user.setPassword(userEntity.getPassword());
+        if(!dto.getPassword().isBlank()) {
+            if(!ValidCheck.isValidPw(dto.getPassword()))
+                throw new RuntimeException("비밀번호 유효성 검사 실패");
 
-        if(!userEntity.getNickname().isEmpty()){
-            if(!userEntity.getNickname().equals(user.getNickname())) {
-                if(userRepo.existsByNickname(userEntity.getNickname())){
-                    throw new RuntimeException("이미 존재하는 닉네임");
-                }
-            }
-            user.setNickname(userEntity.getNickname());
-            updateWriter(userEntity.getId(), userEntity.getNickname());
+            userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
         }
 
-        return userRepo.save(user);
+        if(!dto.getNickname().isBlank()) {
+            if(!ValidCheck.isValidNickname(dto.getNickname()))
+                throw new RuntimeException("닉네임 유효성 검사 실패");
+
+            userInfo.setNickname(dto.getNickname());
+        }
+
+        UserEntity user = userRepo.findById(userInfo.getId());
+
+        if(userInfo.getPassword() != null && !userInfo.getPassword().isBlank())
+            user.setPassword(userInfo.getPassword());
+
+        if(!userInfo.getNickname().isEmpty()){
+            if(!userInfo.getNickname().equals(user.getNickname())) {
+                if(userRepo.existsByNickname(userInfo.getNickname()))
+                    throw new RuntimeException("이미 존재하는 닉네임");
+
+            }
+            user.setNickname(userInfo.getNickname());
+            updateWriter(userInfo.getId(), userInfo.getNickname());
+        }
+
+        userRepo.save(user);
+
+        return UserInfoResponseDTO.builder()
+                .id(user.getId())
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .nickname(user.getNickname())
+                .accessToken(tokenProvider.createAccessToken(user))
+                .refreshToken(tokenProvider.createRefreshToken(user))
+                .build();
     }
 
-    public Boolean checkUser(final UUID id, final String password, final PasswordEncoder encoder) {
+    public Boolean checkUser(final UUID id, final String password) {
         try{
             final UserEntity originalUser = userRepo.findById(id);
 
-            return originalUser != null && encoder.matches(password, originalUser.getPassword());
+            return originalUser != null && pwdEncoder.matches(password, originalUser.getPassword());
         } catch (Exception e){
             log.error("MypageService.checkUser 메소드 중 예외 발생", e);
             return false;
@@ -110,120 +148,161 @@ public class MypageService {
     }
 
     @Transactional
-    public void updateWriter(final UUID id, final String writer) {
-        final List<ProductEntity> products = productRepo.findAllByUserId(id);
+    public void updateProductDetail(DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) throws Exception {
+        // 입력 받은 제목을 NFKC 정규화 적용
+        String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
 
-        for (ProductEntity product : products) {
-            product.setWriter(writer);
-        }
+        if(!ValidCheck.isValidTitle(normalizedTitle))
+            throw new RuntimeException("제목 유효성 검사 실패");
 
-        productRepo.saveAll(products);
-    }
-
-    @Transactional
-    public void productUpdate(final UUID id, final ProductEntity productEntity) {
-        final ProductEntity product = productRepo.findById(id);
-
-        if(product.getChecked() == ProductStatus.WAIT)
+        if((getProduct(dto.getId())).getChecked() == ProductStatus.WAIT)
             throw new RuntimeException("등록 심사 중인 작품");
 
-        product.setImagePath(productEntity.getImagePath());
-        product.setTitle(productEntity.getTitle());
-        product.setScript(productEntity.getScript());
-        product.setPerformance(productEntity.getPerformance());
-        product.setScriptPrice(productEntity.getScriptPrice());
-        product.setPerformancePrice(productEntity.getPerformancePrice());
-        product.setScriptPrice(productEntity.getScriptPrice());
-        product.setPerformancePrice(productEntity.getPerformancePrice());
-        product.setDescriptionPath(productEntity.getDescriptionPath());
-        product.setPlot(productEntity.getPlot());
+        if(!ValidCheck.isValidPlot(dto.getPlot()))
+            throw new RuntimeException("줄거리 유효성 검사 실패");
 
-        productRepo.save(product);
+        String scriptImageFilePath = null;
+        if(file1 != null && file1.length > 0 && !file1[0].isEmpty())
+            scriptImageFilePath = uploadScriptImage(file1, dto.getTitle(), dto.getId());
+        else if (dto.getImagePath() != null)
+            scriptImageFilePath = extractS3KeyFromURL(dto.getImagePath());
+        else if (dto.getImagePath() == null)
+            setScriptImageDefault(dto.getId());
+
+        String descriptionFilePath = null;
+        if(file2 != null && file2.length > 0 && !file2[0].isEmpty())
+            descriptionFilePath = uploadDescription(file2, dto.getTitle(), dto.getId());
+        else if (dto.getDescriptionPath() != null)
+            descriptionFilePath = extractS3KeyFromURL(dto.getDescriptionPath());
+        else if (dto.getDescriptionPath() == null)
+            setDescriptionDefault(dto.getId());
+
+
+        final ProductEntity updateProduct = productRepo.findById(dto.getId());
+
+        if(updateProduct.getChecked() == ProductStatus.WAIT)
+            throw new RuntimeException("등록 심사 중인 작품");
+
+        updateProduct.setImagePath(scriptImageFilePath);
+        updateProduct.setTitle(normalizedTitle);
+        updateProduct.setScript(dto.getScript());
+        updateProduct.setPerformance(dto.getPerformance());
+        updateProduct.setScriptPrice(dto.getScriptPrice());
+        updateProduct.setPerformancePrice(dto.getPerformancePrice());
+        updateProduct.setScriptPrice(dto.getScriptPrice());
+        updateProduct.setPerformancePrice(dto.getPerformancePrice());
+        updateProduct.setDescriptionPath(descriptionFilePath);
+        updateProduct.setPlot(dto.getPlot());
+
+        productRepo.save(updateProduct);
     }
 
-    @Transactional
-    public String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
-        if(files.length > 1) {
-            throw new RuntimeException("작품 이미지가 1개를 초과함");
+    public OrderScriptsResponseDTO getUserOrderScripts(UserEntity userInfo) {
+        try {
+            // 모든 필요한 OrderItemEntity를 한 번에 가져옴
+            final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userInfo.getId(), true, sort);
+
+            // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
+            final Map<LocalDate, List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO>> orderItemsGroupedByDate = new HashMap<>();
+
+            for (OrderItemEntity orderItem : allOrderItems) {
+                final OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO orderItemDTO =  new OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO();
+                orderItemDTO.setId(orderItem.getId());
+                orderItemDTO.setTitle(orderItem.getTitle());
+                orderItemDTO.setScript(orderItem.getScript());
+
+                if(orderItem.getProduct() != null) { // 삭제된 작품이 아닐 경우
+                    String encodedScriptImage = orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
+
+                    orderItemDTO.setDelete(false);
+                    orderItemDTO.setWriter(orderItem.getProduct().getWriter());
+                    orderItemDTO.setImagePath(encodedScriptImage);
+                    orderItemDTO.setChecked(orderItem.getProduct().getChecked());
+                    orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getProduct().getScriptPrice() : 0);
+                    orderItemDTO.setProductId(orderItem.getProduct().getId());
+                    orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
+                } else { // 삭제된 작품일 경우
+                    orderItemDTO.setDelete(true);
+                    orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
+                }
+
+                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+                LocalDate orderDate = orderItem.getOrder().getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                orderItemsGroupedByDate.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+            }
+
+            // DateOrderDTO로 변환하여 OrderScriptsResponseDTO 생성 및 반환
+            List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO> orderList = orderItemsGroupedByDate.entrySet().stream()
+                    .map(entry -> new OrderScriptsResponseDTO.DateScriptOrderResponseDTO(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+
+            return OrderScriptsResponseDTO.builder()
+                    .nickname(userInfo.getNickname())
+                    .orderList(orderList)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("사용자 대본 주문 스크립트 조회 실패", e);
         }
-
-        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/png")) {
-            throw new RuntimeException("ScriptImage file type is only jpg and png");
-        }
-
-        // 파일 이름 가공
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        final Date time = new Date();
-        final String name = files[0].getOriginalFilename();
-        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
-
-        // S3 Key 구성
-        final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
-
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(files[0].getSize());
-        metadata.setContentType(files[0].getContentType());
-
-        // 기존 파일 삭제
-        if(productRepo.findById(id).getImagePath() != null) {
-            final String sourceKey = productRepo.findById(id).getImagePath();
-
-            deleteFile(bucket, sourceKey);
-        }
-
-        // 저장
-        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
-
-        return S3Key;
     }
 
-    public String uploadDescription(final MultipartFile[] files, final String title, final UUID id) throws IOException {
-        if(files.length > 1) {
-            throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
+    public OrderPerformanceResponseDTO getUserOrderPerformances(UserEntity userInfo) {
+        try {
+            // 각 주문의 주문 항목을 가져옴
+            final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userInfo.getId(), sort);
+
+            // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
+            final Map<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>> OrderItems = new HashMap<>();
+
+            for (OrderItemEntity orderItem : allOrderItems) {
+                if (orderItem.getPerformanceAmount() > 0) {
+                    final int dateCount = performanceDateRepo.countByOrderItemId(orderItem.getId());
+
+                    // 각 주문 항목에 대한 제품 정보 가져옴
+                    final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
+                    orderItemDTO.setId(orderItem.getId());
+                    orderItemDTO.setTitle(orderItem.getTitle());
+                    orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
+
+                    if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1)))
+                        orderItemDTO.setPossibleCount(0);
+                    else
+                        orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
+
+                    if(orderItem.getProduct() != null) { // 삭제된 작품이 아닐 경우
+                        String encodedScriptImage = orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
+
+                        orderItemDTO.setDelete(false);
+                        orderItemDTO.setWriter(orderItem.getProduct().getWriter());
+                        orderItemDTO.setImagePath(encodedScriptImage);
+                        orderItemDTO.setChecked(orderItem.getProduct().getChecked());
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                        orderItemDTO.setProductId(orderItem.getProduct().getId());
+                        orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
+                    } else { // 삭제된 작품일 경우
+                        orderItemDTO.setDelete(true);
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                    }
+
+                    final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                    // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+                    OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+                }
+            }
+
+            // DateOrderDTO로 변환
+            List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO> orderList = OrderItems.entrySet().stream()
+                    .map(entry -> new OrderPerformanceResponseDTO.DatePerformanceOrderDTO(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+
+            return OrderPerformanceResponseDTO.builder()
+                .nickname(userInfo.getNickname())
+                .orderList(orderList)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("사용자 공연권 주문 스크립트 조회 실패", e);
         }
-
-        if(!Objects.equals(files[0].getContentType(), "application/pdf") && !Objects.equals(files[0].getContentType(), "application/pdf")) {
-            throw new RuntimeException("Description file type is not PDF");
-        }
-
-        try (InputStream inputStream = files[0].getInputStream()) {
-            final PdfDocument doc = new PdfDocument(new PdfReader(inputStream));
-
-            if(doc.getNumberOfPages() > 5)
-                throw new RuntimeException("작품 설명 파일이 5페이지를 초과함");
-        }
-
-        // 파일 이름 가공
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        final Date time = new Date();
-        final String name = files[0].getOriginalFilename();
-        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
-
-        // S3 Key 구성
-        final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
-
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(files[0].getSize());
-        metadata.setContentType("application/pdf");
-
-        // 기존 파일 삭제
-        if(productRepo.findById(id).getDescriptionPath() != null) {
-            final String sourceKey = productRepo.findById(id).getDescriptionPath();
-
-            deleteFile(bucket, sourceKey);
-        }
-
-        // 저장
-        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
-
-        return S3Key;
-    }
-
-    public String extractS3KeyFromURL(final String S3URL) throws Exception {
-        String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
-        final URL url = (new URI(decodedUrl)).toURL();
-
-        return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
     }
 
     @Transactional
@@ -252,53 +331,6 @@ public class MypageService {
         }
 
         productRepo.save(product);
-    }
-
-    public List<DateScriptOrderDTO> getAllMyOrderScriptWithProducts(final UUID userId) {
-        // 모든 필요한 OrderItemEntity를 한 번에 가져옴
-        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userId, true, sort);
-
-        // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        final Map<LocalDate, List<OrderScriptDTO>> orderItemsGroupedByDate = new HashMap<>();
-
-        for (OrderItemEntity orderItem : allOrderItems) {
-           final OrderScriptDTO orderItemDTO = convertToScriptOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL);
-
-           // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-           LocalDate orderDate = orderItem.getOrder().getCreatedAt().toLocalDate(); // localdatetime -> localdate
-           orderItemsGroupedByDate.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
-       }
-
-        // DateOrderDTO로 변환
-        return orderItemsGroupedByDate.entrySet().stream()
-                .map(entry -> new DateScriptOrderDTO(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-    }
-
-    public List<DatePerformanceOrderDTO> getAllMyOrderPerformanceWithProducts(final UUID userId) {
-        // 각 주문의 주문 항목을 가져옴
-        final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userId, sort);
-
-        // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-        final Map<LocalDate, List<OrderPerformanceDTO>> OrderItems = new HashMap<>();
-
-        for (OrderItemEntity orderItem : allOrderItems) {
-            if (orderItem.getPerformanceAmount() > 0) {
-                final int dateCount = performanceDateRepo.countByOrderItemId(orderItem.getId());
-
-                // 각 주문 항목에 대한 제품 정보 가져옴
-                final OrderPerformanceDTO orderItemDTO = convertToPerformanceOrderItemDTO(orderItem, orderItem.getProduct(), bucketURL, dateCount);
-
-                final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
-            }
-        }
-
-        // DateOrderDTO로 변환
-        return OrderItems.entrySet().stream()
-                .map(entry -> new DatePerformanceOrderDTO(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
     }
 
     public OrderItemEntity getOrderItem(final UUID orderItemId) {
@@ -447,7 +479,7 @@ public class MypageService {
         }
     }
 
-    public RequestedPerformanceDTO.ProductInfo getProductInfo(final UUID productId, final UserEntity userInfo) throws UnsupportedEncodingException {
+    public RequestedPerformanceResponseDTO.ProductInfo getProductInfo(final UUID productId, final UserEntity userInfo) throws UnsupportedEncodingException {
         final ProductEntity product = productRepo.findById(productId);
 
         if(!product.getUser().getId().equals(userInfo.getId()))
@@ -455,7 +487,7 @@ public class MypageService {
 
         final String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), "UTF-8") : "";
 
-        return RequestedPerformanceDTO.ProductInfo.builder()
+        return RequestedPerformanceResponseDTO.ProductInfo.builder()
                 .imagePath(encodedScriptImage)
                 .title(product.getTitle())
                 .writer(product.getWriter())
@@ -469,7 +501,7 @@ public class MypageService {
                 .build();
     }
 
-    public List<RequestedPerformanceDTO.DateRequestedList> getDateRequestedList (final UUID productId) {
+    public List<RequestedPerformanceResponseDTO.DateRequestedList> getDateRequestedList (final UUID productId) {
         // 모든 주문 데이터 가져오기
         final List<OrderItemEntity> orderItems = orderItemRepo.findAllByProductId(productId);
 
@@ -488,21 +520,21 @@ public class MypageService {
                     List<OrderItemEntity> orderItemList = entry.getValue();
 
                     // 각 주문에 대한 신청자 정보
-                    List<RequestedPerformanceDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
-                            .map(orderItem -> RequestedPerformanceDTO.ApplicantInfo.builder()
+                    List<RequestedPerformanceResponseDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
+                            .map(orderItem -> RequestedPerformanceResponseDTO.ApplicantInfo.builder()
                                     .amount(orderItem.getPerformanceAmount())
                                     .name(orderItem.getApplicant().getName())
                                     .phoneNumber(orderItem.getApplicant().getPhoneNumber())
                                     .address(orderItem.getApplicant().getAddress())
                                     .performanceDateList(orderItem.getPerformanceDate().stream()
-                                            .map(performanceDate -> RequestedPerformanceDTO.PerformanceDate.builder()
+                                            .map(performanceDate -> RequestedPerformanceResponseDTO.PerformanceDate.builder()
                                                     .date(performanceDate.getDate())
                                                     .build())
                                             .collect(Collectors.toList()))
                                     .build())
                             .toList();
 
-                    return RequestedPerformanceDTO.DateRequestedList.builder()
+                    return RequestedPerformanceResponseDTO.DateRequestedList.builder()
                             .date(date)
                             .requestedInfo(applicantInfoList)
                             .build();
@@ -552,7 +584,15 @@ public class MypageService {
         return productLikeRepo.existsByUserAndProduct(userInfo, product);
     }
 
-    // =========== private method =============
+    public ProductEntity getProduct(UUID id) {
+        try {
+            return productRepo.findById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 조회 실패", e);
+        }
+    }
+
+    // =========== private (protected) method =============
     private void deleteFile(final String bucket, final String sourceKey) {
         if(amazonS3.doesObjectExist(bucket, sourceKey))
             amazonS3.deleteObject(bucket, sourceKey);
@@ -581,5 +621,103 @@ public class MypageService {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Transactional
+    protected void updateWriter(final UUID id, final String writer) {
+        final List<ProductEntity> products = productRepo.findAllByUserId(id);
+
+        for (ProductEntity product : products) {
+            product.setWriter(writer);
+        }
+
+        productRepo.saveAll(products);
+    }
+
+    @Transactional
+    protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
+        if(files.length > 1) {
+            throw new RuntimeException("작품 이미지가 1개를 초과함");
+        }
+
+        if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/png")) {
+            throw new RuntimeException("ScriptImage file type is only jpg and png");
+        }
+
+        // 파일 이름 가공
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        // S3 Key 구성
+        final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(files[0].getSize());
+        metadata.setContentType(files[0].getContentType());
+
+        // 기존 파일 삭제
+        if(productRepo.findById(id).getImagePath() != null) {
+            final String sourceKey = productRepo.findById(id).getImagePath();
+
+            deleteFile(bucket, sourceKey);
+        }
+
+        // 저장
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
+
+        return S3Key;
+    }
+
+    @Transactional
+    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) throws IOException {
+        if(files.length > 1) {
+            throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
+        }
+
+        if(!Objects.equals(files[0].getContentType(), "application/pdf") && !Objects.equals(files[0].getContentType(), "application/pdf")) {
+            throw new RuntimeException("Description file type is not PDF");
+        }
+
+        try (InputStream inputStream = files[0].getInputStream()) {
+            final PdfDocument doc = new PdfDocument(new PdfReader(inputStream));
+
+            if(doc.getNumberOfPages() > 5)
+                throw new RuntimeException("작품 설명 파일이 5페이지를 초과함");
+        }
+
+        // 파일 이름 가공
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        // S3 Key 구성
+        final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(files[0].getSize());
+        metadata.setContentType("application/pdf");
+
+        // 기존 파일 삭제
+        if(productRepo.findById(id).getDescriptionPath() != null) {
+            final String sourceKey = productRepo.findById(id).getDescriptionPath();
+
+            deleteFile(bucket, sourceKey);
+        }
+
+        // 저장
+        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
+
+        return S3Key;
+    }
+
+
+    private String extractS3KeyFromURL(final String S3URL) throws Exception {
+        String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
+        final URL url = (new URI(decodedUrl)).toURL();
+
+        return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
     }
 }

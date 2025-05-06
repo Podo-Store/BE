@@ -16,33 +16,34 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderScriptsResponseDTO {
+public class OrderPerformanceResponseDTO {
     private String nickname;
-    List<DateScriptOrderResponseDTO> orderList;
+    List<DatePerformanceOrderDTO> orderList;
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DateScriptOrderResponseDTO {
+    public static class DatePerformanceOrderDTO {
         private LocalDate date;
-        private List<OrderScriptDTO> orders;
+        private List<OrderPerformanceDTO> orders;
 
         @Data
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
-        public static class OrderScriptDTO {
-            private boolean delete;
+        public static class OrderPerformanceDTO {
+            private Boolean delete;
             private UUID id;
             private String title;
             private String writer;
             private String imagePath;
             private ProductStatus checked;
             private PlayType playType;
-            private int performanceAmount;
-            private boolean script;
-            private int scriptPrice;
+            private Integer performanceAmount;
+            private Integer performancePrice;
+            private Integer performanceTotalPrice;
+            private Integer possibleCount;
 
             private UUID productId;
             private OrderStatus orderStatus;

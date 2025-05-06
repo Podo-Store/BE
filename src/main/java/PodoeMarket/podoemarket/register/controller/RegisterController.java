@@ -23,13 +23,12 @@ import java.text.Normalizer;
 @Slf4j
 public class RegisterController {
     private final RegisterService registerService;
-    private final MypageService mypageService;
     private final MailSendService mailSendService;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestPart("script") MultipartFile[] files) {
         try{
-            UserEntity user = mypageService.originalUser(userInfo.getId());
+            UserEntity user = registerService.originalUser(userInfo.getId());
 
             String filePath = registerService.uploadScript(files, userInfo.getNickname());
             String normalizedTitle = Normalizer.normalize(FilenameUtils.getBaseName(files[0].getOriginalFilename()), Normalizer.Form.NFKC);

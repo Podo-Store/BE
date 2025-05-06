@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.dto.response;
+package PodoeMarket.podoemarket.profile.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestedPerformanceDTO {
+public class RequestedPerformanceResponseDTO {
     private ProductInfo productInfo;
     private List<DateRequestedList> dateRequestedList;
 
