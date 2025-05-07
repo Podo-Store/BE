@@ -81,10 +81,7 @@ public class ProductController {
             final int likeCount = productService.getLikeCount(productId);
 
             // 조회수 증가
-            if (userInfo != null) // 로그인
-                viewCountService.incrementViewForLogged(userInfo.getId(), productId);
-            else // 비로그인
-                viewCountService.incrementViewForProduct(productId);
+            viewCountService.incrementViewForProduct(productId);
 
             // 총 조회수
             long viewCount = viewCountService.getProductViewCount(productId);
