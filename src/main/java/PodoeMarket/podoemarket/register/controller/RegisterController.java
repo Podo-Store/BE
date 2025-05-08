@@ -1,12 +1,11 @@
 package PodoeMarket.podoemarket.register.controller;
 
-import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.register.service.RegisterService;
 import PodoeMarket.podoemarket.service.MailSendService;
-import PodoeMarket.podoemarket.profile.service.MypageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

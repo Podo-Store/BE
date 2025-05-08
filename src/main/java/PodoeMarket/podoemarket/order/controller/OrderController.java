@@ -2,7 +2,7 @@ package PodoeMarket.podoemarket.order.controller;
 
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
-import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.dto.ResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;

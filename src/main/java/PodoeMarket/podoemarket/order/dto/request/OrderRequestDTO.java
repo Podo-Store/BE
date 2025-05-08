@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.order.dto.request;
 
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.dto.ApplicantDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +18,16 @@ public class OrderRequestDTO {
     List<OrderItemDTO> orderItem;
     private int totalPrice;
     private int paymentMethod;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ApplicantDTO {
+        private String name;
+        private String phoneNumber;
+        private String address;
+    }
 
     @Data
     @Builder
