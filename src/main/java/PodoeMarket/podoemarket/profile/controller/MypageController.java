@@ -113,6 +113,7 @@ public class MypageController {
         }
     }
 
+    // 삭제 예정
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
@@ -125,6 +126,7 @@ public class MypageController {
         }
     }
 
+    // 삭제 예정
     @PostMapping("/detail")
     public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,

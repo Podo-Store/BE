@@ -215,15 +215,10 @@ public class MypageService {
                 }
             }
 
-            if(product.getChecked() == ProductStatus.WAIT)
-                throw new RuntimeException("등록 심사 중인 작품");
-
             product.setImagePath(scriptImageFilePath);
             product.setTitle(normalizedTitle);
             product.setScript(dto.getScript());
             product.setPerformance(dto.getPerformance());
-            product.setScriptPrice(dto.getScriptPrice());
-            product.setPerformancePrice(dto.getPerformancePrice());
             product.setScriptPrice(dto.getScriptPrice());
             product.setPerformancePrice(dto.getPerformancePrice());
             product.setDescriptionPath(descriptionFilePath);
@@ -550,7 +545,7 @@ public class MypageService {
         }
     }
 
-    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) throws UnsupportedEncodingException {
+    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) {
         try {
             final ProductEntity script = productRepo.findById(productId);
 
@@ -691,7 +686,7 @@ public class MypageService {
     }
 
     @Transactional
-    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) throws IOException {
+    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) {
         try {
             if(files.length > 1)
                 throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
@@ -740,7 +735,7 @@ public class MypageService {
         }
     }
 
-    private String extractS3KeyFromURL(final String S3URL) throws Exception {
+    private String extractS3KeyFromURL(final String S3URL) {
         try {
             String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
             final URL url = (new URI(decodedUrl)).toURL();
