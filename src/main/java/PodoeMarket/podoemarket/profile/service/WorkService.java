@@ -280,7 +280,9 @@ public class WorkService {
                 deleteFile(bucket, product.getImagePath());
 
             // 저장
-            amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
+            try (InputStream inputStream = files[0].getInputStream()) {
+                amazonS3.putObject(bucket, S3Key, inputStream, metadata);
+            }
 
             return S3Key;
         } catch (Exception e) {
@@ -327,7 +329,9 @@ public class WorkService {
                 deleteFile(bucket, product.getDescriptionPath());
 
             // 저장
-            amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
+            try (InputStream inputStream = files[0].getInputStream()) {
+                amazonS3.putObject(bucket, S3Key, inputStream, metadata);
+            }
 
             return S3Key;
         } catch (Exception e) {

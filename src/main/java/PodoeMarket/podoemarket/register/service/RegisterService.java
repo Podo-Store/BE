@@ -2,10 +2,13 @@ package PodoeMarket.podoemarket.register.service;
 
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
+import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +30,7 @@ public class RegisterService {
     private final ProductRepository fileRepo;
     private final UserRepository userRepo;
     private final AmazonS3 amazonS3;
+    private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -34,26 +39,44 @@ public class RegisterService {
     private String bucketFolder;
 
     @Transactional
-    public void register(ProductEntity scriptEntity) {
-        fileRepo.save(scriptEntity);
+    public void registerScript(final UserEntity user, MultipartFile[] files) {
+        try {
+            UserEntity userInfo = userRepo.findById(user.getId());
+
+            if(userInfo == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            String filePath = uploadScript(files, userInfo.getNickname());
+
+            String normalizedTitle = Normalizer.normalize(FilenameUtils.getBaseName(files[0].getOriginalFilename()), Normalizer.Form.NFKC);
+
+            ProductEntity script = ProductEntity.builder()
+                    .title(normalizedTitle)
+                    .writer(user.getNickname())
+                    .filePath(filePath)
+                    .checked(ProductStatus.WAIT)
+                    .user(userInfo)
+                    .build();
+
+            fileRepo.save(script);
+
+            mailSendService.joinRegisterEmail(userInfo.getEmail(), normalizedTitle);
+        } catch (Exception e) {
+            throw new RuntimeException("스크립트 등록 실패", e);
+        }
     }
 
-    public UserEntity originalUser(final UUID id) {
-        return userRepo.findById(id);
-    }
+    // ================ private (protected) method =====================
 
     @Transactional
-    public String uploadScript(MultipartFile[] files, String writer) throws IOException {
-        if(files[0].isEmpty()) {
+    protected String uploadScript(MultipartFile[] files, String writer) throws IOException {
+        if(files[0].isEmpty())
             throw new RuntimeException("선택된 파일이 없음");
-        }
-        else if(files.length > 1) {
+        else if(files.length > 1)
             throw new RuntimeException("파일 수가 1개를 초과함");
-        }
 
-        if (!Objects.equals(files[0].getContentType(), "application/pdf")) {
+        if (!Objects.equals(files[0].getContentType(), "application/pdf"))
             throw new RuntimeException("contentType is not PDF");
-        }
 
         // 파일 이름 가공
         final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
@@ -68,9 +91,10 @@ public class RegisterService {
         metadata.setContentLength(files[0].getSize());
         metadata.setContentType(files[0].getContentType());
 
-        amazonS3.putObject(bucket, S3Key, files[0].getInputStream(), metadata);
+        try (InputStream inputStream = files[0].getInputStream()) {
+            amazonS3.putObject(bucket, S3Key, inputStream, metadata);
+        }
 
         return S3Key;
     }
-
 }
