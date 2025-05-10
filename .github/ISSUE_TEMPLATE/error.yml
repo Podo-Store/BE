@@ -1,0 +1,32 @@
+name: "Error"
+description: "버그 리포트 또는 에러 제보"
+title: "error:  "
+labels: ["bug"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "📍 이슈 요약"
+      description: "이슈에 대한 간단한 요약을 작성해 주세요."
+      placeholder: "예: 로그인 실패시 알림 메시지가 보이지 않음"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🧙‍♀️ 재현 방법"
+      description: "버그를 재현할 수 있는 절차를 단계별로 설명해주세요."
+      placeholder: |
+        1. 어떤 페이지에 접속하고
+        2. 어떤 버튼을 눌렀더니
+        3. 이런 에러가 발생함
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🌱 해결 방안"
+      description: "버그를 해결하기 위한 제안이 있다면 작성해 주세요."
+      placeholder: "예: 로그인 실패시 알림 메시지를 보여주는 로직 확인 필요"
+    validations:
+      required: false

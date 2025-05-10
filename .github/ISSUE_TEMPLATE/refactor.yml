@@ -1,0 +1,29 @@
+name: "Refactor"
+description: "코드 리팩토링 또는 구조 개선"
+title: "refactor:  "
+labels: ["refactor"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "👀 배경"
+      description: "리팩토링이 필요한 이유에 대한 배경을 기술해주세요."
+      placeholder: "예: 코드 중복으로 인해 유지보수 어려움"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "✔️ 구현 내용"
+      description: "어떤 부분을 어떻게 리팩토링할지 구체적으로 작성해주세요."
+      placeholder: "예: 중복 로직을 별도의 메서드로 분리"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "📌 관련 이슈 (옵션)"
+      description: "관련된 기존 이슈나 PR이 있다면 작성해 주세요."
+      placeholder: "예: #456"
+    validations:
+      required: false

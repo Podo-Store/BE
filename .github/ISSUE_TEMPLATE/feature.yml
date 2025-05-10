@@ -1,0 +1,33 @@
+name: "Feature"
+description: "새로운 기능 추가"
+title: "feat:  "
+labels: ["feature"]
+assignees: []
+body:
+  - type: textarea
+    attributes:
+      label: "💡 이슈 요약"
+      description: "새로운 기능에 대한 간단한 설명을 작성해 주세요."
+      placeholder: "예: 메인 페이지 개발"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "🔍 작업 상세"
+      description: "할 일을 체크박스 형태로 작성해주세요."
+      placeholder: |
+        - [ ] 메인페이지 레이아웃 구현
+        - [ ] 메인페이지 메인 슬라이드 구현
+        - [ ] 슬라이드 레이아웃 구현
+        - [ ] 슬라이드 기능 구현
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "📌 관련 이슈 (옵션)"
+      description: "관련된 기존 이슈나 PR이 있다면 작성해 주세요."
+      placeholder: "예: #123"
+    validations:
+      required: false
