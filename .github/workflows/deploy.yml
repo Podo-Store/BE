@@ -103,7 +103,7 @@ jobs:
         SLACK_CHANNEL: "#깃헙액션-배포"
         SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
         SLACK_MESSAGE: |
-          *배포 결과:* ${{ job.status }}
+          *배포 결과:* ${{ job.status == 'success' && '✅ 성공' || '❌ 실패' }}
           *프로젝트:* 포도상점 - BackEnd CI/CD - Deploy
           *브랜치:* ${{ github.ref_name }}
           *커밋 메시지:* ${{ github.event.head_commit.message }}
