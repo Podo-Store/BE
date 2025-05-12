@@ -292,7 +292,7 @@ public class MypageController {
     @GetMapping("/like/short")
     public ResponseEntity<?> shortLikeList(@AuthenticationPrincipal UserEntity userInfo,  @RequestParam(value = "page", defaultValue = "0") int page) {
         try {
-            final List<ScriptListResponseDTO.ProductListDTO> lists = mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 10);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = mypageService.getLikePlayList(page, userInfo, PlayType.SHORT, 10);
 
             return ResponseEntity.ok().body(lists);
         } catch (Exception e) {
