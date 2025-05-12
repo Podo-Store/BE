@@ -96,3 +96,19 @@ jobs:
           --deployment-config-name CodeDeployDefault.OneAtATime \
           --deployment-group-name spring-deploy-group \
           --s3-location bucket=backend-podostore,bundleType=zip,key=spring-build.zip
+
+    - name: 배포 완료 Slack 알림
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: "#깃헙액션-배포"
+        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+        SLACK_MESSAGE: |
+          *배포 결과:* ${{ job.status == 'success' && '✅ 성공' || '❌ 실패' }}
+          *프로젝트:* 포도상점 - BackEnd CI/CD - Deploy
+          *브랜치:* ${{ github.ref_name }}
+          *커밋 메시지:* ${{ github.event.head_commit.message }}
+          *커밋 작성자:* ${{ github.event.head_commit.author.name }}
+        SLACK_TITLE: "배포 결과 알림"
+        SLACK_USERNAME: "Notification-Bot"
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always()
