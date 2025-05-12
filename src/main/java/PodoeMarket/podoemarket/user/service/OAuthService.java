@@ -10,8 +10,8 @@ import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class OAuthService {
     private final List<SocialOauth> socialOauthList; // 모든 SocialOauth 구현체가 자동으로 주입됨 (@RequiredArgsConstructor)
     private final UserRepository userRepo;
@@ -30,12 +31,14 @@ public class OAuthService {
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
         SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
+
         return socialOauth.getOauthRedirectURL();
     }
 
     // 인증 코드로 액세스 토큰을 요청하는 메서드
     public String requestAccessToken(SocialLoginType socialLoginType, String code) {
         SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
+
         return socialOauth.requestAccessToken(code);
     }
 
@@ -58,33 +61,29 @@ public class OAuthService {
     }
 
     // 소셜 회원가입 DB create 메서드
+    @Transactional
     public void create(final UserEntity userEntity) {
         final String userId = userEntity.getUserId();
         final String email = userEntity.getEmail();
         final String nickname = userEntity.getNickname();
 
         // 아이디
-        if(userId == null || userId.isBlank()) {
+        if(userId == null || userId.isBlank())
             throw new RuntimeException("userId가 올바르지 않음");
-        }
 
-        if(userRepo.existsByUserId(userId)) {
+        if(userRepo.existsByUserId(userId))
             throw new RuntimeException("이미 존재하는 UserId");
-        }
 
         // 이메일
-        if(email == null || email.isBlank()) {
+        if(email == null || email.isBlank())
             throw new RuntimeException("email이 올바르지 않음");
-        }
 
-        if(userRepo.existsByEmail(email)) {
+        if(userRepo.existsByEmail(email))
             throw new RuntimeException("이미 존재하는 email");
-        }
 
         // 닉네임
-        if(nickname == null || nickname.isBlank()) {
+        if(nickname == null || nickname.isBlank())
             throw new RuntimeException("nickname이 올바르지 않음");
-        }
 
         // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
         String createNickname = "";
@@ -93,9 +92,8 @@ public class OAuthService {
 
         } while (userRepo.existsByNickname(createNickname));
 
-        if(userRepo.existsByNickname(createNickname)) {
+        if(userRepo.existsByNickname(createNickname))
             throw new RuntimeException("이미 존재하는 nickname");
-        }
 
         userEntity.setNickname(createNickname);
 
@@ -103,6 +101,7 @@ public class OAuthService {
     }
 
     // ================= private method =================
+
     private SocialOauth findSocialOauthByType(SocialLoginType socialLoginType) {
         return socialOauthList.stream()
                 .filter(x -> x.type() == socialLoginType)

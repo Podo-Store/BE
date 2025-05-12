@@ -50,6 +50,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -91,19 +92,11 @@ public class MypageService {
             if (!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword()))
                 throw new RuntimeException("비밀번호가 일치하지 않음");
 
-            if (!dto.getPassword().isBlank()) {
-                if (!ValidCheck.isValidPw(dto.getPassword()))
-                    throw new RuntimeException("비밀번호 유효성 검사 실패");
+            isValidPw(dto.getPassword());
+            userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
 
-                userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
-            }
-
-            if (!dto.getNickname().isBlank()) {
-                if (!ValidCheck.isValidNickname(dto.getNickname()))
-                    throw new RuntimeException("닉네임 유효성 검사 실패");
-
-                userInfo.setNickname(dto.getNickname());
-            }
+            isValidNickname(dto.getNickname());
+            userInfo.setNickname(dto.getNickname());
 
             UserEntity user = userRepo.findById(userInfo.getId());
 
@@ -167,6 +160,14 @@ public class MypageService {
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("프로필 정보 조회 실패", e);
+        }
+    }
+
+    public Boolean checkNickname(final String nickname) {
+        try {
+        return userRepo.existsByNickname(nickname);
+        } catch (Exception e) {
+            throw new RuntimeException("닉네임 확인 실패", e);
         }
     }
 
@@ -622,6 +623,22 @@ public class MypageService {
 
     // =========== private (protected) method =============
 
+    private void isValidPw(String password) {
+        String regx_pwd = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+
+        if(password == null || password.isBlank() || password.length() < 4 || password.length() > 12 ||
+                !Pattern.matches(regx_pwd, password)) //password가 null이거나 빈 값일때
+            throw new RuntimeException("비밀번호 유효성 검사 실패");
+    }
+
+    private void isValidNickname(String nickname) {
+        String regx_nick = "^[가-힣a-zA-Z0-9]{3,8}$";; // 한글, 영어, 숫자, (-8)
+
+        if(nickname == null || nickname.isBlank() || !Pattern.matches(regx_nick, nickname) ||
+                nickname.equals("삭제된 계정") || nickname.equals("삭제 계정"))
+            throw new RuntimeException("닉네임 유효성 검사 실패");
+    }
+
     private OrderItemEntity getOrderItem(final UUID orderItemId) {
         try {
             if(orderItemRepo.findById(orderItemId) == null)
@@ -642,7 +659,6 @@ public class MypageService {
         }
     }
 
-    @Transactional
     protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) {
         try {
             if(files.length > 1)
@@ -687,7 +703,6 @@ public class MypageService {
         }
     }
 
-    @Transactional
     protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) {
         try {
             if(files.length > 1)

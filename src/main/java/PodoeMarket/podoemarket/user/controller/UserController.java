@@ -43,27 +43,19 @@ public class UserController {
     @PostMapping("/checkUserId")
     public ResponseEntity<?> duplicateUserId(@RequestBody UserIdCheckRequestDTO dto) {
         try {
-            if(dto.getCheck()) { // True : 회원가입, False : 비밀번호 찾기
-                if(userService.checkUserId(dto.getUserId())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("이미 존재하는 아이디")
-                            .build();
+            boolean result = userService.validateUserId(dto);
 
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
+            if(!result) {
+                String errorMessage = dto.getCheck() ? "이미 존재하는 아이디" : "존재하지 않는 아이디";
 
-                return ResponseEntity.ok().body(true);
-            } else {
-                if(!userService.checkUserId(dto.getUserId())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("존재하지 않는 아이디")
-                            .build();
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error(errorMessage)
+                        .build();
 
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-
-                return ResponseEntity.ok().body(true);
+                return ResponseEntity.badRequest().body(resDTO);
             }
+
+            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -91,7 +83,9 @@ public class UserController {
     @PostMapping("/checkNickname")
     public ResponseEntity<?> duplicateNickname(@RequestBody NicknameCheckRequestDTO dto){
         try {
-            if(userService.checkNickname(dto.getNickname())) {
+            boolean isDuplicate = userService.checkNickname(dto.getNickname());
+
+            if(isDuplicate) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
                         .build();
@@ -107,25 +101,17 @@ public class UserController {
     }
 
     @PostMapping ("/mailSend")
-    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailRequestDTO dto){
+    public ResponseEntity<?> mailSend(@RequestBody @Valid EmailSendRequestDTO dto){
         try {
-            if(!ValidCheck.isValidEmail(dto.getEmail())) {
+            boolean result = userService.validateAndSendEmail(dto.getEmail());
+
+            if(!result) {
                 ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 유효성 검사 실패")
+                        .error("이메일 유효성 검사 실패 및 이메일 중복")
                         .build();
 
                 return ResponseEntity.badRequest().body(resDTO);
             }
-
-            if(userService.checkEmail(dto.getEmail())) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("이메일 중복")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            mailService.joinEmail(dto.getEmail());
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

@@ -246,7 +246,6 @@ public class WorkService {
         }
     }
 
-    @Transactional
     protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) {
         try {
             if(files.length > 1)
@@ -290,7 +289,6 @@ public class WorkService {
         }
     }
 
-    @Transactional
     protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) {
         try {
             if(files.length > 1)

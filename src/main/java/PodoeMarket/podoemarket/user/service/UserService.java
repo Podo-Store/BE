@@ -2,6 +2,8 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.user.dto.request.UserIdCheckRequestDTO;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,12 +11,55 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepo;
+    private final MailSendService mailService;
+
+    public Boolean validateUserId(UserIdCheckRequestDTO dto) {
+        try {
+            boolean isExist = userRepo.existsByUserId(dto.getUserId());
+            boolean isSignUp = dto.getCheck(); // True : 회원가입, False : 비밀번호 찾기
+
+            return (isSignUp && !isExist) || (!isSignUp && isExist);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("아이디 확인 실패", e);
+        }
+    }
+
+    public Boolean checkNickname(final String nickname) {
+        try {
+            return userRepo.existsByNickname(nickname);
+        } catch (Exception e) {
+            throw new RuntimeException("닉네임 확인 실패", e);
+        }
+    }
+
+    public Boolean validateAndSendEmail(final String email) {
+        try {
+            if(isValidEmail(email) && userRepo.existsByEmail(email))
+                return false;
+
+            mailService.joinEmail(email);
+
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 확인 및 전송 실패", e);
+        }
+    }
+
+    public Boolean checkEmail(final String email) {
+        try {
+            return userRepo.existsByEmail(email);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 유효성 검사 실패", e);
+        }
+    }
 
     @Transactional
     public void create(final UserEntity userEntity) {
@@ -24,41 +69,33 @@ public class UserService {
         final String nickname = userEntity.getNickname();
 
         // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
-        if(userEntity == null) {
+        if(userEntity == null)
             throw new RuntimeException("항목들이 올바르지 않음");
-        }
 
         // 아이디
-        if(userId == null || userId.isBlank()) {
+        if(userId == null || userId.isBlank())
             throw new RuntimeException("userId가 올바르지 않음");
-        }
 
-        if(userRepo.existsByUserId(userId)) {
+        if(userRepo.existsByUserId(userId))
             throw new RuntimeException("이미 존재하는 UserId");
-        }
 
         // 이메일
-        if(email == null || email.isBlank()) {
+        if(email == null || email.isBlank())
             throw new RuntimeException("email이 올바르지 않음");
-        }
 
-        if(userRepo.existsByEmail(email)) {
+        if(userRepo.existsByEmail(email))
             throw new RuntimeException("이미 존재하는 email");
-        }
 
         // 비밀번호
-        if(password == null) {
+        if(password == null)
             throw new RuntimeException("password가 올바르지 않음");
-        }
 
         // 닉네임
-        if(nickname == null || nickname.isBlank()) {
+        if(nickname == null || nickname.isBlank())
             throw new RuntimeException("nickname이 올바르지 않음");
-        }
 
-        if(userRepo.existsByNickname(nickname)) {
+        if(userRepo.existsByNickname(nickname))
             throw new RuntimeException("이미 존재하는 nickname");
-        }
 
         userRepo.save(userEntity);
     }
@@ -94,14 +131,6 @@ public class UserService {
         return userRepo.existsByUserId(userId);
     }
 
-    public Boolean checkEmail(final String email) {
-        return userRepo.existsByEmail(email);
-    }
-
-    public Boolean checkNickname(final String nickname) {
-        return userRepo.existsByNickname(nickname);
-    }
-
     public UserEntity getByUserEmail(final String email) {
         return userRepo.findByEmail(email);
     }
@@ -121,5 +150,17 @@ public class UserService {
 
     public UserEntity getByUserId(final String userId) {
         return userRepo.findByUserId(userId);
+    }
+
+    // ============ private method ================
+
+    private Boolean isValidEmail(final String email) {
+        try {
+            String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
+
+            return email != null && !email.isBlank() && Pattern.matches(regx_email, email);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 유효성 검사 실패", e);
+        }
     }
 }

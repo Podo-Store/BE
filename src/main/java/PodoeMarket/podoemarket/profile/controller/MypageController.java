@@ -30,7 +30,6 @@ import java.util.UUID;
 @RequestMapping("/profile")
 public class MypageController {
     private final MypageService mypageService;
-    private final UserService userService;
 
     @GetMapping("/confirm")
     public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
@@ -89,7 +88,7 @@ public class MypageController {
     public ResponseEntity<?> checkNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody NicknameCheckRequestDTO dto) {
         // 기존의 닉네임과 다를 경우
         if(!Objects.equals(userInfo.getNickname(), dto.getNickname())) {
-            if(userService.checkNickname(dto.getNickname())) {
+            if(mypageService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
                         .build();

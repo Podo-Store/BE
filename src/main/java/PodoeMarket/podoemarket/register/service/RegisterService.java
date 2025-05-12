@@ -26,6 +26,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class RegisterService {
     private final ProductRepository fileRepo;
     private final UserRepository userRepo;
@@ -68,7 +69,6 @@ public class RegisterService {
 
     // ================ private (protected) method =====================
 
-    @Transactional
     protected String uploadScript(MultipartFile[] files, String writer) throws IOException {
         if(files[0].isEmpty())
             throw new RuntimeException("선택된 파일이 없음");
