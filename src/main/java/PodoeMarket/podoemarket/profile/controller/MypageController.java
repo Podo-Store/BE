@@ -7,10 +7,8 @@ import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponse
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.profile.service.MypageService;
-import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
