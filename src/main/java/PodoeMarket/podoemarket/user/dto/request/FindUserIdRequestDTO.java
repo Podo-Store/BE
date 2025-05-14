@@ -1,17 +1,15 @@
-package PodoeMarket.podoemarket.dto;
+package PodoeMarket.podoemarket.user.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class ResponseDTO <T> {
-    private String error;
-    private List<T> data;
+public class FindUserIdRequestDTO {
+    private String email;
+    private String authNum;
 }

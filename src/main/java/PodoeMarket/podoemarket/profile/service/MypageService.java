@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.profile.service;
 
-import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
@@ -181,13 +180,13 @@ public class MypageService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 업습니다.");
 
-            if(!ValidCheck.isValidTitle(normalizedTitle))
+            if(!isValidTitle(normalizedTitle))
                 throw new RuntimeException("제목 유효성 검사 실패");
 
             if(product.getChecked() == ProductStatus.WAIT)
                 throw new RuntimeException("등록 심사 중인 작품");
 
-            if(!ValidCheck.isValidPlot(dto.getPlot()))
+            if(!isValidPlot(dto.getPlot()))
                 throw new RuntimeException("줄거리 유효성 검사 실패");
 
             String scriptImageFilePath = null;
@@ -919,6 +918,36 @@ public class MypageService {
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("작품 파일 삭제 실패", e);
+        }
+    }
+
+    private static boolean isValidTitle(String title) {
+        String regx_title = "^.{1,20}$";
+
+        if(title == null) {
+            log.warn("title is null or empty");
+            return false;
+        } else if(!Pattern.matches(regx_title, title)) {
+            log.warn("title is not fit in the rule");
+            return false;
+        } else {
+            log.info("title valid checked");
+            return true;
+        }
+    }
+
+    private static boolean isValidPlot(String plot) {
+        String regx_plot = "^.{1,150}$";
+
+        if(plot == null) {
+            log.warn("plot is null or empty");
+            return false;
+        } else if(!Pattern.matches(regx_plot, plot)) {
+            log.warn("plot is not fit in the rule");
+            return false;
+        } else {
+            log.info("plot valid checked");
+            return true;
         }
     }
 }

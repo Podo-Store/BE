@@ -1,7 +1,7 @@
 package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;

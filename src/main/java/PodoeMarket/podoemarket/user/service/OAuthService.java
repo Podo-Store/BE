@@ -3,7 +3,9 @@ package PodoeMarket.podoemarket.user.service;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.JsonObject;
@@ -26,78 +28,121 @@ import java.util.Random;
 @Transactional(readOnly = true)
 public class OAuthService {
     private final List<SocialOauth> socialOauthList; // 모든 SocialOauth 구현체가 자동으로 주입됨 (@RequiredArgsConstructor)
+    private final TokenProvider tokenProvider;
     private final UserRepository userRepo;
 
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
+        try {
         SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
 
         return socialOauth.getOauthRedirectURL();
+        } catch (Exception e) {
+            throw new RuntimeException("URL 반환 실패", e);
+        }
     }
 
     // 인증 코드로 액세스 토큰을 요청하는 메서드
     public String requestAccessToken(SocialLoginType socialLoginType, String code) {
-        SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
+        try {
+            SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
 
-        return socialOauth.requestAccessToken(code);
+            return socialOauth.requestAccessToken(code);
+        } catch (Exception e) {
+            throw new RuntimeException("엑세스 토큰 요청 실패", e);
+        }
     }
 
     // 액세스 토큰을 사용하여 사용자 정보를 가져오는 메서드
     public UserEntity requestUser(SocialLoginType socialLoginType, String code) {
-        // 1. 액세스 토큰을 포함한 JSON 응답 요청
-        String infoJson = requestAccessToken(socialLoginType, code);
+        try {
+            // 1. 액세스 토큰을 포함한 JSON 응답 요청
+            String infoJson = requestAccessToken(socialLoginType, code);
 
-        // 2. JSON에서 액세스 토큰만 추출
-        String accessToken = extractAccessToken(infoJson);
+            // 2. JSON에서 액세스 토큰만 추출
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(infoJson);
 
-        if(accessToken == null)
-            throw new RuntimeException("Failed to extract access token");
+            String accessToken = jsonNode.get("access_token") != null ? jsonNode.get("access_token").asText() : null;
 
-        // 3. 액세스 토큰을 사용해 사용자 정보 요청
-        String userInfo = getUserInfoWithOauth(socialLoginType, accessToken);
+            if(accessToken == null)
+                throw new RuntimeException("엑세스 토큰 추출 실패");
 
-        // 4. 사용자 정보를 파싱하여 생성한 User 객체 반환
-        return parseUserInfo(userInfo, socialLoginType);
+            // 3. 액세스 토큰을 사용해 사용자 정보 요청
+            String userInfo = getUserInfoWithOauth(socialLoginType, accessToken);
+
+            // 4. 사용자 정보를 파싱하여 생성한 User 객체 반환
+            return parseUserInfo(userInfo, socialLoginType);
+        } catch (Exception e) {
+            throw new RuntimeException("사용자 정보 가져오기 실패", e);
+        }
+    }
+
+    // 소셜 로그인 메서드
+    public SignInResponseDTO socialSignIn(final UserEntity user) {
+        try {
+            final UserEntity signInUser = userRepo.findByUserId(user.getUserId());
+
+            if(signInUser == null)
+                throw new RuntimeException("사용자를 찾을 수 없습니다.");
+
+            return SignInResponseDTO.builder()
+                    .nickname(signInUser.getNickname())
+                    .auth(signInUser.isAuth())
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .refreshToken(tokenProvider.createRefreshToken(user))
+                    .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("소셜 로그인 실패", e);
+        }
     }
 
     // 소셜 회원가입 DB create 메서드
     @Transactional
     public void create(final UserEntity userEntity) {
-        final String userId = userEntity.getUserId();
-        final String email = userEntity.getEmail();
-        final String nickname = userEntity.getNickname();
+        try {
+            final String userId = userEntity.getUserId();
+            final String email = userEntity.getEmail();
+            final String nickname = userEntity.getNickname();
 
-        // 아이디
-        if(userId == null || userId.isBlank())
-            throw new RuntimeException("userId가 올바르지 않음");
+            // 아이디
+            if(userId == null || userId.isBlank())
+                throw new RuntimeException("userId가 올바르지 않음");
 
-        if(userRepo.existsByUserId(userId))
-            throw new RuntimeException("이미 존재하는 UserId");
+            if(userRepo.existsByUserId(userId))
+                throw new RuntimeException("이미 존재하는 UserId");
 
-        // 이메일
-        if(email == null || email.isBlank())
-            throw new RuntimeException("email이 올바르지 않음");
+            // 이메일
+            if(email == null || email.isBlank())
+                throw new RuntimeException("email이 올바르지 않음");
 
-        if(userRepo.existsByEmail(email))
-            throw new RuntimeException("이미 존재하는 email");
+            if(userRepo.existsByEmail(email))
+                throw new RuntimeException("이미 존재하는 email");
 
-        // 닉네임
-        if(nickname == null || nickname.isBlank())
-            throw new RuntimeException("nickname이 올바르지 않음");
+            // 닉네임
+            if(nickname == null || nickname.isBlank())
+                throw new RuntimeException("nickname이 올바르지 않음");
 
-        // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
-        String createNickname = "";
-        do {
-            createNickname = nickname + createRandomNumber();
+            // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
+            String createNickname = "";
+            do {
+                createNickname = nickname + createRandomNumber();
 
-        } while (userRepo.existsByNickname(createNickname));
+            } while (userRepo.existsByNickname(createNickname));
 
-        if(userRepo.existsByNickname(createNickname))
-            throw new RuntimeException("이미 존재하는 nickname");
+            if(userRepo.existsByNickname(createNickname))
+                throw new RuntimeException("이미 존재하는 nickname");
 
-        userEntity.setNickname(createNickname);
+            userEntity.setNickname(createNickname);
 
-        userRepo.save(userEntity);
+            userRepo.save(userEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("회원가입 실패", e);
+        }
+    }
+
+    public Boolean checkUserId(final String userId) {
+        return userRepo.existsByUserId(userId);
     }
 
     // ================= private method =================
@@ -107,19 +152,6 @@ public class OAuthService {
                 .filter(x -> x.type() == socialLoginType)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("알 수 없는 SocialLoginType 입니다."));
-    }
-
-    // JSON에서 액세스 토큰만 추출하는 메서드
-    private String extractAccessToken(String infoJson) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(infoJson);
-
-            return jsonNode.get("access_token") != null ? jsonNode.get("access_token").asText() : null;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     // 소셜 로그인 API에서 사용자 정보를 받아오는 메서드

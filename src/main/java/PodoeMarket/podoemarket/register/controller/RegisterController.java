@@ -1,6 +1,6 @@
 package PodoeMarket.podoemarket.register.controller;
 
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.register.service.RegisterService;
 import lombok.RequiredArgsConstructor;

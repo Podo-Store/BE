@@ -2,7 +2,7 @@ package PodoeMarket.podoemarket.profile.controller;
 
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.dto.ResponseDTO;
+import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.*;
