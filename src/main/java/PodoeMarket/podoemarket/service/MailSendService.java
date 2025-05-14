@@ -23,7 +23,7 @@ public class MailSendService {
     @Value("${spring.mail.username}")
     private String username;
 
-    public boolean CheckAuthNum(String email,String authNum){
+    public boolean CheckAuthNum(final String email, final String authNum){
         if(verificationService.getData(authNum) == null)
             return false;
         else return verificationService.getData(authNum).equals(email);
@@ -40,9 +40,8 @@ public class MailSendService {
         authNumber = Integer.parseInt(randomNumber);
     }
 
-
     // 인증번호
-    public String joinEmail(String email) {
+    public String joinEmail(final String email) {
         makeRandomNumber();
         String setFrom = username; // email-config에 설정한 자신의 이메일 주소를 입력
         String title = "[포도상점] 이메일 인증번호를 보내드립니다."; // 이메일 제목
@@ -100,7 +99,7 @@ public class MailSendService {
     }
 
     // 결제 요청
-    public void joinPaymentEmail(String email, String price) {
+    public void joinPaymentEmail(final String email, final String price) {
         String setFrom = username;
         String title = "[포도상점] 주문하신 상품의 결제 요청드립니다.";
         String content =
@@ -126,7 +125,7 @@ public class MailSendService {
     }
 
     // 작품 등록 신청 완료
-    public void joinRegisterEmail(String email, String scriptTitle) {
+    public void joinRegisterEmail(final String email, final String scriptTitle) {
         String setFrom = username;
         String title = "[포도상점] 작품 등록 신청이 완료되었습니다.";
         String content =
@@ -181,7 +180,7 @@ public class MailSendService {
     }
 
     // 결제 취소
-    public void joinCancelEmail(String email, String productTitle) {
+    public void joinCancelEmail(final String email, final String productTitle) {
         String setFrom = username;
         String title = "[포도상점] 주문하신 상품의 결제가 취소되었습니다.";
         String content =
@@ -199,7 +198,7 @@ public class MailSendService {
     }
 
     // 회원가입 완료
-    public void joinSignupEmail(String email) {
+    public void joinSignupEmail(final String email) {
         String setFrom = username;
         String title = "[포도상점] 회원가입이 완료되었습니다.";
         String content =
@@ -256,7 +255,7 @@ public class MailSendService {
     }
 
     // 이메일 전송
-    public void mailSend(String setFrom, String toMail, String title, String content) {
+    public void mailSend(final String setFrom, final String toMail, final String title, final String content) {
         MimeMessage message = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message,true,"utf-8");//이메일 메시지와 관련된 설정을 수행합니다.

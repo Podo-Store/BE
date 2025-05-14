@@ -1,36 +1,26 @@
 package PodoeMarket.podoemarket.profile.controller;
 
-import PodoeMarket.podoemarket.Utils.EntityToDTOConverter;
-import PodoeMarket.podoemarket.Utils.ValidCheck;
 import PodoeMarket.podoemarket.common.entity.*;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.dto.PerformanceDateDTO;
-import PodoeMarket.podoemarket.dto.response.*;
+import PodoeMarket.podoemarket.common.dto.ResponseDTO;
+import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.*;
-import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.profile.service.MypageService;
-import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.text.Normalizer;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,14 +28,6 @@ import java.text.Normalizer;
 @RequestMapping("/profile")
 public class MypageController {
     private final MypageService mypageService;
-    private final UserService userService;
-    private final ProductService productService;
-    private final TokenProvider tokenProvider;
-
-    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
-
-    @Value("${cloud.aws.s3.url}")
-    private String bucketURL;
 
     @GetMapping("/confirm")
     public ResponseEntity<?> getNickname(@AuthenticationPrincipal UserEntity userInfo) {
@@ -60,8 +42,7 @@ public class MypageController {
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody EnterCheckRequestDTO dto){
         try{
-            boolean confirm = mypageService.checkUser(userInfo.getId(), dto.getPassword(), pwdEncoder);
-            if(confirm)
+            if(mypageService.checkUser(userInfo.getId(), dto.getPassword()))
                 return ResponseEntity.ok().body(true);
             else{
                 ResponseDTO resDTO = ResponseDTO.builder()
@@ -79,16 +60,9 @@ public class MypageController {
     @GetMapping("/account")
     public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
         try {
-            final UserEntity user = mypageService.originalUser(userInfo.getId());
+            final ProfileInfoResponseDTO profile = mypageService.getProfileInfo(userInfo.getId());
 
-            final ProfileInfoResponseDTO info = ProfileInfoResponseDTO.builder()
-                    .id(user.getId())
-                    .userId(user.getUserId())
-                    .nickname(user.getNickname())
-                    .email(user.getEmail())
-                    .build();
-
-            return ResponseEntity.ok().body(info);
+            return ResponseEntity.ok().body(profile);
         }catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -112,7 +86,7 @@ public class MypageController {
     public ResponseEntity<?> checkNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody NicknameCheckRequestDTO dto) {
         // 기존의 닉네임과 다를 경우
         if(!Objects.equals(userInfo.getNickname(), dto.getNickname())) {
-            if(userService.checkNickname(dto.getNickname())) {
+            if(mypageService.checkNickname(dto.getNickname())) {
                 ResponseDTO resDTO = ResponseDTO.builder()
                         .error("닉네임 중복")
                         .build();
@@ -127,44 +101,7 @@ public class MypageController {
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProfileUpdateRequestDTO dto) {
         try{
-            if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("비밀번호가 일치하지 않음")
-                        .build();
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(!dto.getPassword().isBlank()) {
-                if(!ValidCheck.isValidPw(dto.getPassword())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("비밀번호 유효성 검사 실패")
-                            .build();
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-                userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
-            }
-
-            if(!dto.getNickname().isBlank()) {
-                if(!ValidCheck.isValidNickname(dto.getNickname())) {
-                    ResponseDTO resDTO = ResponseDTO.builder()
-                            .error("닉네임 유효성 검사 실패")
-                            .build();
-                    return ResponseEntity.badRequest().body(resDTO);
-                }
-                userInfo.setNickname(dto.getNickname());
-            }
-
-            UserEntity user = mypageService.updateUser(userInfo);
-
-            final UserInfoResponseDTO resUserDTO = UserInfoResponseDTO.builder()
-                    .id(user.getId())
-                    .userId(user.getUserId())
-                    .email(user.getEmail())
-                    .password(user.getPassword())
-                    .nickname(user.getNickname())
-                    .accessToken(tokenProvider.createAccessToken(user))
-                    .refreshToken(tokenProvider.createRefreshToken(user))
-                    .build();
+            UserInfoResponseDTO resUserDTO = mypageService.updateUserAccount(userInfo, dto);
 
             return ResponseEntity.ok().body(resUserDTO);
         } catch(Exception e) {
@@ -173,10 +110,11 @@ public class MypageController {
         }
     }
 
+    // 삭제 예정
     @GetMapping("/detail")
     public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
         try{
-            ScriptDetailResponseDTO productInfo = mypageService.productDetail(productId, 0);
+            final ScriptDetailResponseDTO productInfo = mypageService.productDetail(productId, 0);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
@@ -185,68 +123,13 @@ public class MypageController {
         }
     }
 
+    // 삭제 예정
     @PostMapping("/detail")
     public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
                                           @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestParam(value = "description", required = false) MultipartFile[] file2) {
         try{
-            // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
-            String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
-
-            if(!ValidCheck.isValidTitle(normalizedTitle)){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("제목 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if((productService.product(dto.getId())).getChecked() == ProductStatus.WAIT) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("등록 심사 중인 작품")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(!ValidCheck.isValidPlot(dto.getPlot())){
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("줄거리 유효성 검사 실패")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            String scriptImageFilePath = null;
-            if(file1 != null && file1.length > 0 && !file1[0].isEmpty()) {
-                scriptImageFilePath = mypageService.uploadScriptImage(file1, dto.getTitle(), dto.getId());
-            } else if (dto.getImagePath() != null) {
-                scriptImageFilePath = mypageService.extractS3KeyFromURL(dto.getImagePath());
-            } else if (dto.getImagePath() == null) {
-                mypageService.setScriptImageDefault(dto.getId());
-            }
-
-            String descriptionFilePath = null;
-            if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) {
-                descriptionFilePath = mypageService.uploadDescription(file2, dto.getTitle(), dto.getId());
-            } else if (dto.getDescriptionPath() != null) {
-                descriptionFilePath = mypageService.extractS3KeyFromURL(dto.getDescriptionPath());
-            } else if (dto.getDescriptionPath() == null) {
-                mypageService.setDescriptionDefault(dto.getId());
-            }
-
-            ProductEntity product = ProductEntity.builder()
-                    .imagePath(scriptImageFilePath)
-                    .title(normalizedTitle)
-                    .script(dto.getScript())
-                    .performance(dto.getPerformance())
-                    .scriptPrice(dto.getScriptPrice())
-                    .performancePrice(dto.getPerformancePrice())
-                    .descriptionPath(descriptionFilePath)
-                    .plot(dto.getPlot())
-                    .build();
-
-            mypageService.productUpdate(dto.getId(), product);
+            mypageService.updateProductDetail(dto, file1, file2);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {
@@ -270,10 +153,7 @@ public class MypageController {
     @GetMapping("/orderScripts")
     public ResponseEntity<?> getOrderScripts(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderScriptsResponseDTO result = OrderScriptsResponseDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderScriptWithProducts(userInfo.getId()))
-                    .build();
+            OrderScriptsResponseDTO result = mypageService.getUserOrderScripts(userInfo);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -285,10 +165,7 @@ public class MypageController {
     @GetMapping("/orderPerformances")
     public ResponseEntity<?> getOrderPerformances(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            OrderPerformanceListPageResponseDTO result = OrderPerformanceListPageResponseDTO.builder()
-                    .nickname(userInfo.getNickname())
-                    .orderList(mypageService.getAllMyOrderPerformanceWithProducts(userInfo.getId()))
-                    .build();
+            OrderPerformanceResponseDTO result = mypageService.getUserOrderPerformances(userInfo);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -300,19 +177,7 @@ public class MypageController {
     @GetMapping("/apply")
     public ResponseEntity<?> showApply(@RequestParam("id") UUID orderItemId) {
         try {
-            final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
-
-            if(orderItem.getOrder().getOrderStatus() != OrderStatus.PASS) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("결제 상태를 확인해주십시오.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            final ApplicantEntity applicant = mypageService.getApplicant(orderItemId);
-
-            ApplyDTO applyDTO = EntityToDTOConverter.convertToApplyDTO(orderItem, applicant, bucketURL);
+            ApplyResponseDTO applyDTO = mypageService.getApplyInfo(orderItemId);
 
             return ResponseEntity.ok().body(applyDTO);
         } catch (Exception e) {
@@ -322,35 +187,9 @@ public class MypageController {
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<?> apply(@RequestBody ApplyDTO dto) {
+    public ResponseEntity<?> apply(@RequestBody ApplyRequestDTO dto) {
         try {
-            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
-            mypageService.expire(orderItem.getCreatedAt());
-
-            if(dto.getPerformanceDate().size() > (orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId()))) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("공연권 구매량 초과")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(dto.getPerformanceDate().isEmpty()) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("신청 날짜가 비어있음")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            for(PerformanceDateDTO dateDto : dto.getPerformanceDate()) {
-                final PerformanceDateEntity date = PerformanceDateEntity.builder()
-                        .date(dateDto.getDate())
-                        .orderItem(orderItem)
-                        .build();
-
-                mypageService.dateRegister(date);
-            }
+            mypageService.processPerformanceApplication(dto);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
@@ -362,28 +201,11 @@ public class MypageController {
     @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
         try {
-            final OrderItemEntity item = mypageService.getOrderItem(orderId);
-            if(!item.getScript()) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("대본을 구매하세요.")
-                        .build();
+            ScriptInfoResponseDTO scriptInfo = mypageService.checkValidation(orderId);
 
-                return ResponseEntity.badRequest().body(resDTO);
-            }
+            byte[] fileData = mypageService.downloadFile(scriptInfo.getFilePath(), userInfo.getEmail());
 
-            if(item.getOrder().getOrderStatus() != OrderStatus.PASS) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("결제 상태를 확인해주십시오.")
-                        .build();
-
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            mypageService.expire(item.getCreatedAt());
-
-            byte[] fileData = mypageService.downloadFile(item.getProduct().getFilePath(), userInfo.getEmail());
-
-            String encodedFilename = URLEncoder.encode(item.getProduct().getTitle(), "UTF-8");
+            String encodedFilename = URLEncoder.encode(scriptInfo.getTitle(), StandardCharsets.UTF_8);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
@@ -408,25 +230,9 @@ public class MypageController {
     }
 
     @GetMapping("/refund")
-    public ResponseEntity<?> refundInto(@RequestParam("id") UUID orderItemId) {
+    public ResponseEntity<?> refundInfo(@RequestParam("id") UUID orderItemId) {
         try {
-            final OrderItemEntity orderItem = mypageService.getOrderItem(orderItemId);
-
-            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(orderItemId);
-            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
-
-            RefundDTO resDTO = RefundDTO.builder()
-                    .scriptImage(orderItem.getProduct().getImagePath())
-                    .title(orderItem.getTitle())
-                    .writer(orderItem.getProduct().getWriter())
-                    .performancePrice(orderItem.getProduct().getPerformancePrice())
-                    .orderDate(orderItem.getCreatedAt())
-                    .orderNum(orderItem.getOrder().getId())
-                    .orderAmount(orderItem.getPerformanceAmount())
-                    .orderPrice(orderItem.getPerformancePrice())
-                    .possibleAmount(possibleAmount)
-                    .possiblePrice(possiblePrice)
-                    .build();
+            RefundResponseDTO resDTO = mypageService.getRefundInfo(orderItemId);
 
             return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
@@ -436,36 +242,9 @@ public class MypageController {
     }
 
     @PostMapping("/refund")
-    public ResponseEntity<?> refund(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RefundDTO dto) {
+    public ResponseEntity<?> refund(@AuthenticationPrincipal UserEntity userInfo, @RequestBody RefundRequestDTO dto) {
         try {
-            final OrderItemEntity orderItem = mypageService.getOrderItem(dto.getOrderItemId());
-            final int possibleAmount = orderItem.getPerformanceAmount() - mypageService.registerDatesNum(dto.getOrderItemId());
-            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
-            final int refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
-
-            if(dto.getRefundAmount() > possibleAmount || refundPrice > possiblePrice || dto.getRefundAmount() == 0 || refundPrice < 0) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("환불 가능 수량과 가격이 아님")
-                        .build();
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            if(dto.getReason().isEmpty() || dto.getReason().length() > 50) {
-                ResponseDTO resDTO = ResponseDTO.builder()
-                        .error("환불 사유는 1 ~ 50자까지 가능")
-                        .build();
-                return ResponseEntity.badRequest().body(resDTO);
-            }
-
-            final RefundEntity refund = RefundEntity.builder()
-                    .quantity(dto.getRefundAmount())
-                    .price(refundPrice)
-                    .content(dto.getReason())
-                    .order(orderItem.getOrder())
-                    .user(userInfo)
-                    .build();
-
-            mypageService.refundRegister(refund);
+            mypageService.refundProcess(userInfo, dto);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
@@ -475,15 +254,9 @@ public class MypageController {
     }
 
     @GetMapping("/requested")
-    public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID scriptId, @AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> getRequestedPerformances(@RequestParam("id") UUID productId, @AuthenticationPrincipal UserEntity userInfo) {
         try {
-            final RequestedPerformanceDTO.ProductInfo productInfo = mypageService.getProductInfo(scriptId, userInfo);
-            final List<RequestedPerformanceDTO.DateRequestedList> list = mypageService.getDateRequestedList(scriptId);
-
-            final RequestedPerformanceDTO performanceList = RequestedPerformanceDTO.builder()
-                    .productInfo(productInfo)
-                    .dateRequestedList(list)
-                    .build();
+            RequestedPerformanceResponseDTO performanceList = mypageService.getRequestedPerformances(productId, userInfo);
 
             return ResponseEntity.ok().body(performanceList);
         } catch (Exception e) {
@@ -495,8 +268,7 @@ public class MypageController {
     @GetMapping("/like")
     public ResponseEntity<?> getLikeList(@AuthenticationPrincipal UserEntity userInfo) {
         try {
-            final ScriptListResponseDTO lists = new ScriptListResponseDTO(mypageService.getLikePlayList(0, userInfo, PlayType.LONG, 4),
-                    mypageService.getLikePlayList(0, userInfo, PlayType.SHORT, 4));
+            final ScriptListResponseDTO lists = mypageService.getUserLikeList(userInfo);
 
             return ResponseEntity.ok().body(lists);
         } catch (Exception e) {
