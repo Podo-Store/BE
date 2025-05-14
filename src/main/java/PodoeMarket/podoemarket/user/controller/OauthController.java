@@ -2,12 +2,10 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
-import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.dto.response.ResponseDTO;
+import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import PodoeMarket.podoemarket.user.service.OAuthService;
-import PodoeMarket.podoemarket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class OauthController {
     private final OAuthService oauthService;
-    private final UserService userService;
     private final MailSendService mailService;
-    private final TokenProvider tokenProvider;
 
     @GetMapping(value = "/{socialLoginType}")
     public ResponseEntity<?> socialLoginType(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
@@ -36,19 +32,12 @@ public class OauthController {
         try {
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
-            if (userService.checkUserId(user.getUserId())) {
-                final UserEntity signInUser = userService.getByUserId(user.getUserId());
+            if (oauthService.checkUserId(user.getUserId())) {
+                final SignInResponseDTO resDTO = oauthService.socialSignIn(user);
 
-                final SignInResponseDTO resUserDTO = SignInResponseDTO.builder()
-                        .nickname(signInUser.getNickname())
-                        .auth(signInUser.isAuth())
-                        .accessToken(tokenProvider.createAccessToken(user))
-                        .refreshToken(tokenProvider.createRefreshToken(user))
-                        .build();
+                mailService.joinSignupEmail(user.getEmail());
 
-                mailService.joinSignupEmail(signInUser.getEmail());
-
-                return ResponseEntity.ok().body(resUserDTO);
+                return ResponseEntity.ok().body(resDTO);
             } else {
                 // 새 사용자는 저장
                 oauthService.create(user);
