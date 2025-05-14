@@ -4,7 +4,6 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
