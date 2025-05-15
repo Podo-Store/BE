@@ -144,7 +144,7 @@ public class ProductService {
 
     }
 
-    public ResponseEntity<StreamingResponseBody> generateScriptPreview(UUID productId) throws Exception {
+    public ResponseEntity<StreamingResponseBody> generateScriptPreview(UUID productId) {
         try {
             final ProductEntity product = getProduct(productId);
             final String s3Key = product.getFilePath();
@@ -152,27 +152,26 @@ public class ProductService {
 
             int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 3 : 1;
 
-            try (InputStream fileStream = (new URI(preSignedURL)).toURL().openStream()) {
-                PdfExtractionResult result = extractPagesFromPdf(fileStream, pagesToExtract);
+            // PDF 처리는 트랜잭션과 분리
+            PdfExtractionResult result = processPreviewPdf(preSignedURL, pagesToExtract);
 
-                StreamingResponseBody streamingResponseBody = outputStream -> {
-                    try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
-                        byte[] buffer = new byte[8192];
-                        int bytesRead;
-                        while ((bytesRead = extractedPdfStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, bytesRead);
-                            outputStream.flush();
-                        }
-                    } catch (Exception e) {
-                        log.error("PDF 스트리밍 중 오류 발생: {}", e.getMessage());
+            StreamingResponseBody streamingResponseBody = outputStream -> {
+                try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = extractedPdfStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                        outputStream.flush();
                     }
-                };
+                } catch (Exception e) {
+                    log.error("PDF 스트리밍 중 오류 발생: {}", e.getMessage());
+                }
+            };
 
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_PDF)
-                        .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
-                        .body(streamingResponseBody);
-            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
+                    .body(streamingResponseBody);
         } catch (Exception e) {
             throw new RuntimeException("스크립트 미리보기 생성 실패", e);
         }
@@ -211,21 +210,54 @@ public class ProductService {
         }
     }
 
-    // PDF의 특정 페이지까지 추출하는 함수
-    private PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) throws Exception {
-        try (PdfReader reader = new PdfReader(fileStream);
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            final PdfDocument originalDoc = new PdfDocument(reader);
-            final int totalPageCount = originalDoc.getNumberOfPages();
-            final PdfWriter writer = new PdfWriter(outputStream);
-            final PdfDocument newDoc = new PdfDocument(writer);
+    // 트랜잭션과 분리된 PDF 처리 메서드
+    private PdfExtractionResult processPreviewPdf(String preSignedURL, int pagestoExtract) {
+        try (InputStream fileStream = (new URI(preSignedURL).toURL().openStream())){
+            return extractPagesFromPdf(fileStream, pagestoExtract);
+        } catch (Exception e) {
+            throw new RuntimeException("PDF 처리 실패", e);
+        }
+    }
 
+    // PDF의 특정 페이지까지 추출하는 함수
+    private PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) {
+        PdfDocument originalDoc = null;
+        PdfDocument newDoc = null;
+
+        try (PdfReader reader = new PdfReader(fileStream);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             PdfWriter writer = new PdfWriter(outputStream)) {
+
+            originalDoc = new PdfDocument(reader);
+            newDoc = new PdfDocument(writer);
+
+            final int totalPageCount = originalDoc.getNumberOfPages();
             final int endPage = Math.min(pagesToExtract, totalPageCount);
+
             originalDoc.copyPagesTo(1, endPage, newDoc);
+
+            // 명시적으로 문서 닫기
             newDoc.close();
+            originalDoc.close();
 
             return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
         } catch (Exception e) {
+            // 예외 발생 시에도 리소스 해제 보장
+            if(newDoc != null && !newDoc.isClosed()) {
+                try {
+                    newDoc.close();
+                } catch (Exception ex) {
+                    log.error("newDoc 닫기 실패: {}", ex.getMessage());
+                }
+            }
+            if (originalDoc != null && !originalDoc.isClosed()) {
+                try {
+                    originalDoc.close();
+                } catch (Exception ex) {
+                    log.error("originalDoc 닫기 실패: {}", ex.getMessage());
+                }
+            }
+            log.error("PDF 페이지 추출 중 오류 발생: pagesToExtract={}, error={}", pagesToExtract, e.getMessage());
             throw new RuntimeException("PDF 페이지 추출 실패", e);
         }
     }
