@@ -18,6 +18,7 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.ReaderProperties;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -144,14 +146,9 @@ public class ProductService {
 
     }
 
-    public ResponseEntity<StreamingResponseBody> generateScriptPreview(UUID productId) {
+    // 트랜잭션 없는 PDF 처리 메서드
+    public ResponseEntity<StreamingResponseBody> generateScriptPreview(String preSignedURL, int pagesToExtract) {
         try {
-            final ProductEntity product = getProduct(productId);
-            final String s3Key = product.getFilePath();
-            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
-
-            int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 3 : 1;
-
             // PDF 처리는 트랜잭션과 분리
             PdfExtractionResult result = processPreviewPdf(preSignedURL, pagesToExtract);
 
@@ -211,56 +208,69 @@ public class ProductService {
     }
 
     // 트랜잭션과 분리된 PDF 처리 메서드
-    private PdfExtractionResult processPreviewPdf(String preSignedURL, int pagestoExtract) {
-        try (InputStream fileStream = (new URI(preSignedURL).toURL().openStream())){
-            return extractPagesFromPdf(fileStream, pagestoExtract);
+    private PdfExtractionResult processPreviewPdf(String preSignedURL, int pagesToExtract) {
+        InputStream fileStream = null;
+        try {
+            fileStream = new URI(preSignedURL).toURL().openStream();
+            return extractPagesFromPdf(fileStream, pagesToExtract);
         } catch (Exception e) {
             throw new RuntimeException("PDF 처리 실패", e);
+        } finally {
+            if (fileStream != null) {
+                try {
+                    fileStream.close();
+                } catch (IOException e) {
+                    log.error("InputStream 닫기 실패: {}", e.getMessage());
+                }
+            }
         }
     }
 
     // PDF의 특정 페이지까지 추출하는 함수
     private PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            PdfReader reader = null;
-            PdfWriter writer = null;
-            PdfDocument originalDoc = null;
-            PdfDocument newDoc = null;
+        PdfReader reader = null;
+        PdfWriter writer = null;
+        PdfDocument originalDoc = null;
+        PdfDocument newDoc = null;
+        ByteArrayOutputStream outputStream = null;
 
-            try {
-                reader = new PdfReader(fileStream);
-                reader.setMemorySavingMode(true); // 메모리 절약 모드 활성화
+        try {
+            outputStream = new ByteArrayOutputStream();
 
-                writer = new PdfWriter(outputStream);
+            // 안전 모드 설정 추가
+            ReaderProperties properties = new ReaderProperties();
+            reader = new PdfReader(fileStream, properties);
+            reader.setMemorySavingMode(true); // 메모리 절약 모드 활성화
 
-                originalDoc = new PdfDocument(reader);
-                newDoc = new PdfDocument(writer);
+            writer = new PdfWriter(outputStream);
 
-                final int totalPageCount = originalDoc.getNumberOfPages();
-                final int endPage = Math.min(pagesToExtract, totalPageCount);
+            originalDoc = new PdfDocument(reader);
+            newDoc = new PdfDocument(writer);
 
-                originalDoc.copyPagesTo(1, endPage, newDoc);
+            final int totalPageCount = originalDoc.getNumberOfPages();
+            final int endPage = Math.min(pagesToExtract, totalPageCount);
 
-                // 명시적으로 문서 닫기 (역순으로)
-                newDoc.close();
-                originalDoc.close();
-                writer.close();
-                reader.close();
+            originalDoc.copyPagesTo(1, endPage, newDoc);
 
-                return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
-            } catch (Exception e) {
-                // 예외 발생 시에도 리소스 해제 보장 (역순으로)
-                closeQuietly(newDoc, "newDoc");
-                closeQuietly(originalDoc, "originalDoc");
-                closeQuietly(writer, "writer");
-                closeQuietly(reader, "reader");
+            // 명시적으로 문서 닫기 (역순으로)
+            newDoc.close();
+            originalDoc.close();
+            writer.close();
+            reader.close();
 
-                throw new RuntimeException("PDF 페이지 추출 실패", e);
-            }
+            return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
         } catch (Exception e) {
-            log.error("PDF 처리 중 오류 발생: error={}", e.getMessage());
+            closeAllResources(newDoc, originalDoc, writer, reader, outputStream);
             throw new RuntimeException("PDF 처리 실패", e);
         }
+    }
+
+    private void closeAllResources(PdfDocument newDoc, PdfDocument originalDoc, PdfWriter writer, PdfReader reader, ByteArrayOutputStream outputStream) {
+        closeQuietly(newDoc, "newDoc");
+        closeQuietly(originalDoc, "originalDoc");
+        closeQuietly(writer, "writer");
+        closeQuietly(reader, "reader");
+        closeQuietly(outputStream, "outputStream");
     }
 
     // 리소스를 안전하게 닫는 유틸리티 메서드
