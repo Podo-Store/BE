@@ -25,4 +25,4 @@ hooks:
   AfterInstall:
     - location: cleanup-after-install.sh
       timeout: 60
-      runas: ubuntu
+      runas: root
