@@ -1,125 +1,289 @@
 package PodoeMarket.podoemarket.user.service;
 
+import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
+import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.service.VerificationService;
+import PodoeMarket.podoemarket.user.dto.request.*;
+import PodoeMarket.podoemarket.user.dto.response.FindPasswordResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.FindUserIdResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenResponseDTO;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepo;
+    private final MailSendService mailService;
+    private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+    private final VerificationService verificationService;
+    private final TokenProvider tokenProvider;
+    private final JwtProperties jwtProperties;
 
-    @Transactional
-    public void create(final UserEntity userEntity) {
-        final String userId = userEntity.getUserId();
-        final String email = userEntity.getEmail();
-        final String password = userEntity.getPassword();
-        final String nickname = userEntity.getNickname();
-
-        // user 정보 확인 - 필드 하나라도 비어있을 경우 확인
-        if(userEntity == null) {
-            throw new RuntimeException("항목들이 올바르지 않음");
-        }
-
-        // 아이디
-        if(userId == null || userId.isBlank()) {
-            throw new RuntimeException("userId가 올바르지 않음");
-        }
-
-        if(userRepo.existsByUserId(userId)) {
-            throw new RuntimeException("이미 존재하는 UserId");
-        }
-
-        // 이메일
-        if(email == null || email.isBlank()) {
-            throw new RuntimeException("email이 올바르지 않음");
-        }
-
-        if(userRepo.existsByEmail(email)) {
-            throw new RuntimeException("이미 존재하는 email");
-        }
-
-        // 비밀번호
-        if(password == null) {
-            throw new RuntimeException("password가 올바르지 않음");
-        }
-
-        // 닉네임
-        if(nickname == null || nickname.isBlank()) {
-            throw new RuntimeException("nickname이 올바르지 않음");
-        }
-
-        if(userRepo.existsByNickname(nickname)) {
-            throw new RuntimeException("이미 존재하는 nickname");
-        }
-
-        userRepo.save(userEntity);
-    }
-
-    public UserEntity getByCredentials(final String userId, final String password, final PasswordEncoder encoder){
+    public Boolean validateUserId(UserIdCheckRequestDTO dto) {
         try {
-            final UserEntity originalUser = userRepo.findByUserId(userId);
+            boolean isExist = userRepo.existsByUserId(dto.getUserId());
+            boolean isSignUp = dto.getCheck(); // True : 회원가입, False : 비밀번호 찾기
 
-            if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
-                return originalUser;
-            } else if (originalUser == null) {
-                // 로그인 실패 시, 실패 이유 전달을 위한 메세지 작성
-                UserEntity user = new UserEntity();
-                user.setNickname("잘못된 아이디");
-
-                return user;
-            } else if(!encoder.matches(password, originalUser.getPassword())) {
-                UserEntity user = new UserEntity();
-                user.setNickname("잘못된 비밀번호");
-
-                return user;
-            } else{
-                log.info("signin error");
-                return null;
-            }
-        } catch (Exception e){
-            log.error("UserService.getByCredentials 메소드 중 예외 발생", e);
-            return null;
+            return (isSignUp && !isExist) || (!isSignUp && isExist);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("아이디 확인 실패", e);
         }
     }
 
-    public Boolean checkUserId(final String userId) {
-        return userRepo.existsByUserId(userId);
+    public void checkNickname(final String nickname) {
+        try {
+            boolean isExist = userRepo.existsByNickname(nickname);
+
+            if (isExist)
+                throw new RuntimeException("닉네임 중복");
+        } catch (Exception e) {
+            throw new RuntimeException("닉네임 확인 실패", e);
+        }
     }
 
-    public Boolean checkEmail(final String email) {
-        return userRepo.existsByEmail(email);
-    }
+    public void validateAndSendEmail(final String email) {
+        try {
+            if(isValidEmail(email) && userRepo.existsByEmail(email))
+                throw new RuntimeException("이메일 유효성 검사 실패 및 이메일 중복");
 
-    public Boolean checkNickname(final String nickname) {
-        return userRepo.existsByNickname(nickname);
-    }
-
-    public UserEntity getByUserEmail(final String email) {
-        return userRepo.findByEmail(email);
-    }
-
-    public UserEntity getById(final UUID id) {
-        return userRepo.findById(id);
+            mailService.joinEmail(email);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 확인 및 전송 실패", e);
+        }
     }
 
     @Transactional
-    public void update(UUID id, final UserEntity userEntity) {
-        final UserEntity user = userRepo.findById(id);
+    public void create(final SignUpRequestDTO dto) {
+        try {
+            if(!isValidUserId(dto.getUserId()))
+                throw new RuntimeException("아이디 유효성 검사 실패");
 
-        user.setPassword(userEntity.getPassword());
+            if(!isValidEmail(dto.getEmail()))
+                throw new RuntimeException("이메일 유효성 검사 실패");
 
-        userRepo.save(user);
+            if(!isValidPassword(dto.getPassword(), dto.getConfirmPassword()))
+                throw new RuntimeException("비밀번호 유효성 검사 실패");
+
+            if(!isValidNickname(dto.getNickname()))
+                throw new RuntimeException("닉네임 유효성 검사 실패");
+
+            if(userRepo.existsByUserId(dto.getUserId()))
+                throw new RuntimeException("이미 존재하는 아이디");
+
+            if(userRepo.existsByEmail(dto.getEmail()))
+                throw new RuntimeException("이미 존재하는 이메일");
+
+            if(userRepo.existsByNickname(dto.getNickname()))
+                throw new RuntimeException("이미 존재하는 닉네임");
+
+            UserEntity user = UserEntity.builder()
+                    .userId(dto.getUserId())
+                    .password(pwdEncoder.encode(dto.getPassword()))
+                    .nickname(dto.getNickname())
+                    .email(dto.getEmail())
+                    .auth(false)
+                    .build();
+
+            userRepo.save(user);
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+            mailService.joinSignupEmail(dto.getEmail());
+        } catch (Exception e){
+            throw new RuntimeException("회원가입 실패", e);
+        }
     }
 
-    public UserEntity getByUserId(final String userId) {
-        return userRepo.findByUserId(userId);
+    public SignInResponseDTO getByCredentials(final String userId, final String password){
+        try {
+            final UserEntity user = userRepo.findByUserId(userId);
+
+            if(user != null && pwdEncoder.matches(password, user.getPassword())) {
+                return SignInResponseDTO.builder()
+                        .nickname(user.getNickname())
+                        .auth(user.isAuth())
+                        .accessToken(tokenProvider.createAccessToken(user))
+                        .refreshToken(tokenProvider.createRefreshToken(user))
+                        .build();
+            }
+            else
+                throw new RuntimeException("아이디 혹은 비밀번호가 일치하지 않음");
+
+        } catch (Exception e){
+            throw new RuntimeException("로그인 실패", e);
+        }
+    }
+
+    public String findUserInfo(final EmailRequestDTO dto) {
+        try {
+            if(dto.getFlag()) { // 비밀번호 찾기 - check 값이 true
+                final UserEntity userById = userRepo.findByUserId(dto.getUserId());
+                final UserEntity userByEmail = userRepo.findByEmail(dto.getEmail());
+
+                if(userById == null || userByEmail == null || !userById.getUserId().equals(dto.getUserId()))
+                    throw new RuntimeException("아이디와 이메일의 정보가 일치하지 않습니다.");
+            } else { // 아이디 찾기 - check 값이 false
+                if(!userRepo.existsByEmail(dto.getEmail()))
+                    throw new RuntimeException("사용자 정보 없음");
+            }
+
+            return mailService.joinEmail(dto.getEmail());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("계정 찾기 요청 처리 실패", e);
+        }
+    }
+
+    public FindUserIdResponseDTO findUserId(final FindUserIdRequestDTO dto) {
+        try {
+            final UserEntity user = userRepo.findByEmail(dto.getEmail());
+
+            if(user == null)
+                throw new RuntimeException("사용자 정보를 찾을 수 없습니다.");
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+
+            return FindUserIdResponseDTO.builder()
+                    .userId(user.getUserId())
+                    .date(user.getCreatedAt().format(formatter))
+                    .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("아이디 찾기 실패", e);
+        }
+    }
+
+    public FindPasswordResponseDTO findPassword(final FindPasswordRequestDTO dto) {
+        try {
+            final UserEntity userByEmail = userRepo.findByEmail(dto.getEmail());
+            final UserEntity userById = userRepo.findByUserId(dto.getUserId());
+
+            if(userByEmail == null || userById == null || !userByEmail.getId().equals(userById.getId()))
+                throw new RuntimeException("아이디와 이메일의 정보가 일치하지 않습니다.");
+
+            verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
+
+            return FindPasswordResponseDTO.builder()
+                    .id(userById.getId())
+                    .userId(userById.getUserId())
+                    .email(userById.getEmail())
+                    .password(userById.getPassword())
+                    .nickname(userById.getNickname())
+                    .accessToken(tokenProvider.createAccessToken(userById))
+                    .refreshToken(tokenProvider.createRefreshToken(userById))
+                    .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("비밀번호 찾기 실패", e);
+        }
+    }
+
+    @Transactional
+    public void updatePassword(final UUID id, final PwCheckRequestDTO dto) {
+        try {
+            if(!isValidPassword(dto.getPassword(), dto.getConfirmPassword()))
+                throw new RuntimeException("비밀번호 유효성 검사 실패");
+
+            UserEntity user = userRepo.findById(id);
+
+            if(user == null)
+                throw new RuntimeException("사용자 정보를 찾을 수 없습니다.");
+
+            user.setPassword(pwdEncoder.encode(dto.getPassword()));
+
+            userRepo.save(user);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("비밀번호 업데이트 실패", e);
+        }
+    }
+
+    public TokenResponseDTO createNewToken(final String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtProperties.getSecretKey())
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            UUID userId = UUID.fromString(claims.getSubject());
+
+            final UserEntity user = userRepo.findById(userId);
+
+            if(user == null)
+                throw new RuntimeException("사용자 정보를 찾을 수 없습니다.");
+
+            return TokenResponseDTO.builder()
+                    .userId(user.getUserId())
+                    .nickname(user.getNickname())
+                    .email(user.getEmail())
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("토큰 재발급 실패", e);
+        }
+    }
+
+    // ============ private method ================
+
+    private Boolean isValidEmail(final String email) {
+        try {
+            String regx_email = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)*(\\.[a-zA-Z]{2,})$";
+
+            return email != null && !email.isBlank() && Pattern.matches(regx_email, email);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 유효성 검사 실패", e);
+        }
+    }
+
+    private Boolean isValidPassword(final String password, final String confirmPassword) {
+        try {
+            String regx_pwd = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@!%*#?&])[A-Za-z\\d$@!%*#?&]{5,11}$"; // 숫자 최소 1개, 대소문자 최소 1개, 특수문자 최소 1개, (5-11)
+
+            if(password == null || password.isBlank())
+                return false;
+            else if(password.length() < 4 || password.length() > 12)
+                return false;
+            else if(!password.equals(confirmPassword))
+                return false;
+            else if(!Pattern.matches(regx_pwd, password))
+                return false;
+
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("비밀번호 유효성 검사 실패", e);
+        }
+    }
+
+    private Boolean isValidUserId(final String userId) {
+        try {
+            String regx_userId = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{5,10}$"; // 영어, 숫자, (5-10)
+
+            return userId != null && !userId.isBlank() && Pattern.matches(regx_userId, userId);
+        } catch (Exception e) {
+            throw new RuntimeException("아이디 유효성 검사 실패", e);
+        }
+    }
+
+    private Boolean isValidNickname(final String nickname) {
+        try {
+            String regx_nick = "^[가-힣a-zA-Z0-9]{3,8}$"; // 한글, 영어, 숫자, (-8)
+
+            return nickname != null && !nickname.isBlank() && Pattern.matches(regx_nick, nickname);
+        } catch (Exception e) {
+            throw new RuntimeException("닉네임 유효성 검사 실패", e);
+        }
     }
 }

@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignInResponseDTO {
-    private String nickname;
-    private Boolean auth;
-    private String accessToken; // jwt 저장공간
-    private String refreshToken; // jwt 저장공간
+public class FindUserIdResponseDTO {
+    private String userId;
+    private String date;
 }
