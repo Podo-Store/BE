@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 # 작업 디렉토리를 /home/ubuntu/app으로 변경
 cd /home/ubuntu/app
