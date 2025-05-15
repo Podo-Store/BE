@@ -14,6 +14,7 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
+import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -31,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -221,44 +221,56 @@ public class ProductService {
 
     // PDF의 특정 페이지까지 추출하는 함수
     private PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) {
-        PdfDocument originalDoc = null;
-        PdfDocument newDoc = null;
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            PdfReader reader = null;
+            PdfWriter writer = null;
+            PdfDocument originalDoc = null;
+            PdfDocument newDoc = null;
 
-        try (PdfReader reader = new PdfReader(fileStream);
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             PdfWriter writer = new PdfWriter(outputStream)) {
+            try {
+                reader = new PdfReader(fileStream);
+                reader.setMemorySavingMode(true); // 메모리 절약 모드 활성화
 
-            originalDoc = new PdfDocument(reader);
-            newDoc = new PdfDocument(writer);
+                writer = new PdfWriter(outputStream);
 
-            final int totalPageCount = originalDoc.getNumberOfPages();
-            final int endPage = Math.min(pagesToExtract, totalPageCount);
+                originalDoc = new PdfDocument(reader);
+                newDoc = new PdfDocument(writer);
 
-            originalDoc.copyPagesTo(1, endPage, newDoc);
+                final int totalPageCount = originalDoc.getNumberOfPages();
+                final int endPage = Math.min(pagesToExtract, totalPageCount);
 
-            // 명시적으로 문서 닫기
-            newDoc.close();
-            originalDoc.close();
+                originalDoc.copyPagesTo(1, endPage, newDoc);
 
-            return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
+                // 명시적으로 문서 닫기 (역순으로)
+                newDoc.close();
+                originalDoc.close();
+                writer.close();
+                reader.close();
+
+                return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
+            } catch (Exception e) {
+                // 예외 발생 시에도 리소스 해제 보장 (역순으로)
+                closeQuietly(newDoc, "newDoc");
+                closeQuietly(originalDoc, "originalDoc");
+                closeQuietly(writer, "writer");
+                closeQuietly(reader, "reader");
+
+                throw new RuntimeException("PDF 페이지 추출 실패", e);
+            }
         } catch (Exception e) {
-            // 예외 발생 시에도 리소스 해제 보장
-            if(newDoc != null && !newDoc.isClosed()) {
-                try {
-                    newDoc.close();
-                } catch (Exception ex) {
-                    log.error("newDoc 닫기 실패: {}", ex.getMessage());
-                }
+            log.error("PDF 처리 중 오류 발생: error={}", e.getMessage());
+            throw new RuntimeException("PDF 처리 실패", e);
+        }
+    }
+
+    // 리소스를 안전하게 닫는 유틸리티 메서드
+    private void closeQuietly(AutoCloseable resource, String resourceName) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Exception e) {
+                log.error("{} 닫기 실패: {}", resourceName, e.getMessage());
             }
-            if (originalDoc != null && !originalDoc.isClosed()) {
-                try {
-                    originalDoc.close();
-                } catch (Exception ex) {
-                    log.error("originalDoc 닫기 실패: {}", ex.getMessage());
-                }
-            }
-            log.error("PDF 페이지 추출 중 오류 발생: pagesToExtract={}, error={}", pagesToExtract, e.getMessage());
-            throw new RuntimeException("PDF 페이지 추출 실패", e);
         }
     }
 
