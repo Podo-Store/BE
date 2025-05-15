@@ -1,11 +1,13 @@
 package PodoeMarket.podoemarket.product.controller;
 
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.service.ProductService;
+import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import java.util.UUID;
 @RequestMapping("/scripts")
 public class ProductController {
     private final ProductService productService;
+    private final S3Service s3Service;
 
     @GetMapping
     public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo) {
@@ -76,7 +79,14 @@ public class ProductController {
     @GetMapping("/preview")
     public ResponseEntity<StreamingResponseBody> scriptPreview(@RequestParam("script") UUID productId) {
         try {
-            return productService.generateScriptPreview(productId);
+            // 데이터베이스 작업 (트랜잭션 내에서 수행)
+            final ProductEntity product = productService.getProduct(productId);
+            final String s3Key = product.getFilePath();
+            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
+            int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 3 : 1;
+
+            // PDF 처리 (트랜잭션 외부에서 수행)
+            return productService.generateScriptPreview(preSignedURL, pagesToExtract);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
