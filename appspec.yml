@@ -22,3 +22,7 @@ hooks:
     - location: deploy.sh
       timeout: 60
       runas: ubuntu
+  AfterInstall:
+    - location: cleanup-after-install.sh
+      timeout: 60
+      runas: ubuntu
