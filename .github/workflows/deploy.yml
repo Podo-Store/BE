@@ -95,7 +95,8 @@ jobs:
           --application-name deploy \
           --deployment-config-name CodeDeployDefault.OneAtATime \
           --deployment-group-name spring-deploy-group \
-          --s3-location bucket=backend-podostore,bundleType=zip,key=spring-build.zip
+          --s3-location bucket=backend-podostore,bundleType=zip,key=spring-build.zip \
+          --ignore-application-stop-failures
 
     - name: 배포 완료 Slack 알림
       uses: rtCamp/action-slack-notify@v2
