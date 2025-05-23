@@ -46,14 +46,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ViewCountService viewCountService;
-    private final S3Service s3Service;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -104,6 +102,7 @@ public class ProductService {
         }
     }
 
+    @Transactional(readOnly = true)
     public ScriptDetailResponseDTO getScriptDetailInfo(UserEntity userInfo, UUID productId) {
         try {
             // 조회수 증가
