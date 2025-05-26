@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -104,34 +103,6 @@ public class MypageController {
             UserInfoResponseDTO resUserDTO = mypageService.updateUserAccount(userInfo, dto);
 
             return ResponseEntity.ok().body(resUserDTO);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    // 삭제 예정
-    @GetMapping("/detail")
-    public ResponseEntity<?> scriptDetail(@RequestParam("script") UUID productId) {
-        try{
-            final ScriptDetailResponseDTO productInfo = mypageService.productDetail(productId, 0);
-
-            return ResponseEntity.ok().body(productInfo);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    // 삭제 예정
-    @PostMapping("/detail")
-    public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
-                                          @RequestParam(value = "scriptImage", required = false) MultipartFile[] file1,
-                                          @RequestParam(value = "description", required = false) MultipartFile[] file2) {
-        try{
-            mypageService.updateProductDetail(dto, file1, file2);
-
-            return ResponseEntity.ok().body(true);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

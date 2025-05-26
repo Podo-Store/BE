@@ -9,13 +9,11 @@ import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.profile.dto.request.ApplyRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.request.RefundRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
-import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.request.ProfileUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -35,16 +33,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -72,12 +64,6 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
-
-    @Value("${cloud.aws.s3.folder.folderName2}")
-    private String scriptImageBucketFolder;
-
-    @Value("${cloud.aws.s3.folder.folderName3}")
-    private String descriptionBucketFolder;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
@@ -167,66 +153,6 @@ public class MypageService {
         return userRepo.existsByNickname(nickname);
         } catch (Exception e) {
             throw new RuntimeException("닉네임 확인 실패", e);
-        }
-    }
-
-    @Transactional
-    public void updateProductDetail(DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) {
-        try {
-            // 입력 받은 제목을 NFKC 정규화 적용
-            String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
-            final ProductEntity product = productRepo.findById(dto.getId());
-
-            if(product == null)
-                throw new RuntimeException("상품을 찾을 수 업습니다.");
-
-            if(!isValidTitle(normalizedTitle))
-                throw new RuntimeException("제목 유효성 검사 실패");
-
-            if(product.getChecked() == ProductStatus.WAIT)
-                throw new RuntimeException("등록 심사 중인 작품");
-
-            if(!isValidPlot(dto.getPlot()))
-                throw new RuntimeException("줄거리 유효성 검사 실패");
-
-            String scriptImageFilePath = null;
-            if(file1 != null && file1.length > 0 && !file1[0].isEmpty())
-                scriptImageFilePath = uploadScriptImage(file1, dto.getTitle(), dto.getId());
-            else if (dto.getImagePath() != null)
-                scriptImageFilePath = extractS3KeyFromURL(dto.getImagePath());
-            else {
-                if(product.getImagePath() != null) {
-                    final String imagePath = product.getImagePath().replace("scriptImage", "delete");
-                    moveFile(bucket, product.getImagePath(), imagePath);
-                    deleteFile(bucket, product.getImagePath());
-                }
-            }
-
-            String descriptionFilePath = null;
-            if(file2 != null && file2.length > 0 && !file2[0].isEmpty())
-                descriptionFilePath = uploadDescription(file2, dto.getTitle(), dto.getId());
-            else if (dto.getDescriptionPath() != null)
-                descriptionFilePath = extractS3KeyFromURL(dto.getDescriptionPath());
-            else {
-                if (product.getDescriptionPath() != null) {
-                    final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
-                    moveFile(bucket, product.getDescriptionPath(), descriptionPath);
-                    deleteFile(bucket, product.getDescriptionPath());
-                }
-            }
-
-            product.setImagePath(scriptImageFilePath);
-            product.setTitle(normalizedTitle);
-            product.setScript(dto.getScript());
-            product.setPerformance(dto.getPerformance());
-            product.setScriptPrice(dto.getScriptPrice());
-            product.setPerformancePrice(dto.getPerformancePrice());
-            product.setDescriptionPath(descriptionFilePath);
-            product.setPlot(dto.getPlot());
-
-            productRepo.save(product);
-        } catch (Exception e) {
-            throw new RuntimeException("상품 상세 정보 업데이트 실패", e);
         }
     }
 
@@ -545,39 +471,6 @@ public class MypageService {
         }
     }
 
-    public ScriptDetailResponseDTO productDetail(UUID productId, int buyStatus) {
-        try {
-            final ProductEntity script = productRepo.findById(productId);
-
-            if(script == null)
-                throw new RuntimeException("상품을 찾을 수 없습니다.");
-
-            ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
-            String encodedScriptImage = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
-            String encodedDescription = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), "UTF-8") : "";
-
-            scriptDetailDTO.setId(script.getId());
-            scriptDetailDTO.setTitle(script.getTitle());
-            scriptDetailDTO.setWriter(script.getWriter());
-            scriptDetailDTO.setImagePath(encodedScriptImage);
-            scriptDetailDTO.setScript(script.getScript());
-            scriptDetailDTO.setScriptPrice(script.getScriptPrice());
-            scriptDetailDTO.setPerformance(script.getPerformance());
-            scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
-            scriptDetailDTO.setDescriptionPath(encodedDescription);
-            scriptDetailDTO.setDate(script.getCreatedAt());
-            scriptDetailDTO.setChecked(script.getChecked());
-            scriptDetailDTO.setPlayType(script.getPlayType());
-            scriptDetailDTO.setPlot(script.getPlot());
-
-            scriptDetailDTO.setBuyStatus(buyStatus);
-
-            return scriptDetailDTO;
-        } catch (Exception e) {
-            throw new RuntimeException("상품 상세 정보 조회 실패", e);
-        }
-    }
-
     public List<ScriptListResponseDTO.ProductListDTO> getLikePlayList(int page, UserEntity userInfo, PlayType playType, int pageSize) {
         try {
             final Pageable mainLikePage = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -655,112 +548,6 @@ public class MypageService {
                 amazonS3.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
             throw new RuntimeException("파일 삭제 실패", e);
-        }
-    }
-
-    protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) {
-        try {
-            if(files.length > 1)
-                throw new RuntimeException("작품 이미지가 1개를 초과함");
-
-            if(!Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/jpeg") && !Objects.equals(files[0].getContentType(), "image/png"))
-                throw new RuntimeException("ScriptImage file type is only jpg and png");
-
-            // 파일 이름 가공
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            final Date time = new Date();
-            final String name = files[0].getOriginalFilename();
-            final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
-
-            // S3 Key 구성
-            final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
-
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(files[0].getSize());
-            metadata.setContentType(files[0].getContentType());
-
-            // 기존 파일 삭제
-            final ProductEntity product = productRepo.findById(id);
-
-            if(product == null)
-                throw new RuntimeException("상품을 찾을 수 없습니다.");
-
-            if(product.getImagePath() != null) {
-                final String sourceKey = product.getImagePath();
-
-                deleteFile(bucket, sourceKey);
-            }
-
-            // 저장
-            try (InputStream inputStream = files[0].getInputStream()) {
-                amazonS3.putObject(bucket, S3Key, inputStream, metadata);
-            }
-
-            return S3Key;
-        } catch (Exception e) {
-            throw new RuntimeException("스크립트 이미지 업로드 실패", e);
-        }
-    }
-
-    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) {
-        try {
-            if(files.length > 1)
-                throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
-
-            if(!Objects.equals(files[0].getContentType(), "application/pdf") && !Objects.equals(files[0].getContentType(), "application/pdf"))
-                throw new RuntimeException("Description file type is not PDF");
-
-            try (InputStream inputStream = files[0].getInputStream()) {
-                final PdfDocument doc = new PdfDocument(new PdfReader(inputStream));
-
-                if(doc.getNumberOfPages() > 5)
-                    throw new RuntimeException("작품 설명 파일이 5페이지를 초과함");
-            }
-
-            // 파일 이름 가공
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            final Date time = new Date();
-            final String name = files[0].getOriginalFilename();
-            final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
-
-            // S3 Key 구성
-            final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
-
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(files[0].getSize());
-            metadata.setContentType("application/pdf");
-
-            // 기존 파일 삭제
-            final ProductEntity product = productRepo.findById(id);
-
-            if(product == null)
-                throw new RuntimeException("상품을 찾을 수 없습니다.");
-
-            if(product.getDescriptionPath() != null) {
-                final String sourceKey = product.getDescriptionPath();
-
-                deleteFile(bucket, sourceKey);
-            }
-
-            // 저장
-            try (InputStream inputStream = files[0].getInputStream()) {
-                amazonS3.putObject(bucket, S3Key, inputStream, metadata);
-            }
-
-            return S3Key;
-        } catch (Exception e) {
-            throw new RuntimeException("설명 파일 업로드 실패", e);
-        }
-    }
-
-    private String extractS3KeyFromURL(final String S3URL) {
-        try {
-            String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
-            final URL url = (new URI(decodedUrl)).toURL();
-
-            return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
-        } catch (Exception e) {
-            throw new RuntimeException("S3 URL에서 키 추출 실패", e);
         }
     }
 
@@ -918,36 +705,6 @@ public class MypageService {
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("작품 파일 삭제 실패", e);
-        }
-    }
-
-    private static boolean isValidTitle(String title) {
-        String regx_title = "^.{1,20}$";
-
-        if(title == null) {
-            log.warn("title is null or empty");
-            return false;
-        } else if(!Pattern.matches(regx_title, title)) {
-            log.warn("title is not fit in the rule");
-            return false;
-        } else {
-            log.info("title valid checked");
-            return true;
-        }
-    }
-
-    private static boolean isValidPlot(String plot) {
-        String regx_plot = "^.{1,150}$";
-
-        if(plot == null) {
-            log.warn("plot is null or empty");
-            return false;
-        } else if(!Pattern.matches(regx_plot, plot)) {
-            log.warn("plot is not fit in the rule");
-            return false;
-        } else {
-            log.info("plot valid checked");
-            return true;
         }
     }
 }
