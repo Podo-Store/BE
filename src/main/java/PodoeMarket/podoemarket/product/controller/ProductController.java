@@ -7,9 +7,11 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.service.ProductService;
+import PodoeMarket.podoemarket.product.type.SortType;
 import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +29,12 @@ public class ProductController {
     private final S3Service s3Service;
 
     @GetMapping
-    public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo) {
+    public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(defaultValue = "POPULAR") SortType sortType) {
         try{
             final ScriptListResponseDTO lists = new ScriptListResponseDTO(
-                    productService.getPlayList(0, userInfo, PlayType.LONG, 10),
-                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20));
+                    productService.getPlayList(0, userInfo, PlayType.LONG, 10, sortType),
+                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20, sortType)
+            );
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -41,9 +44,9 @@ public class ProductController {
     }
 
     @GetMapping("/long")
-    public ResponseEntity<?> longProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> longProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(defaultValue = "POPULAR") SortType sortType) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.LONG, 20);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.LONG, 20, sortType);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -53,9 +56,9 @@ public class ProductController {
     }
 
     @GetMapping("/short")
-    public ResponseEntity<?> shortProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<?> shortProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(defaultValue = "POPULAR") SortType sortType, Sort sort) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.SHORT, 20);
+            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.SHORT, 20, sortType);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {

@@ -14,9 +14,10 @@ import java.util.UUID;
 @Repository
 public interface ProductLikeRepository extends JpaRepository<ProductLikeEntity, Long> {
     Boolean existsByUserAndProductId(UserEntity user, UUID productId);
+
     Boolean existsByUserAndProduct(UserEntity user, ProductEntity product);
+
     ProductLikeEntity findByUserAndProductId(UserEntity user, UUID productId);
-    int countByProductId(UUID productId);
-    int countByProduct(ProductEntity product);
+
     List<ProductLikeEntity> findAllByUserAndProduct_PlayType(UserEntity user, PlayType playType, Pageable pageable);
 }

@@ -34,7 +34,7 @@ public class ScriptListResponseDTO {
         private ProductStatus checked;
         private LocalDateTime date;
         private Boolean like;
-        private Integer likeCount;
+        private Long likeCount;
         private Long viewCount;
     }
 }
