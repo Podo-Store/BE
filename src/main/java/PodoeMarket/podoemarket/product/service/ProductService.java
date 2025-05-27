@@ -12,6 +12,7 @@ import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.product.type.SortType;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
@@ -56,9 +57,10 @@ public class ProductService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize) {
+    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, SortType sortType) {
         try {
-            final Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Sort sort = createSort(sortType);
+            final Pageable pageable = PageRequest.of(page, pageSize, sort);
             final List<ProductEntity> plays = productRepo.findAllByPlayTypeAndChecked(playType, ProductStatus.PASS, pageable);
 
             return plays.stream()
@@ -66,12 +68,7 @@ public class ProductService {
                     .filter(play -> play.getScript() || play.getPerformance())
                     .map(play -> {
                         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
-                        String encodedScriptImage = null;
-                        try {
-                            encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), "UTF-8") : "";
-                        } catch (UnsupportedEncodingException e) {
-                            throw new RuntimeException(e);
-                        }
+                        String encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), StandardCharsets.UTF_8) : "";
 
                         productListDTO.setId(play.getId());
                         productListDTO.setTitle(play.getTitle());
@@ -84,7 +81,7 @@ public class ProductService {
                         productListDTO.setDate(play.getCreatedAt());
                         productListDTO.setChecked(play.getChecked());
                         productListDTO.setLike(getLikeStatus(userInfo, play.getId()));
-                        productListDTO.setLikeCount(getLikeCount(play.getId()));
+                        productListDTO.setLikeCount(play.getLikeCount());
                         productListDTO.setViewCount(viewCountService.getProductViewCount(play.getId()));
 
                         return productListDTO;
@@ -136,7 +133,7 @@ public class ProductService {
                     .act(script.getAct())
                     .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
                     .like(getLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
-                    .likeCount(getLikeCount(productId)) // 총 좋아요 수
+                    .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
                     .build();
         } catch (Exception e) {
@@ -185,7 +182,7 @@ public class ProductService {
                         .user(userInfo)
                         .product(product)
                         .build();
-                createLike(like);
+                createLike(like, productId);
                 return "like";
             }
         } catch (Exception e) {
@@ -194,6 +191,10 @@ public class ProductService {
     }
 
     // ============== private (protected) method ===============
+    private Sort createSort(SortType sortType) {
+        return sortType.createSort();
+    }
+
     // PDF 추출 결과를 저장할 클래스
     @Getter
     private static class PdfExtractionResult {
@@ -287,15 +288,17 @@ public class ProductService {
     protected void deleteLike(final UserEntity userInfo, final UUID productId) {
         try {
             productLikeRepo.delete(productLikeRepo.findByUserAndProductId(userInfo, productId));
+            productRepo.decrementLikeCount(productId);
         } catch (Exception e) {
             throw new RuntimeException("좋아요 삭제 실패", e);
         }
     }
 
     @Transactional
-    protected void createLike(final ProductLikeEntity like) {
+    protected void createLike(final ProductLikeEntity like, final UUID productId) {
         try {
             productLikeRepo.save(like);
+            productRepo.incrementLikeCount(productId);
         } catch (Exception e) {
             throw new RuntimeException("좋아요 생성 실패", e);
         }
@@ -328,14 +331,6 @@ public class ProductService {
             return 0; // 오류 발생 시 구매하지 않은 것으로 처리
         }
 
-    }
-
-    private int getLikeCount(final UUID productId) {
-        try {
-            return productLikeRepo.countByProductId(productId);
-        } catch (Exception e) {
-            return 0; // 오류 발생 시 0으로 처리
-        }
     }
 
     private boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
