@@ -492,7 +492,7 @@ public class MypageService {
                                 .date(playLike.getProduct().getCreatedAt())
                                 .checked(playLike.getProduct().getChecked())
                                 .like(productLikeRepo.existsByUserAndProduct(userInfo, playLike.getProduct()))
-                                .likeCount(productLikeRepo.countByProduct(playLike.getProduct()))
+                                .likeCount(playLike.getProduct().getLikeCount())
                                 .viewCount(viewCountService.getProductViewCount(playLike.getProduct().getId()))
                                 .build();
                     })

@@ -35,7 +35,7 @@ public class ScriptDetailResponseDTO {
     // 2 : 공연권만 보유
     private Integer buyStatus;
     private Boolean like;
-    private Integer likeCount;
+    private Long likeCount;
     private Long viewCount;
 
     // 개요
