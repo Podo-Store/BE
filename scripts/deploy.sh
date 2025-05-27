@@ -38,7 +38,10 @@ if [ -z "$EXIST_BLUE" ]; then
   echo "green 중단 시작 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
 
   # docker-compose.green.yml 파일을 사용하여 spring-green 프로젝트의 컨테이너를 중지
-  sudo docker-compose -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml down
+  ## sudo docker-compose -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml down
+  # graceful shutdown을 위해 stop을 사용
+  sudo docker-compose -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml stop
+  sudo docker-compose -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml rm -f
 
    # 사용하지 않는 이미지 삭제
   sudo docker image prune -af
@@ -53,7 +56,10 @@ else
   sleep 30
 
   echo "blue 중단 시작 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
-  sudo docker-compose -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml down
+  # sudo docker-compose -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml down
+  sudo docker-compose -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml stop
+  sudo docker-compose -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml rm -f
+
   sudo docker image prune -af
 
   echo "blue 중단 완료 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
