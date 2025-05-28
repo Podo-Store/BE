@@ -44,3 +44,6 @@ src/main/resources/application.yml
 
 # .github/ISSUE_TEMPLATE 디렉터리 안의 YAML 파일 제외
 !**/.github/ISSUE_TEMPLATE/*.yml
+
+# docker-compose.yml 제외
+!**/docker/*.yml

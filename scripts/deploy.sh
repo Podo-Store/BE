@@ -5,14 +5,34 @@ cd /home/ubuntu/app
 
 # 환경변수 DOCKER_APP_NAME을 spring으로 설정
 DOCKER_APP_NAME=spring
-
 # 네트워크 존재 여부 확인 및 생성
 NETWORK_NAME="app-network"
+# redis container명
+REDIS_CONTAINER_NAME="redis"
 
 if ! sudo docker network ls | grep -q "$NETWORK_NAME"; then
     echo "Docker 네트워크가 없습니다. $NETWORK_NAME를 생성합니다."
     sudo docker network create $NETWORK_NAME
 fi
+
+# Redis 컨테이너가 실행 중인지 확인
+IS_REDIS_RUNNING=$(sudo docker ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q)
+
+# Redis 컨테이너가 없거나 꺼져 있으면 redis-compose로 실행
+if [ -z "$IS_REDIS_RUNNING" ]; then
+    echo "Redis 실행 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
+    sudo docker-compose -f docker-compose.redis.yml up -d
+
+    # 재확인
+    sleep 3
+    IS_REDIS_RUNNING=$(sudo docker ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q)
+    if [ -z "$IS_REDIS_RUNNING" ]; then
+        echo "배포 중단 - Redis 컨테이너 실행 실패 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
+        exit 1
+    fi
+fi
+
+echo "Redis 상태: $(sudo docker ps -a --filter name=redis --format '{{.Status}}')" >> /home/ubuntu/deploy.log
 
 # 실행중인 blue가 있는지 확인
 # 프로젝트의 실행 중인 컨테이너를 확인하고, 해당 컨테이너가 실행 중인지 여부를 EXIST_BLUE 변수에 저장
