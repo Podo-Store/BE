@@ -24,7 +24,7 @@ if [ -z "$IS_REDIS_RUNNING" ]; then
     sudo docker-compose -f docker-compose.redis.yml up -d
 
     # 재확인
-    sleep 3
+    sleep 10
     IS_REDIS_RUNNING=$(sudo docker ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q)
     if [ -z "$IS_REDIS_RUNNING" ]; then
         echo "배포 중단 - Redis 컨테이너 실행 실패 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
