@@ -28,6 +28,8 @@ if [ -z "$IS_REDIS_RUNNING" ]; then
     IS_REDIS_RUNNING=$(sudo docker ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q)
     if [ -z "$IS_REDIS_RUNNING" ]; then
         echo "배포 중단 - Redis 컨테이너 실행 실패 : $(date +%Y)-$(date +%m)-$(date +%d) $(date +%H):$(date +%M):$(date +%S)" >> /home/ubuntu/deploy.log
+        echo "===================== 배포 실패 =====================" >> /home/ubuntu/deploy.log
+        echo >> /home/ubuntu/deploy.log
         exit 1
     fi
 fi
