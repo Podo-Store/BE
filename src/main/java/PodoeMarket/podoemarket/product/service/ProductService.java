@@ -66,6 +66,7 @@ public class ProductService {
             return plays.stream()
                     .filter(play -> play.getUser() != null)
                     .filter(play -> play.getScript() || play.getPerformance())
+                    .filter(play -> !play.getIsDelete())
                     .map(play -> {
                         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
                         String encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), StandardCharsets.UTF_8) : "";
