@@ -161,22 +161,26 @@ public class OrderService {
                 if(user.getId().equals(product.getUser().getId()))
                     throw new RuntimeException("본인 작품 구매 불가");
 
-                // 대본권, 공연권 1일 때만 구매 가능
-                if ((!product.getScript() && orderItemDTO.isScript()) || (!product.getPerformance() && (orderItemDTO.getPerformanceAmount() > 0)))
+//                // 대본권, 공연권 1일 때만 구매 가능
+//                if ((!product.getScript() && orderItemDTO.isScript()) || (!product.getPerformance() && (orderItemDTO.getPerformanceAmount() > 0)))
+//                    throw new RuntimeException("구매 조건 확인");
+
+                // 공연권 1일 때만 구매 가능
+                if (!product.getPerformance() && (orderItemDTO.getPerformanceAmount() > 0))
                     throw new RuntimeException("구매 조건 확인");
 
-                if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
-                    final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
-
-                    for(OrderItemEntity item : items) {
-                        // 대본권 제한
-                        if(orderItemDTO.isScript() && item.getScript())
-                            throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
-                    }
-                } else {
-                    if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
-                        throw new RuntimeException("대본권을 구매해야 함");
-                }
+//                if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
+//                    final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
+//
+//                    for(OrderItemEntity item : items) {
+//                        // 대본권 제한
+//                        if(orderItemDTO.isScript() && item.getScript())
+//                            throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
+//                    }
+//                } else {
+//                    if(!orderItemDTO.isScript() && orderItemDTO.getPerformanceAmount() > 0)
+//                        throw new RuntimeException("대본권을 구매해야 함");
+//                }
 
                 final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
                 final int performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
