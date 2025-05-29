@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.order.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
+import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
 import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
@@ -37,7 +38,7 @@ public class OrderService {
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    public OrderItemResponseDTO getOrderItemInfo(UserEntity userInfo, OrderItemResponseDTO dto) {
+    public OrderItemResponseDTO getOrderItemInfo(UserEntity userInfo, OrderInfoRequestDTO dto) {
         try {
             final ProductEntity orderProduct = getProduct(dto.getProductId());
 
