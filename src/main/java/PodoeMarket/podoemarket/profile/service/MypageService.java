@@ -56,10 +56,10 @@ public class MypageService {
     private final PerformanceDateRepository performanceDateRepo;
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
-    private final AmazonS3 amazonS3;
     private final ViewCountService viewCountService;
     private final TokenProvider tokenProvider;
 
+    private final AmazonS3 amazonS3;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @Value("${cloud.aws.s3.bucket}")
