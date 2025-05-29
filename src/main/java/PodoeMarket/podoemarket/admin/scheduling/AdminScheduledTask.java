@@ -44,7 +44,7 @@ public class AdminScheduledTask {
 
         productRepo.saveAll(rejectProducts);
 
-        log.info("작품 자동 삭제 작업이 완료되었습니다.");
+        log.info("작품 파일 자동 삭제 작업이 완료되었습니다.");
     }
 
     // ============ private method ================

@@ -33,6 +33,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     List<ProductEntity> findAllByCheckedAndUpdatedAt(ProductStatus checked, LocalDateTime updatedAt);
 
+    List<ProductEntity> findAllByIsDeleteAndUpdatedAt(Boolean isDelete, LocalDateTime updatedAt);
+
     @Modifying
     @Query("UPDATE ProductEntity p SET p.likeCount = p.likeCount + 1 WHERE p.id = :productId")
     void incrementLikeCount(@Param("productId") UUID productId);
