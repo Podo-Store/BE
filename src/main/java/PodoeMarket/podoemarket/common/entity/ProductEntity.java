@@ -113,6 +113,11 @@ public class ProductEntity {
     @ColumnDefault("0")
     private Integer act = 0; // 막
 
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Boolean isDelete = false; // 삭제 여부
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
