@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.order.dto.request;
 
-import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +15,6 @@ import java.util.UUID;
 public class OrderRequestDTO {
     ApplicantDTO applicant;
     List<OrderItemDTO> orderItem;
-    private int totalPrice;
     private int paymentMethod;
 
     @Data
@@ -34,19 +32,8 @@ public class OrderRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderItemDTO {
-        private boolean delete;
-        private UUID id;
-        private String title;
-        private String writer;
-        private String imagePath;
-        private PlayType playType;
         private boolean script;
-        private int scriptPrice;
         private int performanceAmount;
-        private int performancePrice;
-        private int performanceTotalPrice;
-        private int possibleCount;
-        private int totalPrice;
 
         private UUID productId;
     }
