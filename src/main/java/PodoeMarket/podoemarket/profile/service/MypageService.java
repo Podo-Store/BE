@@ -239,7 +239,7 @@ public class MypageService {
                         orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                     } else { // 삭제된 작품일 경우
                         orderItemDTO.setDelete(true);
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                     }
 
