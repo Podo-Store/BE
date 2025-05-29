@@ -145,6 +145,6 @@ public class ProductEntity {
     private List<OrderItemEntity> orderItem = new ArrayList<>();
 
     // product : like = 1 : N
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ProductLikeEntity> like = new ArrayList<>();
 }
