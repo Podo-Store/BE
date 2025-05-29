@@ -477,6 +477,7 @@ public class MypageService {
             final List<ProductLikeEntity> playLikes = productLikeRepo.findAllByUserAndProduct_PlayType(userInfo, playType, mainLikePage);
 
             return playLikes.stream()
+                    .filter(playLike -> !playLike.getProduct().getIsDelete())
                     .map(playLike -> {
                         String encodedScriptImage = playLike.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(playLike.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
 
