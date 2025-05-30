@@ -115,4 +115,19 @@ public class ProductController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @GetMapping("/view")
+    public ResponseEntity<StreamingResponseBody> scriptView(@RequestParam("script") UUID productId) {
+        try{
+            // 데이터베이스 작업 (트랜잭션 내에서 수행)
+            final ProductEntity product = productService.getProduct(productId);
+            final String s3Key = product.getFilePath();
+            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
+
+            return productService.generateFullScriptDirect(preSignedURL);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
+        }
+    }
 }
