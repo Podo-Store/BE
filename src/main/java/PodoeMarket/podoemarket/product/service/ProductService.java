@@ -13,7 +13,6 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.SortType;
-import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -36,7 +35,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -190,6 +188,26 @@ public class ProductService {
             throw new RuntimeException("좋아요 처리 실패", e);
         }
     }
+
+    public ResponseEntity<StreamingResponseBody> generateFullScriptDirect(String preSignedURL) {
+        StreamingResponseBody streamingResponseBody = outputStream -> {
+            try (InputStream inputStream = new URI(preSignedURL).toURL().openStream()) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    outputStream.flush();
+                }
+            } catch (Exception e) {
+                log.error("PDF 스트리밍 중 오류 발생: {}", e.getMessage());
+            }
+        };
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(streamingResponseBody);
+    }
+
 
     // ============== private (protected) method ===============
     private Sort createSort(SortType sortType) {
