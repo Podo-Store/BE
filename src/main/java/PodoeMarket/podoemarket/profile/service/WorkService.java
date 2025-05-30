@@ -59,23 +59,25 @@ public class WorkService {
             final Map<LocalDate, List<WorkListResponseDTO.DateWorkDTO.WorksDTO>> works = new HashMap<>();
 
             for (final ProductEntity product : products) {
-                String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), StandardCharsets.UTF_8) : "";
+                if (!product.getIsDelete()) {
+                    String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), StandardCharsets.UTF_8) : "";
 
-                final WorkListResponseDTO.DateWorkDTO.WorksDTO worksDTO = WorkListResponseDTO.DateWorkDTO.WorksDTO.builder()
-                        .id(product.getId())
-                        .title(product.getTitle())
-                        .imagePath(encodedScriptImage)
-                        .script(product.getScript())
-                        .scriptPrice(product.getScriptPrice())
-                        .performance(product.getPerformance())
-                        .performancePrice(product.getPerformancePrice())
-                        .checked(product.getChecked())
-                        .build();
+                    final WorkListResponseDTO.DateWorkDTO.WorksDTO worksDTO = WorkListResponseDTO.DateWorkDTO.WorksDTO.builder()
+                            .id(product.getId())
+                            .title(product.getTitle())
+                            .imagePath(encodedScriptImage)
+                            .script(product.getScript())
+                            .scriptPrice(product.getScriptPrice())
+                            .performance(product.getPerformance())
+                            .performancePrice(product.getPerformancePrice())
+                            .checked(product.getChecked())
+                            .build();
 
-                final LocalDate date = product.getCreatedAt().toLocalDate();
+                    final LocalDate date = product.getCreatedAt().toLocalDate();
 
-                // 날짜에 따른 리스트를 초기화하고 추가 - date라는 key가 없으면 만들고, worksDTO를 value로 추가
-                works.computeIfAbsent(date, k -> new ArrayList<>()).add(worksDTO);
+                    // 날짜에 따른 리스트를 초기화하고 추가 - date라는 key가 없으면 만들고, worksDTO를 value로 추가
+                    works.computeIfAbsent(date, k -> new ArrayList<>()).add(worksDTO);
+                }
             }
 
             List<WorkListResponseDTO.DateWorkDTO> dateWorks = works.entrySet().stream()
@@ -210,6 +212,30 @@ public class WorkService {
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("상품 상세 정보 업데이트 실패", e);
+        }
+    }
+
+    @Transactional
+    public void deleteProduct(final UUID productId, final UUID userId) {
+        try {
+            final ProductEntity product = productRepo.findById(productId);
+
+            if(product == null)
+                throw new RuntimeException("상품을 찾을 수 없습니다.");
+
+            if(!product.getUser().getId().equals(userId))
+                throw new RuntimeException("작가가 아님");
+
+            if(product.getChecked() == ProductStatus.WAIT)
+                throw new RuntimeException("심사 중");
+
+            // 탈퇴와 동일한 파일 삭제 처리 필요
+            deleteScripts(product);
+
+            product.setIsDelete(true);
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("상품 삭제 실패", e);
         }
     }
 
@@ -364,6 +390,28 @@ public class WorkService {
         } else {
             log.info("plot valid checked");
             return true;
+        }
+    }
+
+    private void deleteScripts(final ProductEntity product) {
+        try {
+            final String filePath = product.getFilePath().replace("script", "delete");
+            moveFile(bucket, product.getFilePath(), filePath);
+            deleteFile(bucket, product.getFilePath());
+            product.setFilePath(filePath);
+
+            product.setImagePath(null);
+
+            if(product.getDescriptionPath() != null) {
+                final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
+                moveFile(bucket, product.getDescriptionPath(), descriptionPath);
+                deleteFile(bucket, product.getDescriptionPath());
+                product.setDescriptionPath(descriptionPath);
+            }
+
+            productRepo.save(product);
+        } catch (Exception e) {
+            throw new RuntimeException("작품 파일 삭제 실패", e);
         }
     }
 }

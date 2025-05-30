@@ -56,10 +56,10 @@ public class MypageService {
     private final PerformanceDateRepository performanceDateRepo;
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
-    private final AmazonS3 amazonS3;
     private final ViewCountService viewCountService;
     private final TokenProvider tokenProvider;
 
+    private final AmazonS3 amazonS3;
     private final PasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 
     @Value("${cloud.aws.s3.bucket}")
@@ -239,7 +239,7 @@ public class MypageService {
                         orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                     } else { // 삭제된 작품일 경우
                         orderItemDTO.setDelete(true);
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                     }
 
@@ -477,6 +477,7 @@ public class MypageService {
             final List<ProductLikeEntity> playLikes = productLikeRepo.findAllByUserAndProduct_PlayType(userInfo, playType, mainLikePage);
 
             return playLikes.stream()
+                    .filter(playLike -> !playLike.getProduct().getIsDelete())
                     .map(playLike -> {
                         String encodedScriptImage = playLike.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(playLike.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
 

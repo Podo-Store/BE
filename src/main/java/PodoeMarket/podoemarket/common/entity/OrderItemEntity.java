@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -76,6 +78,7 @@ public class OrderItemEntity {
     // product : orderItem = 1 : N
     @ManyToOne(targetEntity = ProductEntity.class)
     @JoinColumn(name = "product_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JsonIgnore
     private ProductEntity product;
 

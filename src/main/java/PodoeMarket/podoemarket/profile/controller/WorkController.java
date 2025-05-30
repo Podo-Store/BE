@@ -60,4 +60,16 @@ public class WorkController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @DeleteMapping("/deleteScript/{id}")
+    public ResponseEntity<?> deleteScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try {
+            workService.deleteProduct(id, userInfo.getId());
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

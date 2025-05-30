@@ -1,12 +1,12 @@
 package PodoeMarket.podoemarket.order.controller;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
-import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +22,9 @@ import java.util.List;
 @RequestMapping("/order")
 public class OrderController {
     private final OrderService orderService;
-    private final MailSendService mailSendService;
 
     @GetMapping("/item")
-    public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderItemResponseDTO dto) {
+    public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderInfoRequestDTO dto) {
         try {
             OrderItemResponseDTO item = orderService.getOrderItemInfo(userInfo, dto);
 
