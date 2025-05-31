@@ -189,25 +189,25 @@ public class WorkService {
             product.setDescriptionPath(descriptionFilePath);
             product.setPlot(dto.getPlot());
 
-            if (product.getAny() < 0 || product.getMale() < 0 || product.getFemale() < 0)
+            if (dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
                 throw new RuntimeException("등장인물이 0명 이상이어야 함");
 
-            if(product.getStageComment() == null)
+            if(dto.getStageComment() == null)
                 throw new RuntimeException("무대 설명이 작성되어야 함");
 
-            if(product.getRunningTime() <= 0)
+            if(dto.getRunningTime() <= 0)
                 throw new RuntimeException("공연 시간이 0분 이상이어야 함");
 
-            if(product.getScene() < 0 || product.getAct() < 0)
+            if(dto.getScene() < 0 || dto.getAct() < 0)
                 throw new RuntimeException("장과 막이 작성되어야 함");
 
-            product.setAny(product.getAny());
-            product.setMale(product.getMale());
-            product.setFemale(product.getFemale());
-            product.setStageComment(product.getStageComment());
-            product.setRunningTime(product.getRunningTime());
-            product.setScene(product.getScene());
-            product.setAct(product.getAct());
+            product.setAny(dto.getAny());
+            product.setMale(dto.getMale());
+            product.setFemale(dto.getFemale());
+            product.setStageComment(dto.getStageComment());
+            product.setRunningTime(dto.getRunningTime());
+            product.setScene(dto.getScene());
+            product.setAct(dto.getAct());
 
             productRepo.save(product);
         } catch (Exception e) {
