@@ -130,4 +130,14 @@ public class ProductController {
             return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
         }
     }
+
+    @GetMapping("/likeStatus/{id}")
+    public ResponseEntity<?> likeStatus(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try{
+            return ResponseEntity.ok().body(productService.getLikeStatus(userInfo, id));
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }
