@@ -208,6 +208,18 @@ public class ProductService {
                 .body(streamingResponseBody);
     }
 
+    public boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
+        try {
+            if (userInfo == null)
+                return false;
+
+            return productLikeRepo.existsByUserAndProductId(userInfo, productId);
+        } catch (Exception e) {
+            log.error("좋아요 상태 확인 중 오류 발생: userId={}, productId={}, error={}",
+                    userInfo != null ? userInfo.getId() : "null", productId, e.getMessage());
+            return false; // 오류 발생 시 좋아요하지 않은 것으로 처리
+        }
+    }
 
     // ============== private (protected) method ===============
     private Sort createSort(SortType sortType) {
@@ -350,18 +362,5 @@ public class ProductService {
             return 0; // 오류 발생 시 구매하지 않은 것으로 처리
         }
 
-    }
-
-    private boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
-        try {
-            if (userInfo == null)
-                return false;
-
-            return productLikeRepo.existsByUserAndProductId(userInfo, productId);
-        } catch (Exception e) {
-            log.error("좋아요 상태 확인 중 오류 발생: userId={}, productId={}, error={}",
-                    userInfo != null ? userInfo.getId() : "null", productId, e.getMessage());
-            return false; // 오류 발생 시 좋아요하지 않은 것으로 처리
-        }
     }
 }
