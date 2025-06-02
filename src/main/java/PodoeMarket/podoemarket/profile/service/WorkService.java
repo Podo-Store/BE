@@ -140,19 +140,32 @@ public class WorkService {
         try {
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
+
+            if(!isValidTitle(normalizedTitle))
+                throw new RuntimeException("제목 유효성 검사 실패");
+
+            if(!isValidPlot(dto.getPlot()))
+                throw new RuntimeException("줄거리 유효성 검사 실패");
+
+            if (dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
+                throw new RuntimeException("등장인물이 0명 이상이어야 함");
+
+            if(dto.getStageComment() == null)
+                throw new RuntimeException("무대 설명이 작성되어야 함");
+
+            if(dto.getRunningTime() <= 0)
+                throw new RuntimeException("공연 시간이 0분 이상이어야 함");
+
+            if(dto.getScene() < 0 || dto.getAct() < 0)
+                throw new RuntimeException("장과 막이 작성되어야 함");
+
             final ProductEntity product = productRepo.findById(dto.getId());
 
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 업습니다.");
 
-            if(!isValidTitle(normalizedTitle))
-                throw new RuntimeException("제목 유효성 검사 실패");
-
             if(product.getChecked() == ProductStatus.WAIT)
                 throw new RuntimeException("등록 심사 중인 작품");
-
-            if(!isValidPlot(dto.getPlot()))
-                throw new RuntimeException("줄거리 유효성 검사 실패");
 
             String scriptImageFilePath = null;
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty())
@@ -189,18 +202,7 @@ public class WorkService {
             product.setDescriptionPath(descriptionFilePath);
             product.setPlot(dto.getPlot());
 
-            if (dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
-                throw new RuntimeException("등장인물이 0명 이상이어야 함");
-
-            if(dto.getStageComment() == null)
-                throw new RuntimeException("무대 설명이 작성되어야 함");
-
-            if(dto.getRunningTime() <= 0)
-                throw new RuntimeException("공연 시간이 0분 이상이어야 함");
-
-            if(dto.getScene() < 0 || dto.getAct() < 0)
-                throw new RuntimeException("장과 막이 작성되어야 함");
-
+            // 개요
             product.setAny(dto.getAny());
             product.setMale(dto.getMale());
             product.setFemale(dto.getFemale());
@@ -244,9 +246,16 @@ public class WorkService {
     private String extractS3KeyFromURL(final String S3URL) {
         try {
             String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
-            final URL url = (new URI(decodedUrl)).toURL();
 
-            return url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+            // 도메인 부분 제거
+            if (decodedUrl.startsWith(bucketURL)) {
+                String key = decodedUrl.substring(bucketURL.length());
+                key = key.replace("\\", "/");
+
+                return key;
+            }
+
+            throw new RuntimeException("올바르지 않은 S3 URL 형식: " + decodedUrl);
         } catch (Exception e) {
             throw new RuntimeException("S3 URL에서 키 추출 실패", e);
         }
@@ -289,7 +298,7 @@ public class WorkService {
             final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
             // S3 Key 구성
-            final String S3Key = scriptImageBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".jpg";
+            final String S3Key = scriptImageBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".jpg";
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(files[0].getSize());
@@ -337,7 +346,7 @@ public class WorkService {
             final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
             // S3 Key 구성
-            final String S3Key = descriptionBucketFolder + fileName[0] + "\\" + title + "\\" + dateFormat.format(time) + ".pdf";
+            final String S3Key = descriptionBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".pdf";
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(files[0].getSize());

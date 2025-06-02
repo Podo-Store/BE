@@ -85,7 +85,7 @@ public class RegisterService {
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
         // S3 Key 구성
-        final String S3Key = bucketFolder + fileName[0] +"\\"+ writer + "\\" + dateFormat.format(time) + ".pdf";
+        final String S3Key = bucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".pdf";
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(files[0].getSize());
