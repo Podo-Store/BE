@@ -149,7 +149,7 @@ public class AdminController {
 
             if (dto.getOrderStatus() != null) {
                 if (dto.getOrderStatus() == OrderStatus.REJECT)
-                    mailSendService.joinCancelEmail(userInfo.getEmail(), order.getOrderItem().getFirst().getTitle());
+                    mailSendService.joinCancelEmail(userInfo.getEmail(), order.getOrderItem().getFirst().getProduct().getTitle());
 
                 order.setOrderStatus(dto.getOrderStatus());
             }
