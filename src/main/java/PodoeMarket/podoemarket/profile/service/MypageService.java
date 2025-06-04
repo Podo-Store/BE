@@ -167,7 +167,7 @@ public class MypageService {
             for (OrderItemEntity orderItem : allOrderItems) {
                 final OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO orderItemDTO =  new OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO();
                 orderItemDTO.setId(orderItem.getId());
-                orderItemDTO.setTitle(orderItem.getTitle());
+                orderItemDTO.setTitle(orderItem.getProduct().getTitle());
                 orderItemDTO.setScript(orderItem.getScript());
 
                 if(orderItem.getProduct() != null) { // 삭제된 작품이 아닐 경우
@@ -218,7 +218,7 @@ public class MypageService {
                     // 각 주문 항목에 대한 제품 정보 가져옴
                     final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
                     orderItemDTO.setId(orderItem.getId());
-                    orderItemDTO.setTitle(orderItem.getTitle());
+                    orderItemDTO.setTitle(orderItem.getProduct().getTitle());
                     orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
                     if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1)))
@@ -300,7 +300,7 @@ public class MypageService {
 
             applyResponseDTO.setOrderItemId(orderItem.getId());
             applyResponseDTO.setImagePath(orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8): "");
-            applyResponseDTO.setTitle(orderItem.getTitle());
+            applyResponseDTO.setTitle(orderItem.getProduct().getTitle());
             applyResponseDTO.setWriter(orderItem.getProduct().getWriter());
             applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
@@ -414,7 +414,7 @@ public class MypageService {
 
             return RefundResponseDTO.builder()
                     .scriptImage(orderItem.getProduct().getImagePath())
-                    .title(orderItem.getTitle())
+                    .title(orderItem.getProduct().getTitle())
                     .writer(orderItem.getProduct().getWriter())
                     .performancePrice(orderItem.getProduct().getPerformancePrice())
                     .orderDate(orderItem.getCreatedAt())
