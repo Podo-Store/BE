@@ -50,9 +50,6 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private Integer totalPrice;
 
-    @Column(nullable = false)
-    private String title;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

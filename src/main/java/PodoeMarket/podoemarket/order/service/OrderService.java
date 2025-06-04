@@ -105,7 +105,7 @@ public class OrderService {
             OrderInfoResponseDTO orderInfo = OrderInfoResponseDTO.builder()
                     .orderId(orderId)
                     .orderDate(order.getCreatedAt())
-                    .title(orderItem.getFirst().getTitle())
+                    .title(orderItem.getFirst().getProduct().getTitle())
                     .script(orderItem.getFirst().getScript())
                     .scriptPrice(orderItem.getFirst().getScriptPrice())
                     .performanceAmount(orderItem.getFirst().getPerformanceAmount())
@@ -192,7 +192,6 @@ public class OrderService {
                 orderItem.setPerformanceAmount(orderItemDTO.getPerformanceAmount());
                 orderItem.setPerformancePrice(performancePrice);
                 orderItem.setTotalPrice(totalPrice);
-                orderItem.setTitle(product.getTitle());
                 orderItem.setUser(user);
 
                 return orderItem;
@@ -236,7 +235,6 @@ public class OrderService {
                             .id(ordersEntity.getId())
                             .orderDate(ordersEntity.getCreatedAt())
                             .orderNum(ordersEntity.getId())
-                            .title(orderItem.getTitle())
                             .scriptPrice(orderItem.getScriptPrice())
                             .performancePrice(orderItem.getPerformancePrice())
                             .totalPrice(orderItem.getTotalPrice())

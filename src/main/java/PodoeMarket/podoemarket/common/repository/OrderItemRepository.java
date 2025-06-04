@@ -37,7 +37,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
     JOIN p.user u
-    WHERE oi.title LIKE %:keyword%
+    WHERE p.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
     """)
@@ -49,7 +49,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     JOIN oi.product p
     JOIN p.user u
     JOIN oi.order o
-    WHERE (oi.title LIKE %:keyword%
+    WHERE (p.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%)
     AND(o.orderStatus = :orderStatus)
