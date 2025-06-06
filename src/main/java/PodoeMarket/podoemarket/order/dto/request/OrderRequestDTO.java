@@ -32,8 +32,8 @@ public class OrderRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderItemDTO {
-        private boolean script;
-        private int performanceAmount;
+        private Boolean script;
+        private Integer performanceAmount;
 
         private UUID productId;
     }

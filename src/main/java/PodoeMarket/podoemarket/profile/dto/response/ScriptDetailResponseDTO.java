@@ -20,9 +20,9 @@ public class ScriptDetailResponseDTO {
     private String writer;
     private String imagePath;
     private Boolean script;
-    private Integer scriptPrice;
+    private Long scriptPrice;
     private Boolean performance;
-    private Integer performancePrice;
+    private Long performancePrice;
     private String descriptionPath;
     private PlayType playType;
     private ProductStatus checked;

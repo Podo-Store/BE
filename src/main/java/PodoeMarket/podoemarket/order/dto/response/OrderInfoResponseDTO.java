@@ -16,7 +16,7 @@ public class OrderInfoResponseDTO {
     private Long orderId;
     private String title;
     private Boolean script;
-    private Integer scriptPrice;
+    private Long scriptPrice;
     private Integer performanceAmount;
-    private Integer performancePrice;
+    private Long performancePrice;
 }

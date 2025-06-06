@@ -18,7 +18,7 @@ public class ApplyResponseDTO {
     private String ImagePath;
     private String title;
     private String writer;
-    private int performanceAmount;
+    private Integer performanceAmount;
     private ApplicantDTO applicant;
     List<PerformanceDateDTO> performanceDate;
 

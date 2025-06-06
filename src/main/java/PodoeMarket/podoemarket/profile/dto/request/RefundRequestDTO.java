@@ -13,6 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RefundRequestDTO {
     private UUID orderItemId;
-    private int refundAmount;
+    private Integer refundAmount;
     private String reason;
 }

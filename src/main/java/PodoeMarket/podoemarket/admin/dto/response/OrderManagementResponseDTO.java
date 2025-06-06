@@ -31,7 +31,7 @@ public class OrderManagementResponseDTO {
         private String customer;
         private OrderStatus orderStatus;
         private Boolean script; // 대본은 한 번에 1개만 구매 가능
-        private int performanceAmount;
-        private int totalPrice;
+        private Integer performanceAmount;
+        private Long totalPrice;
     }
 }

@@ -28,9 +28,9 @@ public class ScriptListResponseDTO {
         private String writer;
         private String imagePath;
         private Boolean script;
-        private Integer scriptPrice;
+        private Long scriptPrice;
         private Boolean performance;
-        private Integer performancePrice;
+        private Long performancePrice;
         private ProductStatus checked;
         private LocalDateTime date;
         private Boolean like;
