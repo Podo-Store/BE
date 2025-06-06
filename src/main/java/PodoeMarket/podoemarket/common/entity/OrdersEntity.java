@@ -25,7 +25,7 @@ public class OrdersEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Integer totalPrice;
+    private Long totalPrice;
 
     @Column(nullable = false)
     private Integer paymentMethod; // 0: 0원, 1: 계좌이체
