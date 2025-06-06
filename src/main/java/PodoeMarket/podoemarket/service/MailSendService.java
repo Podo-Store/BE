@@ -219,7 +219,8 @@ public class MailSendService {
                         "<p style=\"font-size: 12.5px; margin-bottom: 54px; margin-top: 38px; color: black\">" +
                         "회원가입이 완료되었습니다." +
                         "</p>" +
-                        "<p style=\"font-size: 15px; font-weight: 900; color: black; margin-top: 54px; margin-bottom: 54px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 700; color: black; margin-top: 54px; margin-bottom: 54px\">" +
+//                        "<p style=\"font-size: 15px; font-weight: 600; color: black; margin-top: 54px; margin-bottom: 54px\">" +
                         "포도상점에서 다양한 작품을 둘러보세요!" +
                         "</p>" +
                         "<table role=\"presentation\" style=\"width: 150px; height: 35px; background: #6a39c0; border-radius: 4.5px; margin-bottom: 38px; text-align: center;\">" +
