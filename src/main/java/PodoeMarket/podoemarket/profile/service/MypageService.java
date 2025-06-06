@@ -410,7 +410,7 @@ public class MypageService {
             final OrderItemEntity orderItem = getOrderItem(orderItemId);
 
             final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId);
-            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+            final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
 
             return RefundResponseDTO.builder()
                     .scriptImage(orderItem.getProduct().getImagePath())
@@ -434,8 +434,8 @@ public class MypageService {
         try {
             final OrderItemEntity orderItem = getOrderItem(userInfo.getId());
             final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
-            final int possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
-            final int refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
+            final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+            final long refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
 
             if(dto.getRefundAmount() > possibleAmount || refundPrice > possiblePrice || dto.getRefundAmount() == 0 || refundPrice < 0)
                 throw new RuntimeException("환불 가능 수량과 가격이 아님");

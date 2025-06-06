@@ -22,6 +22,6 @@ public class OrderItemResponseDTO {
     private Long scriptPrice;
     private Integer performanceAmount;
     private Long performancePrice;
-    private Integer performanceTotalPrice;
+    private Long performanceTotalPrice;
     private Long totalPrice;
 }
