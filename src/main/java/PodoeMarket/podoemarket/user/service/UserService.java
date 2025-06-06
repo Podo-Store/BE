@@ -54,7 +54,7 @@ public class UserService {
             if (isExist)
                 throw new RuntimeException("닉네임 중복");
         } catch (Exception e) {
-            throw new RuntimeException("닉네임 확인 실패", e);
+            throw e;
         }
     }
 
@@ -65,7 +65,7 @@ public class UserService {
 
             mailService.joinEmail(email);
         } catch (Exception e) {
-            throw new RuntimeException("이메일 확인 및 전송 실패", e);
+            throw e;
         }
     }
 
@@ -105,7 +105,7 @@ public class UserService {
             verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             mailService.joinSignupEmail(dto.getEmail());
         } catch (Exception e){
-            throw new RuntimeException("회원가입 실패", e);
+            throw e;
         }
     }
 
@@ -125,7 +125,7 @@ public class UserService {
                 throw new RuntimeException("아이디 혹은 비밀번호가 일치하지 않음");
 
         } catch (Exception e){
-            throw new RuntimeException("로그인 실패", e);
+            throw e;
         }
     }
 
@@ -144,7 +144,7 @@ public class UserService {
 
             return mailService.joinEmail(dto.getEmail());
         } catch (RuntimeException e) {
-            throw new RuntimeException("계정 찾기 요청 처리 실패", e);
+            throw e;
         }
     }
 
@@ -164,7 +164,7 @@ public class UserService {
                     .date(user.getCreatedAt().format(formatter))
                     .build();
         } catch (RuntimeException e) {
-            throw new RuntimeException("아이디 찾기 실패", e);
+            throw e;
         }
     }
 
@@ -188,7 +188,7 @@ public class UserService {
                     .refreshToken(tokenProvider.createRefreshToken(userById))
                     .build();
         } catch (RuntimeException e) {
-            throw new RuntimeException("비밀번호 찾기 실패", e);
+            throw e;
         }
     }
 
@@ -207,7 +207,7 @@ public class UserService {
 
             userRepo.save(user);
         } catch (RuntimeException e) {
-            throw new RuntimeException("비밀번호 업데이트 실패", e);
+            throw e;
         }
     }
 
@@ -232,7 +232,7 @@ public class UserService {
                     .accessToken(tokenProvider.createAccessToken(user))
                     .build();
         } catch (RuntimeException e) {
-            throw new RuntimeException("토큰 재발급 실패", e);
+            throw e;
         }
     }
 

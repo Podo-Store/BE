@@ -110,9 +110,7 @@ public class MypageService {
                     .refreshToken(tokenProvider.createRefreshToken(user))
                     .build();
         } catch (Exception e) {
-            log.error("사용자 계정 정보 업데이트 중 오류 발생: userId={}, error={}",
-                    userInfo.getId(), e.getMessage());
-            throw new RuntimeException("사용자 계정 정보 업데이트 실패", e);
+            throw e;
         }
     }
 
@@ -125,7 +123,6 @@ public class MypageService {
 
             return pwdEncoder.matches(password, originalUser.getPassword());
         } catch (Exception e){
-            log.error("사용자 확인 중 오류 발생", e);
             return false;
         }
     }
@@ -144,13 +141,13 @@ public class MypageService {
                     .email(user.getEmail())
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("프로필 정보 조회 실패", e);
+            throw e;
         }
     }
 
     public Boolean checkNickname(final String nickname) {
         try {
-        return userRepo.existsByNickname(nickname);
+            return userRepo.existsByNickname(nickname);
         } catch (Exception e) {
             throw new RuntimeException("닉네임 확인 실패", e);
         }
@@ -200,7 +197,7 @@ public class MypageService {
                     .orderList(orderList)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("사용자 대본 주문 스크립트 조회 실패", e);
+            throw e;
         }
     }
 
@@ -259,7 +256,7 @@ public class MypageService {
                 .orderList(orderList)
                 .build();
         } catch (Exception e) {
-            throw new RuntimeException("사용자 공연권 주문 스크립트 조회 실패", e);
+            throw e;
         }
     }
 
@@ -280,7 +277,7 @@ public class MypageService {
             // 탈퇴와 동일한 파일 삭제 처리 필요
             deleteScripts(product);
         } catch (Exception e) {
-            throw new RuntimeException("상품 삭제 실패", e);
+            throw e;
         }
     }
 
@@ -321,7 +318,7 @@ public class MypageService {
 
             return applyResponseDTO;
         } catch (Exception e) {
-            throw new RuntimeException("공연 신청 정보 조회 실패", e);
+            throw e;
         }
     }
 
@@ -350,7 +347,7 @@ public class MypageService {
 
             performanceDateRepo.saveAll(dates);
         } catch (Exception e) {
-            throw new RuntimeException("공연 신청 처리 실패", e);
+            throw e;
         }
     }
 
@@ -371,11 +368,11 @@ public class MypageService {
                     .title(orderItem.getProduct().getTitle())
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("대본 다운로드 유효성 검사 실패", e);
+            throw e;
         }
     }
 
-    public byte[] downloadFile(final String fileKey, final String email) {
+    public byte[] downloadFile(final String fileKey, final String email) throws IOException {
         // S3에서 파일 객체 가져오기
         try (S3Object s3Object = amazonS3.getObject(bucket, fileKey);
              InputStream inputStream = s3Object.getObjectContent();
@@ -385,7 +382,7 @@ public class MypageService {
 
             return outputStream.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("파일 다운로드 실패", e);
+            throw e;
         }
     }
 
@@ -401,7 +398,7 @@ public class MypageService {
             // DB 계정 삭제
             userRepo.delete(userEntity);
         } catch (Exception e) {
-            throw new RuntimeException("사용자 계정 삭제 실패", e);
+            throw e;
         }
     }
 
@@ -425,7 +422,7 @@ public class MypageService {
                     .possiblePrice(possiblePrice)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("환불 정보 조회 실패", e);
+            throw e;
         }
     }
 
@@ -453,7 +450,7 @@ public class MypageService {
 
             refundRepo.save(refund);
         } catch (Exception e) {
-            throw new RuntimeException("환불 처리 실패", e);
+            throw e;
         }
     }
 
@@ -467,7 +464,7 @@ public class MypageService {
                     .dateRequestedList(list)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("요청된 공연 목록 조회 실패", e);
+            throw e;
         }
     }
 
@@ -499,7 +496,7 @@ public class MypageService {
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("좋아요 상품 목록 조회 실패", e);
+            throw e;
         }
     }
 
@@ -510,7 +507,7 @@ public class MypageService {
                     getLikePlayList(0, userInfo, PlayType.SHORT, 4)
             );
         } catch (Exception e) {
-            throw new RuntimeException("사용자 좋아요 목록 조회 실패", e);
+            throw e;
         }
     }
 
