@@ -35,7 +35,7 @@ public class OrderItemEntity {
     @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer scriptPrice = 0;
+    private Long scriptPrice = 0L;
 
     @Builder.Default
     @Column(nullable = false)
@@ -45,10 +45,10 @@ public class OrderItemEntity {
     @Builder.Default
     @Column
     @ColumnDefault("0")
-    private Integer performancePrice = 0;
+    private Long performancePrice = 0L;
 
     @Column(nullable = false)
-    private Integer totalPrice;
+    private Long totalPrice;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

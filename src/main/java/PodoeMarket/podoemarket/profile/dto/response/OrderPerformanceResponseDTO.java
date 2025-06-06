@@ -41,8 +41,8 @@ public class OrderPerformanceResponseDTO {
             private ProductStatus checked;
             private PlayType playType;
             private Integer performanceAmount;
-            private Integer performancePrice;
-            private Integer performanceTotalPrice;
+            private Long performancePrice;
+            private Long performanceTotalPrice;
             private Integer possibleCount;
 
             private UUID productId;

@@ -226,7 +226,7 @@ public class AdminService {
 
     public OrdersEntity orders(final Long orderId) {
         try {
-            return orderRepo.findById(orderId).orElse(null);
+            return orderRepo.findOrderById(orderId);
         } catch (Exception e) {
             throw new RuntimeException("주문 조회 실패", e);
         }

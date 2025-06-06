@@ -15,11 +15,11 @@ public class RefundResponseDTO {
     private String scriptImage;
     private String title;
     private String writer;
-    private int performancePrice;
+    private Long performancePrice;
     private LocalDateTime orderDate;
     private Long orderNum;
-    private int orderAmount;
-    private int orderPrice;
-    private int possibleAmount;
-    private int possiblePrice;
+    private Integer orderAmount;
+    private Long orderPrice;
+    private Integer possibleAmount;
+    private Long possiblePrice;
 }

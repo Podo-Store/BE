@@ -26,12 +26,12 @@ public class RequestedPerformanceResponseDTO {
         private String title;
         private String writer;
         private String plot;
-        private boolean script;
-        private int scriptPrice;
-        private int scriptQuantity;
-        private boolean performance;
-        private int performancePrice;
-        private int performanceQuantity;
+        private Boolean script;
+        private Long scriptPrice;
+        private Integer scriptQuantity;
+        private Boolean performance;
+        private Long performancePrice;
+        private Integer performanceQuantity;
     }
 
     @Data
@@ -48,7 +48,7 @@ public class RequestedPerformanceResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ApplicantInfo {
-        private int amount;
+        private Integer amount;
         private String name;
         private String phoneNumber;
         private String address;

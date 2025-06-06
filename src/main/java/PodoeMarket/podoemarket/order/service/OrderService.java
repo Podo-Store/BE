@@ -48,7 +48,7 @@ public class OrderService {
             if(userInfo.getId().equals(orderProduct.getUser().getId()))
                 throw new RuntimeException("본인 작품 구매 불가");
 
-            final int totalPrice = (dto.isScript() ? orderProduct.getScriptPrice() : 0) + (dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0);
+            final long totalPrice = (dto.getScript() ? orderProduct.getScriptPrice() : 0) + (dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0);
             final String encodedScriptImage = orderProduct.getImagePath() != null ? bucketURL + URLEncoder.encode(orderProduct.getImagePath(), StandardCharsets.UTF_8) : "";
 
             return OrderItemResponseDTO.builder()
@@ -56,8 +56,8 @@ public class OrderService {
                     .writer(orderProduct.getWriter())
                     .imagePath(encodedScriptImage)
                     .playType(orderProduct.getPlayType())
-                    .script(dto.isScript())
-                    .scriptPrice(dto.isScript() ? orderProduct.getScriptPrice() : 0)
+                    .script(dto.getScript())
+                    .scriptPrice(dto.getScript() ? orderProduct.getScriptPrice() : 0)
                     .performanceAmount(dto.getPerformanceAmount())
                     .performancePrice(orderProduct.getPerformancePrice())
                     .performanceTotalPrice(dto.getPerformanceAmount() > 0 ? orderProduct.getPerformancePrice() * dto.getPerformanceAmount() : 0)
@@ -182,12 +182,12 @@ public class OrderService {
 //                        throw new RuntimeException("대본권을 구매해야 함");
 //                }
 
-                final int scriptPrice = orderItemDTO.isScript() ? product.getScriptPrice() : 0;
-                final int performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
-                final int totalPrice = scriptPrice + performancePrice;
+                final long scriptPrice = orderItemDTO.getScript() ? product.getScriptPrice() : 0;
+                final long performancePrice = orderItemDTO.getPerformanceAmount() > 0 ? product.getPerformancePrice() * orderItemDTO.getPerformanceAmount() : 0;
+                final long totalPrice = scriptPrice + performancePrice;
 
                 orderItem.setProduct(product);
-                orderItem.setScript(orderItemDTO.isScript());
+                orderItem.setScript(orderItemDTO.getScript());
                 orderItem.setScriptPrice(scriptPrice);
                 orderItem.setPerformanceAmount(orderItemDTO.getPerformanceAmount());
                 orderItem.setPerformancePrice(performancePrice);
@@ -198,7 +198,7 @@ public class OrderService {
             }).toList();
 
             ordersEntity.setOrderItem(orderItems);
-            ordersEntity.setTotalPrice(orderItems.stream().mapToInt(OrderItemEntity::getTotalPrice).sum());
+            ordersEntity.setTotalPrice(orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum());
 
             return orderRepo.save(ordersEntity);
         } catch (Exception e) {
@@ -261,7 +261,7 @@ public class OrderService {
         }
     }
 
-    private String formatPrice(int totalPrice) {
+    private String formatPrice(long totalPrice) {
         DecimalFormat formatter = new DecimalFormat("#,###");
         return formatter.format(totalPrice);
     }

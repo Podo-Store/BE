@@ -145,12 +145,11 @@ public class AdminController {
         try {
             adminService.checkAuth(userInfo);
 
-            OrdersEntity order = adminService.orders(orderId);
+            final OrdersEntity order = adminService.orders(orderId);
 
             if (dto.getOrderStatus() != null) {
                 if (dto.getOrderStatus() == OrderStatus.REJECT)
-                    mailSendService.joinCancelEmail(userInfo.getEmail(), order.getOrderItem().getFirst().getProduct().getTitle());
-
+                    mailSendService.joinCancelEmail(order.getUser().getEmail(), order.getOrderItem().getFirst().getProduct().getTitle());
                 order.setOrderStatus(dto.getOrderStatus());
             }
 
