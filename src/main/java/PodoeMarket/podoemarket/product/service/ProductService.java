@@ -86,7 +86,7 @@ public class ProductService {
                         return productListDTO;
                     }).toList();
         } catch (Exception e) {
-            throw new RuntimeException("상품 목록 조회 실패", e);
+            throw e;
         }
     }
 
@@ -94,7 +94,7 @@ public class ProductService {
         try {
             return productRepo.findById(id);
         } catch (Exception e) {
-            throw new RuntimeException("상품 조회 실패", e);
+            throw e;
         }
     }
 
@@ -136,37 +136,33 @@ public class ProductService {
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("상품 상세 정보 조회 실패", e);
+            throw  e;
         }
 
     }
 
     // 트랜잭션 없는 PDF 처리 메서드
     public ResponseEntity<StreamingResponseBody> generateScriptPreview(String preSignedURL, int pagesToExtract) {
-        try {
-            // PDF 처리는 트랜잭션과 분리
-            PdfExtractionResult result = processPreviewPdf(preSignedURL, pagesToExtract);
+        // PDF 처리는 트랜잭션과 분리
+        PdfExtractionResult result = processPreviewPdf(preSignedURL, pagesToExtract);
 
-            StreamingResponseBody streamingResponseBody = outputStream -> {
-                try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = extractedPdfStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                        outputStream.flush();
-                    }
-                } catch (Exception e) {
-                    log.error("PDF 스트리밍 중 오류 발생: {}", e.getMessage());
+        StreamingResponseBody streamingResponseBody = outputStream -> {
+            try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = extractedPdfStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    outputStream.flush();
                 }
-            };
+            } catch (Exception e) {
+                throw new RuntimeException("PDF 스트리밍 중 오류 발생");
+            }
+        };
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
-                    .body(streamingResponseBody);
-        } catch (Exception e) {
-            throw new RuntimeException("스크립트 미리보기 생성 실패", e);
-        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
+                .body(streamingResponseBody);
     }
 
     @Transactional
@@ -185,7 +181,7 @@ public class ProductService {
                 return "like";
             }
         } catch (Exception e) {
-            throw new RuntimeException("좋아요 처리 실패", e);
+            throw e;
         }
     }
 
@@ -199,7 +195,7 @@ public class ProductService {
                     outputStream.flush();
                 }
             } catch (Exception e) {
-                log.error("PDF 스트리밍 중 오류 발생: {}", e.getMessage());
+                throw new RuntimeException("PDF 스트리밍 중 오류 발생");
             }
         };
 
@@ -215,8 +211,6 @@ public class ProductService {
 
             return productLikeRepo.existsByUserAndProductId(userInfo, productId);
         } catch (Exception e) {
-            log.error("좋아요 상태 확인 중 오류 발생: userId={}, productId={}, error={}",
-                    userInfo != null ? userInfo.getId() : "null", productId, e.getMessage());
             return false; // 오류 발생 시 좋아요하지 않은 것으로 처리
         }
     }

@@ -64,7 +64,7 @@ public class OrderService {
                     .totalPrice(totalPrice)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("주문 상품 정보 조회 중 오류 발생", e);
+            throw e;
         }
     }
 
@@ -92,7 +92,7 @@ public class OrderService {
 
             return orderResult(orders);
         } catch (Exception e) {
-            throw new RuntimeException("주문 처리 실패", e);
+            throw e;
         }
     }
 
@@ -117,7 +117,7 @@ public class OrderService {
 
             return orderInfo;
         } catch (Exception e) {
-            throw new RuntimeException("주문 성공 처리 중 오류 발생", e);
+            throw e;
         }
     }
 
