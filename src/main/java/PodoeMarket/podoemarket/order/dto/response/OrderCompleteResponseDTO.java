@@ -16,8 +16,8 @@ public class OrderCompleteResponseDTO {
     private LocalDateTime orderDate;
     private Long orderNum;
     private String title;
-    private int scriptPrice;
-    private int performancePrice;
-    private int performanceAmount;
-    private int totalPrice;
+    private Long scriptPrice;
+    private Long performancePrice;
+    private Integer performanceAmount;
+    private Long totalPrice;
 }

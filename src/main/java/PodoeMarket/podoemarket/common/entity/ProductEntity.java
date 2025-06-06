@@ -44,7 +44,7 @@ public class ProductEntity {
     @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer scriptPrice = 0;
+    private Long scriptPrice = 0L;
 
     @Builder.Default
     @Column(nullable = false)
@@ -53,7 +53,7 @@ public class ProductEntity {
 
     @Column
     @ColumnDefault("0")
-    private Integer performancePrice = 0;
+    private Long performancePrice = 0L;
 
     @Column
     private String descriptionPath;

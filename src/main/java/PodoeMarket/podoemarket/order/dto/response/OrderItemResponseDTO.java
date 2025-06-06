@@ -18,10 +18,10 @@ public class OrderItemResponseDTO {
     private String writer;
     private String imagePath;
     private PlayType playType;
-    private boolean script;
-    private int scriptPrice;
-    private int performanceAmount;
-    private int performancePrice;
-    private int performanceTotalPrice;
-    private int totalPrice;
+    private Boolean script;
+    private Long scriptPrice;
+    private Integer performanceAmount;
+    private Long performancePrice;
+    private Integer performanceTotalPrice;
+    private Long totalPrice;
 }

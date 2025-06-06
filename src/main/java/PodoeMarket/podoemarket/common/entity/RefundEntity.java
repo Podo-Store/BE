@@ -25,7 +25,7 @@ public class RefundEntity {
     private Integer quantity;
 
     @Column(nullable = false)
-    private Integer price;
+    private Long price;
 
     @Column(nullable = false, length = 51)
     private String content;

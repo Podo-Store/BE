@@ -13,6 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderInfoRequestDTO {
     private UUID productId;
-    private boolean script;
-    private int performanceAmount;
+    private Boolean script;
+    private Integer performanceAmount;
 }
