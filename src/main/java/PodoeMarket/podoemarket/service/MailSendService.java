@@ -146,7 +146,7 @@ public class MailSendService {
                         "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
                         "작품 등록 신청이 완료되었습니다." +
                         "</p>" +
-                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 600; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
                         scriptTitle +
                         "</p>" +
                         "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
