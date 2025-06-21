@@ -59,12 +59,9 @@ public class ProductService {
         try {
             Sort sort = createSort(sortType);
             final Pageable pageable = PageRequest.of(page, pageSize, sort);
-            final List<ProductEntity> plays = productRepo.findAllByPlayTypeAndChecked(playType, ProductStatus.PASS, pageable);
+            final List<ProductEntity> plays = productRepo.findAllValidPlays(playType, ProductStatus.PASS, pageable);
 
             return plays.stream()
-                    .filter(play -> play.getUser() != null)
-                    .filter(play -> play.getScript() || play.getPerformance())
-                    .filter(play -> !play.getIsDelete())
                     .map(play -> {
                         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
                         String encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), StandardCharsets.UTF_8) : "";
