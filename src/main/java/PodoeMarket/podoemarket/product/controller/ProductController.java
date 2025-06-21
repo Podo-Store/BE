@@ -33,7 +33,7 @@ public class ProductController {
         try{
             final ScriptListResponseDTO lists = new ScriptListResponseDTO(
                     productService.getPlayList(0, userInfo, PlayType.LONG, 10, sortType),
-                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20, sortType)
+                    productService.getPlayList(0, userInfo, PlayType.SHORT, 10, sortType)
             );
 
             return ResponseEntity.ok().body(lists);

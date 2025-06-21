@@ -21,7 +21,18 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     ProductEntity findById(UUID id);
 
-    List<ProductEntity> findAllByPlayTypeAndChecked(PlayType playType, ProductStatus checked, Pageable pageable);
+    @Query("SELECT p FROM ProductEntity p " +
+            "WHERE p.playType = :playType " +
+            "AND p.checked = :checked " +
+            "AND p.isDelete = false " +
+            "AND (p.script = true OR p.performance = true)")
+    List<ProductEntity> findAllValidPlays(
+            @Param("playType") PlayType playType,
+            @Param("checked") ProductStatus checked,
+            Pageable pageable
+    );
+
+
 
     Long countAllByChecked(ProductStatus checked);
 
