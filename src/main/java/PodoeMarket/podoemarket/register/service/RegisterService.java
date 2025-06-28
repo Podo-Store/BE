@@ -108,7 +108,7 @@ public class RegisterService {
     private byte[] compressToZip(MultipartFile file) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-            ZipEntry zipEntry = new ZipEntry(file.getOriginalFilename());
+            ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(file.getOriginalFilename()));
             zipOutputStream.putNextEntry(zipEntry);
             zipOutputStream.write(file.getBytes());
             zipOutputStream.closeEntry();
