@@ -124,7 +124,7 @@ public class ProductController {
             final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
-            return productService.generateFullScriptDirect(preSignedURL);
+            return productService.generateFullScript(preSignedURL);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);

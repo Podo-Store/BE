@@ -33,12 +33,4 @@ public class S3Service {
         // URL 문자열 반환
         return url.toString();
     }
-
-    private Date getExpirationTime() {
-        // 유효 시간 10분으로 설정
-        long expirationTimeInMillis = 1000 * 60 * 10;
-        Date expirationDate = new Date();
-        expirationDate.setTime(expirationDate.getTime() + expirationTimeInMillis);
-        return expirationDate;
-    }
 }

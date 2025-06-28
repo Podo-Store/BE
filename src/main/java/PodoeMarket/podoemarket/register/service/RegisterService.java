@@ -16,12 +16,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -85,16 +89,32 @@ public class RegisterService {
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
         // S3 Key 구성
-        final String S3Key = bucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".pdf";
+        final String S3Key = bucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".zip";
+
+        // PDF 파일을 zip으로 압축
+        byte[] zippedBytes = compressToZip(files[0]);
 
         final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(files[0].getSize());
-        metadata.setContentType(files[0].getContentType());
+        metadata.setContentLength(zippedBytes.length);
+        metadata.setContentType("application/pdf");
 
-        try (InputStream inputStream = files[0].getInputStream()) {
+        try (InputStream inputStream = new ByteArrayInputStream(zippedBytes)) {
             amazonS3.putObject(bucket, S3Key, inputStream, metadata);
         }
 
         return S3Key;
+    }
+
+    private byte[] compressToZip(MultipartFile file) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+            ZipEntry zipEntry = new ZipEntry(file.getOriginalFilename());
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(file.getBytes());
+            zipOutputStream.closeEntry();
+            zipOutputStream.flush();
+
+            return outputStream.toByteArray();
+        }
     }
 }
