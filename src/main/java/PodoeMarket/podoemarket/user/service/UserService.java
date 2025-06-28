@@ -61,7 +61,7 @@ public class UserService {
     public void validateAndSendEmail(final String email) {
         try {
             if(isValidEmail(email) && userRepo.existsByEmail(email))
-                throw new RuntimeException("이메일 유효성 검사 실패 및 이메일 중복");
+                throw new RuntimeException("이메일 중복");
 
             mailService.joinEmail(email);
         } catch (Exception e) {
