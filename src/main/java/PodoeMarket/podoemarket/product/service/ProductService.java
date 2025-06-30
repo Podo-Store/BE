@@ -107,7 +107,6 @@ public class ProductService {
             final ProductEntity script = productRepo.findById(productId);
 
             String imagePath = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
-            String descriptionPath = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), StandardCharsets.UTF_8) : "";
 
             return ScriptDetailResponseDTO.builder()
                     .id(script.getId())
@@ -118,7 +117,6 @@ public class ProductService {
                     .scriptPrice(script.getScriptPrice())
                     .performance(script.getPerformance())
                     .performancePrice(script.getPerformancePrice())
-                    .descriptionPath(descriptionPath)
                     .date(script.getCreatedAt())
                     .checked(script.getChecked())
                     .playType(script.getPlayType())
@@ -184,7 +182,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<StreamingResponseBody> generateFullScript(String preSignedURL) {
+    public ResponseEntity<StreamingResponseBody> generateFullPDF(String preSignedURL) {
         StreamingResponseBody stream = outputStream -> {
             try {
                 streamPdfFromZip(preSignedURL, outputStream);
@@ -246,6 +244,7 @@ public class ProductService {
                     return byteArrayOutputStream.toByteArray();
                 }
             }
+
             throw new RuntimeException("ZIP 파일 내에 PDF가 없습니다.");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

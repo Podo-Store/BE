@@ -19,17 +19,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -136,7 +135,7 @@ public class WorkService {
     }
 
     @Transactional
-    public void updateProductDetail(DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) {
+    public void updateProductDetail(DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) throws IOException {
         try {
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
@@ -324,7 +323,7 @@ public class WorkService {
         }
     }
 
-    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) {
+    protected String uploadDescription(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         try {
             if(files.length > 1)
                 throw new RuntimeException("작품 설명 파일 수가 1개를 초과함");
@@ -348,8 +347,11 @@ public class WorkService {
             // S3 Key 구성
             final String S3Key = descriptionBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".pdf";
 
+            // PDF 파일을 zip으로 압축
+            byte[] zippedBytes = compressToZip(files[0]);
+
             final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(files[0].getSize());
+            metadata.setContentLength(zippedBytes.length);
             metadata.setContentType("application/pdf");
 
             // 기존 파일 삭제
@@ -362,13 +364,26 @@ public class WorkService {
                 deleteFile(bucket, product.getDescriptionPath());
 
             // 저장
-            try (InputStream inputStream = files[0].getInputStream()) {
+            try (InputStream inputStream = new ByteArrayInputStream(zippedBytes)) {
                 amazonS3.putObject(bucket, S3Key, inputStream, metadata);
             }
 
             return S3Key;
         } catch (Exception e) {
-            throw new RuntimeException("설명 파일 업로드 실패", e);
+            throw e;
+        }
+    }
+
+    private byte[] compressToZip(MultipartFile file) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+            ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(file.getOriginalFilename()));
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write(file.getBytes());
+            zipOutputStream.closeEntry();
+            zipOutputStream.flush();
+
+            return outputStream.toByteArray();
         }
     }
 
