@@ -147,4 +147,8 @@ public class ProductEntity {
     // product : like = 1 : N
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ProductLikeEntity> like = new ArrayList<>();
+
+    // product : review = 1 : N
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ReviewEntity> review = new ArrayList<>();
 }
