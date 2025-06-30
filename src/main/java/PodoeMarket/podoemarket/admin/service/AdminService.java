@@ -12,6 +12,7 @@ import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.OrderRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
@@ -41,6 +42,7 @@ public class AdminService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final AmazonS3 amazonS3;
+    private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -115,6 +117,12 @@ public class AdminService {
                 product.setChecked(dto.getProductStatus());
 
             productRepo.save(product);
+
+            if (dto.getProductStatus() == ProductStatus.PASS)
+                mailSendService.joinRegisterPassMail(product.getUser().getEmail(), product.getTitle());
+            else if (dto.getProductStatus() == ProductStatus.REJECT)
+                mailSendService.joinRegisterRejectMail(product.getUser().getEmail(), product.getTitle());
+
         } catch (Exception e) {
             throw new RuntimeException("상품 업데이트 실패", e);
         }

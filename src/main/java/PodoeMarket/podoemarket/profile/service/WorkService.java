@@ -131,7 +131,7 @@ public class WorkService {
 
             return scriptDetailDTO;
         } catch (Exception e) {
-            throw new RuntimeException("상품 상세 정보 조회 실패", e);
+            throw e;
         }
     }
 
@@ -213,7 +213,7 @@ public class WorkService {
 
             productRepo.save(product);
         } catch (Exception e) {
-            throw new RuntimeException("상품 상세 정보 업데이트 실패", e);
+            throw e;
         }
     }
 
@@ -237,7 +237,7 @@ public class WorkService {
             product.setIsDelete(true);
             productRepo.save(product);
         } catch (Exception e) {
-            throw new RuntimeException("상품 삭제 실패", e);
+            throw e;
         }
     }
 

@@ -146,7 +146,7 @@ public class MailSendService {
                         "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
                         "작품 등록 신청이 완료되었습니다." +
                         "</p>" +
-                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 600; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
                         scriptTitle +
                         "</p>" +
                         "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
@@ -219,7 +219,7 @@ public class MailSendService {
                         "<p style=\"font-size: 12.5px; margin-bottom: 54px; margin-top: 38px; color: black\">" +
                         "회원가입이 완료되었습니다." +
                         "</p>" +
-                        "<p style=\"font-size: 15px; font-weight: 900; color: black; margin-top: 54px; margin-bottom: 54px\">" +
+                        "<p style=\"font-size: 15px; font-weight: 600; color: black; margin-top: 54px; margin-bottom: 54px\">" +
                         "포도상점에서 다양한 작품을 둘러보세요!" +
                         "</p>" +
                         "<table role=\"presentation\" style=\"width: 150px; height: 35px; background: #6a39c0; border-radius: 4.5px; margin-bottom: 38px; text-align: center;\">" +
@@ -231,6 +231,118 @@ public class MailSendService {
                         "</td>" +
                         "</tr>" +
                         "</table>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
+
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 작품 등록 심사 통과
+    public void joinRegisterPassMail(final String email, final String scriptTitle) {
+        String setFrom = username;
+        String title = "[포도상점] 작품 등록 심사가 통과되었습니다.";
+        String content =
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
+                        "작품 등록 심사가 통과되었습니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 15px; font-weight: 600; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
+                        scriptTitle +
+                        "</p>" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
+                        "심사가 완료되어, 작품이 승인되었습니다.<br />" +
+                        "이제 마이페이지의 작품 관리 탭에서 작품의 판매 상태를 변경하여 판매를 시작하실 수 있습니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
+                        "포도상점은 언제나 작가님의 이야기를 응원합니다.<br />" +
+                        "We're always cheering for your stories to shine." +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
+
+        mailSend(setFrom, email, title, content);
+    }
+
+    // 작품 등록 심사 거절
+    public void joinRegisterRejectMail(final String email, final String scriptTitle) {
+        String setFrom = username;
+        String title = "[포도상점] 작품 등록 심사 결과 안내드립니다.";
+        String content =
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
+                        "작품 등록 심사 결과 안내드립니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 15px; font-weight: 600; margin-left: 57px; margin-top: 48.5px; margin-bottom: 48.5px\">" +
+                        scriptTitle +
+                        "</p>" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
+                        "안타깝게도 이번 작품은 심사 기준에 부합하지 않아 등록이 승인되지 않았습니다.<br />" +
+                        "포도상점은 건강한 공연 생태계 조성을 위해 표절, 중복 등 다양한 기준으로 작품 심사를 진행하고 있습니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
+                        "더 나은 작품으로 다시 만날 수 있기를 기대합니다.<br />" +
+                        "We look forward to seeing your next creation." +
+                        "</p>" +
                         "</td>" +
                         "</tr>" +
                         "<tr>" +

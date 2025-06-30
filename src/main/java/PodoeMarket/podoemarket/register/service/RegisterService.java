@@ -40,7 +40,7 @@ public class RegisterService {
     private String bucketFolder;
 
     @Transactional
-    public void registerScript(final UserEntity user, MultipartFile[] files) {
+    public void registerScript(final UserEntity user, MultipartFile[] files) throws IOException {
         try {
             UserEntity userInfo = userRepo.findById(user.getId());
 
@@ -63,7 +63,7 @@ public class RegisterService {
 
             mailSendService.joinRegisterEmail(userInfo.getEmail(), normalizedTitle);
         } catch (Exception e) {
-            throw new RuntimeException("스크립트 등록 실패", e);
+            throw e;
         }
     }
 
