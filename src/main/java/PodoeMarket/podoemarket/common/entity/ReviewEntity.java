@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,6 +36,11 @@ public class ReviewEntity {
     @Column(nullable = false)
     private String content;
 
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long likeCount = 0L;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -59,7 +65,7 @@ public class ReviewEntity {
 
     // review : reviewLike = 1 : N
     @OneToMany(mappedBy = "review", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReivewLikeEntity> reviewLike = new ArrayList<>();
+    private List<ReviewLikeEntity> reviewLike = new ArrayList<>();
 
     // user : review = 1 : N
     @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)

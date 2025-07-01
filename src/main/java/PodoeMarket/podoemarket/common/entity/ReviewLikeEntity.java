@@ -17,7 +17,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReivewLikeEntity {
+public class ReviewLikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;

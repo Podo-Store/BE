@@ -85,5 +85,5 @@ public class UserEntity {
     // user : reviewLike = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY
     )
-    private List<ReivewLikeEntity> reviewLike = new ArrayList<>();
+    private List<ReviewLikeEntity> reviewLike = new ArrayList<>();
 }

@@ -5,9 +5,11 @@ import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
+import PodoeMarket.podoemarket.product.dto.response.ReviewListResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
-import PodoeMarket.podoemarket.product.type.SortType;
+import PodoeMarket.podoemarket.product.type.ProductSortType;
+import PodoeMarket.podoemarket.product.type.ReviewSortType;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -46,15 +48,16 @@ public class ProductService {
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ReviewRepository reviewRepo;
+    private final ReviewLikeRepository reviewLikeRepo;
 
     private final ViewCountService viewCountService;
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
 
-    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, SortType sortType) {
+    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
-            Sort sort = createSort(sortType);
+            Sort sort = createProductSort(sortType);
             final Pageable pageable = PageRequest.of(page, pageSize, sort);
             final List<ProductEntity> plays = productRepo.findAllValidPlays(playType, ProductStatus.PASS, pageable);
 
@@ -73,7 +76,7 @@ public class ProductService {
                         productListDTO.setPerformancePrice(play.getPerformancePrice());
                         productListDTO.setDate(play.getCreatedAt());
                         productListDTO.setChecked(play.getChecked());
-                        productListDTO.setLike(getLikeStatus(userInfo, play.getId()));
+                        productListDTO.setLike(getProductLikeStatus(userInfo, play.getId()));
                         productListDTO.setLikeCount(play.getLikeCount());
                         productListDTO.setViewCount(viewCountService.getProductViewCount(play.getId()));
 
@@ -125,7 +128,7 @@ public class ProductService {
                     .scene(script.getScene())
                     .act(script.getAct())
                     .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
-                    .like(getLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
+                    .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
                     .build();
@@ -162,7 +165,7 @@ public class ProductService {
     @Transactional
     public String toggleLike(UserEntity userInfo, UUID productId) {
         try {
-            if (getLikeStatus(userInfo, productId)) {
+            if (getProductLikeStatus(userInfo, productId)) {
                 deleteLike(userInfo, productId);
                 return "cancel like";
             } else {
@@ -202,7 +205,7 @@ public class ProductService {
                 .body(streamingResponseBody);
     }
 
-    public boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
+    public boolean getProductLikeStatus(final UserEntity userInfo, final UUID productId) {
         try {
             if (userInfo == null)
                 return false;
@@ -247,9 +250,54 @@ public class ProductService {
         }
     }
 
+    @Transactional
+    public void deleteReview(final UserEntity userInfo, final UUID id) {
+        try {
+            final ReviewEntity review = reviewRepo.findById(id);
+
+            if (!review.getUser().getId().equals(userInfo.getId()))
+                throw new RuntimeException("후기 작성자가 아닙니다.");
+
+            reviewRepo.delete(review);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+//    public List<ReviewListResponseDTO> getReviewList(int page, int pageSize, UserEntity userInfo, UUID productId, ReviewSortType sortType) {
+//        try {
+//            Sort sort = createReviewSort(sortType);
+//            final Pageable pageable = PageRequest.of(page, pageSize, sort);
+//            final List<ReviewEntity> reviews = reviewRepo.findAllByProductId(productId, pageable);
+//
+//            return reviews.stream()
+//                    .map(review -> {
+//                        ReviewListResponseDTO reviewDTO = new ReviewListResponseDTO();
+//
+//                        reviewDTO.setId(review.getId());
+//                        reviewDTO.setNickname(review.getUser().getNickname());
+//                        reviewDTO.setDate(review.getCreatedAt());
+//                        reviewDTO.setMyself(review.getUser().getId().equals(userInfo.getId()));
+//                        reviewDTO.setRating(review.getRating());
+//                        reviewDTO.setStandardType(review.getStandardType());
+//                        reviewDTO.setContent(review.getContent());
+//                        reviewDTO.setIsLike(getProductLikeStatus(userInfo, review.getId()));
+//                        reviewDTO.setLikeCount(review.getLikeCount());
+//
+//                        return reviewDTO;
+//                    }).toList();
+//        } catch (Exception e) {
+//            throw e;
+//        }
+//    }
+
     // ============== private (protected) method ===============
-    private Sort createSort(SortType sortType) {
-        return sortType.createSort();
+    private Sort createProductSort(ProductSortType productSortType) {
+        return productSortType.createSort();
+    }
+
+    private Sort createReviewSort(ReviewSortType reviewSortType) {
+        return reviewSortType.createSort();
     }
 
     // PDF 추출 결과를 저장할 클래스
@@ -388,5 +436,16 @@ public class ProductService {
             return 0; // 오류 발생 시 구매하지 않은 것으로 처리
         }
 
+    }
+
+    private boolean getReviewLikeStatus(final UserEntity userInfo, final UUID reviewId) {
+        try {
+            if (userInfo == null)
+                return false;
+
+            return reviewLikeRepo.existsByUserAndReviewId(userInfo, reviewId);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
