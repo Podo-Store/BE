@@ -1,15 +1,10 @@
 package PodoeMarket.podoemarket.product.service;
 
-import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.common.entity.ProductEntity;
-import PodoeMarket.podoemarket.common.entity.ProductLikeEntity;
-import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.common.repository.ProductLikeRepository;
+import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
-import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.SortType;
@@ -50,6 +45,8 @@ public class ProductService {
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final ReviewRepository reviewRepo;
+
     private final ViewCountService viewCountService;
 
     @Value("${cloud.aws.s3.url}")
@@ -169,7 +166,11 @@ public class ProductService {
                 deleteLike(userInfo, productId);
                 return "cancel like";
             } else {
-                final ProductEntity product = getProduct(productId);
+                final ProductEntity product = productRepo.findById(productId);
+
+                if(product == null)
+                    throw new RuntimeException("상품을 찾을 수 업습니다.");
+
                 final ProductLikeEntity like = ProductLikeEntity.builder()
                         .user(userInfo)
                         .product(product)
@@ -209,6 +210,40 @@ public class ProductService {
             return productLikeRepo.existsByUserAndProductId(userInfo, productId);
         } catch (Exception e) {
             return false; // 오류 발생 시 좋아요하지 않은 것으로 처리
+        }
+    }
+
+    @Transactional
+    public void writeReview(final UserEntity userInfo, final ReviewRequestDTO dto) {
+        try {
+            // 평점이 존재하고, 범위가 1 ~ 5인지
+            if (dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5)
+                throw new RuntimeException("평점이 올바르지 않습니다.");
+
+            // 평가 기준이 존재하는가
+            if (dto.getStandardType() == null)
+                throw new RuntimeException("평가 기준을 선택해주세요.");
+
+            // 내용이 50자 이상인지 확인
+            if (dto.getContent().length() < 50)
+                throw new RuntimeException("평가 내용을 50자 이상 작성해주세요.");
+
+            final ProductEntity product = productRepo.findById(dto.getProductId());
+
+            if(product == null)
+                throw new RuntimeException("상품을 찾을 수 업습니다.");
+
+            ReviewEntity review = ReviewEntity.builder()
+                    .rating(dto.getRating())
+                    .standardType(dto.getStandardType())
+                    .content(dto.getContent())
+                    .user(userInfo)
+                    .product(product)
+                    .build();
+
+            reviewRepo.save(review);
+        } catch (Exception e) {
+            throw e;
         }
     }
 

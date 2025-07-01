@@ -26,7 +26,7 @@ public class ReviewEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private Integer grade;
+    private Integer rating;
 
     @Enumerated(EnumType.STRING)
     @Column

@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.product.controller;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
+import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
@@ -136,6 +137,18 @@ public class ProductController {
         try{
             return ResponseEntity.ok().body(productService.getLikeStatus(userInfo, id));
         } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/review")
+    public ResponseEntity<?> writeReview(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ReviewRequestDTO dto) {
+        try {
+            productService.writeReview(userInfo, dto);
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
