@@ -79,10 +79,11 @@ public class UserEntity {
     private List<ProductLikeEntity> like = new ArrayList<>();
 
     // user : review = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReviewEntity> review = new ArrayList<>();
 
     // user : reviewLike = 1 : N
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY
+    )
     private List<ReivewLikeEntity> reviewLike = new ArrayList<>();
 }

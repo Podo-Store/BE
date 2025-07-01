@@ -38,8 +38,8 @@ public class ReivewLikeEntity {
     private ReviewEntity review;
 
     // user : reviewLike = 1 : N
-    @ManyToOne(targetEntity = ReviewEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewLike_id")
+    @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     @JsonIgnore
-    private ReivewLikeEntity reviewLike;
+    private UserEntity user;
 }

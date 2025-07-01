@@ -145,10 +145,10 @@ public class ProductEntity {
     private List<OrderItemEntity> orderItem = new ArrayList<>();
 
     // product : like = 1 : N
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductLikeEntity> like = new ArrayList<>();
 
     // product : review = 1 : N
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewEntity> review = new ArrayList<>();
 }
