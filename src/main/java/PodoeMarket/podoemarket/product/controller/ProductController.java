@@ -113,7 +113,7 @@ public class ProductController {
             final String s3Key = product.getDescriptionPath();
 
             if (s3Key == null)
-                throw new RuntimeException("해당 파일이 존재하지 않습니다.");
+                throw new RuntimeException("false");
 
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
