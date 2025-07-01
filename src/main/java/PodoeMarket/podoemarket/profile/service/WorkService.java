@@ -110,7 +110,7 @@ public class WorkService {
 
             ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
             String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
-            String encodedDescription = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), StandardCharsets.UTF_8) : "";
+            String descriptionTitle = script.getDescriptionPath() != null ?  script.getDescriptionPath().split("/")[1] : "";
 
             scriptDetailDTO.setId(script.getId());
             scriptDetailDTO.setTitle(script.getTitle());
@@ -120,7 +120,7 @@ public class WorkService {
             scriptDetailDTO.setScriptPrice(script.getScriptPrice());
             scriptDetailDTO.setPerformance(script.getPerformance());
             scriptDetailDTO.setPerformancePrice(script.getPerformancePrice());
-            scriptDetailDTO.setDescriptionPath(encodedDescription);
+            scriptDetailDTO.setDescriptionPath(descriptionTitle);
             scriptDetailDTO.setDate(script.getCreatedAt());
             scriptDetailDTO.setChecked(script.getChecked());
             scriptDetailDTO.setPlayType(script.getPlayType());
