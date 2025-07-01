@@ -13,6 +13,7 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.SortType;
+import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
@@ -54,9 +55,7 @@ public class ProductService {
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ViewCountService viewCountService;
-
-    @Value("${cloud.aws.s3.url}")
-    private String bucketURL;
+    private final S3Service s3Service;
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, SortType sortType) {
         try {
@@ -67,12 +66,13 @@ public class ProductService {
             return plays.stream()
                     .map(play -> {
                         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
-                        String encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), StandardCharsets.UTF_8) : "";
+
+                        String scriptImage = play.getImagePath() != null ? s3Service.generatePreSignedURL(play.getImagePath()) : "";
 
                         productListDTO.setId(play.getId());
                         productListDTO.setTitle(play.getTitle());
                         productListDTO.setWriter(play.getWriter());
-                        productListDTO.setImagePath(encodedScriptImage);
+                        productListDTO.setImagePath(scriptImage);
                         productListDTO.setScript(play.getScript());
                         productListDTO.setScriptPrice(play.getScriptPrice());
                         productListDTO.setPerformance(play.getPerformance());
@@ -106,13 +106,13 @@ public class ProductService {
 
             final ProductEntity script = productRepo.findById(productId);
 
-            String imagePath = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
+            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
 
             return ScriptDetailResponseDTO.builder()
                     .id(script.getId())
                     .title(script.getTitle())
                     .writer(script.getWriter())
-                    .imagePath(imagePath)
+                    .imagePath(scriptImage)
                     .script(script.getScript())
                     .scriptPrice(script.getScriptPrice())
                     .performance(script.getPerformance())

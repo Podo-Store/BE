@@ -105,7 +105,7 @@ public class RegisterService {
         return S3Key;
     }
 
-    private byte[] compressToZip(MultipartFile file) throws IOException {
+    private static byte[] compressToZip(MultipartFile file) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
             ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(file.getOriginalFilename()));

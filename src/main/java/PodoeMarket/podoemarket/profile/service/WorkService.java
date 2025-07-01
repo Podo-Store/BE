@@ -7,6 +7,7 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
+import PodoeMarket.podoemarket.service.S3Service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -19,6 +20,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 public class WorkService {
     private final ProductRepository productRepo;
     private final AmazonS3 amazonS3;
+    private final S3Service s3Service;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -59,12 +67,12 @@ public class WorkService {
 
             for (final ProductEntity product : products) {
                 if (!product.getIsDelete()) {
-                    String encodedScriptImage = product.getImagePath() != null ? bucketURL + URLEncoder.encode(product.getImagePath(), StandardCharsets.UTF_8) : "";
+                    String scriptImage = product.getImagePath() != null ? s3Service.generatePreSignedURL(product.getImagePath()) : "";
 
                     final WorkListResponseDTO.DateWorkDTO.WorksDTO worksDTO = WorkListResponseDTO.DateWorkDTO.WorksDTO.builder()
                             .id(product.getId())
                             .title(product.getTitle())
-                            .imagePath(encodedScriptImage)
+                            .imagePath(scriptImage)
                             .script(product.getScript())
                             .scriptPrice(product.getScriptPrice())
                             .performance(product.getPerformance())
@@ -101,13 +109,13 @@ public class WorkService {
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
             ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
-            String encodedScriptImage = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
+            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
             String encodedDescription = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), StandardCharsets.UTF_8) : "";
 
             scriptDetailDTO.setId(script.getId());
             scriptDetailDTO.setTitle(script.getTitle());
             scriptDetailDTO.setWriter(script.getWriter());
-            scriptDetailDTO.setImagePath(encodedScriptImage);
+            scriptDetailDTO.setImagePath(scriptImage);
             scriptDetailDTO.setScript(script.getScript());
             scriptDetailDTO.setScriptPrice(script.getScriptPrice());
             scriptDetailDTO.setPerformance(script.getPerformance());
@@ -280,7 +288,7 @@ public class WorkService {
         }
     }
 
-    protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) {
+    protected String uploadScriptImage(final MultipartFile[] files, final String title, final UUID id) throws IOException {
         try {
             if(files.length > 1)
                 throw new RuntimeException("작품 이미지가 1개를 초과함");
@@ -299,10 +307,6 @@ public class WorkService {
             // S3 Key 구성
             final String S3Key = scriptImageBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".jpg";
 
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(files[0].getSize());
-            metadata.setContentType(files[0].getContentType());
-
             // 기존 파일 삭제
             final ProductEntity product = productRepo.findById(id);
 
@@ -312,14 +316,22 @@ public class WorkService {
             if(product.getImagePath() != null)
                 deleteFile(bucket, product.getImagePath());
 
+            // 이미지 압축 (ex. 품질 0.7 = 70%)
+            float quality = 0.7f;
+            byte[] compressedImage = compressImage(files[0], quality);
+
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(compressedImage.length);
+            metadata.setContentType("image/jpeg");
+
             // 저장
-            try (InputStream inputStream = files[0].getInputStream()) {
+            try (InputStream inputStream = new ByteArrayInputStream(compressedImage)) {
                 amazonS3.putObject(bucket, S3Key, inputStream, metadata);
             }
 
             return S3Key;
         } catch (Exception e) {
-            throw new RuntimeException("스크립트 이미지 업로드 실패", e);
+            throw e;
         }
     }
 
@@ -374,7 +386,7 @@ public class WorkService {
         }
     }
 
-    private byte[] compressToZip(MultipartFile file) throws IOException {
+    private static byte[] compressToZip(MultipartFile file) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
             ZipEntry zipEntry = new ZipEntry(Objects.requireNonNull(file.getOriginalFilename()));
@@ -385,6 +397,26 @@ public class WorkService {
 
             return outputStream.toByteArray();
         }
+    }
+
+    private static byte[] compressImage(MultipartFile file, float quality) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        // JPEG writer
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+        ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        writeParam.setCompressionQuality(quality); // 0.0 ~ 1.0 (낮을수록 압축률↑, 용량↓, 화질↓)
+
+        try (ImageOutputStream imgOutputStream = ImageIO.createImageOutputStream(outputStream)) {
+            writer.setOutput(imgOutputStream);
+            writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
+        } finally {
+            writer.dispose();
+        }
+
+        return outputStream.toByteArray();
     }
 
     private static boolean isValidTitle(String title) {
