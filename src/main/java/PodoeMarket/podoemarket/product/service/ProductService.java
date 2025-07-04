@@ -13,12 +13,10 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.SortType;
+import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.ReaderProperties;
+import org.apache.pdfbox.Loader;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,16 +29,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -51,9 +55,7 @@ public class ProductService {
     private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ViewCountService viewCountService;
-
-    @Value("${cloud.aws.s3.url}")
-    private String bucketURL;
+    private final S3Service s3Service;
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, SortType sortType) {
         try {
@@ -64,12 +66,13 @@ public class ProductService {
             return plays.stream()
                     .map(play -> {
                         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
-                        String encodedScriptImage = play.getImagePath() != null ? bucketURL + URLEncoder.encode(play.getImagePath(), StandardCharsets.UTF_8) : "";
+
+                        String scriptImage = play.getImagePath() != null ? s3Service.generatePreSignedURL(play.getImagePath()) : "";
 
                         productListDTO.setId(play.getId());
                         productListDTO.setTitle(play.getTitle());
                         productListDTO.setWriter(play.getWriter());
-                        productListDTO.setImagePath(encodedScriptImage);
+                        productListDTO.setImagePath(scriptImage);
                         productListDTO.setScript(play.getScript());
                         productListDTO.setScriptPrice(play.getScriptPrice());
                         productListDTO.setPerformance(play.getPerformance());
@@ -103,19 +106,17 @@ public class ProductService {
 
             final ProductEntity script = productRepo.findById(productId);
 
-            String imagePath = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
-            String descriptionPath = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), StandardCharsets.UTF_8) : "";
+            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
 
             return ScriptDetailResponseDTO.builder()
                     .id(script.getId())
                     .title(script.getTitle())
                     .writer(script.getWriter())
-                    .imagePath(imagePath)
+                    .imagePath(scriptImage)
                     .script(script.getScript())
                     .scriptPrice(script.getScriptPrice())
                     .performance(script.getPerformance())
                     .performancePrice(script.getPerformancePrice())
-                    .descriptionPath(descriptionPath)
                     .date(script.getCreatedAt())
                     .checked(script.getChecked())
                     .playType(script.getPlayType())
@@ -135,15 +136,14 @@ public class ProductService {
         } catch (Exception e) {
             throw  e;
         }
-
     }
 
     // 트랜잭션 없는 PDF 처리 메서드
-    public ResponseEntity<StreamingResponseBody> generateScriptPreview(String preSignedURL, int pagesToExtract) {
+    public ResponseEntity<StreamingResponseBody> generateScriptPreview(String preSignedURL, int pagesToExtract) throws IOException {
         // PDF 처리는 트랜잭션과 분리
-        PdfExtractionResult result = processPreviewPdf(preSignedURL, pagesToExtract);
+        PdfExtractionResult result = extractPagesFromPdf(extractPdfFromZip(preSignedURL), pagesToExtract);
 
-        StreamingResponseBody streamingResponseBody = outputStream -> {
+        StreamingResponseBody stream = outputStream -> {
             try (InputStream extractedPdfStream = new ByteArrayInputStream(result.getExtractedPdfBytes())) {
                 byte[] buffer = new byte[8192];
                 int bytesRead;
@@ -159,7 +159,7 @@ public class ProductService {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("X-Total-Pages", String.valueOf(result.getTotalPageCount()))
-                .body(streamingResponseBody);
+                .body(stream);
     }
 
     @Transactional
@@ -182,23 +182,19 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<StreamingResponseBody> generateFullScriptDirect(String preSignedURL) {
-        StreamingResponseBody streamingResponseBody = outputStream -> {
-            try (InputStream inputStream = new URI(preSignedURL).toURL().openStream()) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                    outputStream.flush();
-                }
+    public ResponseEntity<StreamingResponseBody> generateFullPDF(String preSignedURL) {
+        StreamingResponseBody stream = outputStream -> {
+            try {
+                streamPdfFromZip(preSignedURL, outputStream);
             } catch (Exception e) {
-                throw new RuntimeException("PDF 스트리밍 중 오류 발생");
+                throw new RuntimeException("ZIP에서 PDF 추출 또는 스트리밍 중 오류 발생", e);
             }
         };
 
         return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=\"script.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
-                .body(streamingResponseBody);
+                .body(stream);
     }
 
     public boolean getLikeStatus(final UserEntity userInfo, final UUID productId) {
@@ -229,79 +225,77 @@ public class ProductService {
         }
     }
 
-    // 트랜잭션과 분리된 PDF 처리 메서드
-    private PdfExtractionResult processPreviewPdf(String preSignedURL, int pagesToExtract) {
-        InputStream fileStream = null;
-        try {
-            fileStream = new URI(preSignedURL).toURL().openStream();
-            return extractPagesFromPdf(fileStream, pagesToExtract);
-        } catch (Exception e) {
-            throw new RuntimeException("PDF 처리 실패", e);
-        } finally {
-            if (fileStream != null) {
-                try {
-                    fileStream.close();
-                } catch (IOException e) {
-                    log.error("InputStream 닫기 실패: {}", e.getMessage());
+    // PDF 추출 메서드
+    private static byte[] extractPdfFromZip(String preSignedURL) throws IOException {
+        try (InputStream inputStream = new URI(preSignedURL).toURL().openStream();
+             ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            ZipEntry entry;
+
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                if (entry.getName().toLowerCase().endsWith(".pdf")) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+
+                    while ((len = zipInputStream.read(buffer)) > 0) {
+                        byteArrayOutputStream.write(buffer, 0, len);
+                    }
+
+                    return byteArrayOutputStream.toByteArray();
                 }
             }
+
+            throw new RuntimeException("ZIP 파일 내에 PDF가 없습니다.");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // PDF 추출 메서드 (스트리밍 방식)
+    private static void streamPdfFromZip(String preSignedURL, OutputStream outputStream) throws IOException {
+        try (InputStream inputStream = new URI(preSignedURL).toURL().openStream();
+             ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+            ZipEntry entry;
+            boolean found = false;
+
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                if (entry.getName().toLowerCase().endsWith(".pdf")) {
+                    found = true;
+                    byte[] buffer = new byte[8192]; // 8KB 씩 스트리밍
+                    int len;
+
+                    while ((len = zipInputStream.read(buffer)) > 0) {
+                        outputStream.write(buffer, 0, len);
+                    }
+
+                    outputStream.flush();
+                    break;
+                }
+            }
+
+            if (!found)
+                throw new RuntimeException("ZIP 파일 내에 PDF가 없습니다.");
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
     // PDF의 특정 페이지까지 추출하는 함수
-    private PdfExtractionResult extractPagesFromPdf(InputStream fileStream, int pagesToExtract) {
-        PdfReader reader = null;
-        PdfWriter writer = null;
-        PdfDocument originalDoc = null;
-        PdfDocument newDoc = null;
-        ByteArrayOutputStream outputStream = null;
+    private PdfExtractionResult extractPagesFromPdf(byte[] pdfBytes, int pagesToExtract) throws IOException {
+        try (PDDocument document = Loader.loadPDF(pdfBytes)) {
+            int totalPages = document.getNumberOfPages();
+            int endPage = Math.min(pagesToExtract, totalPages);
 
-        try {
-            outputStream = new ByteArrayOutputStream();
+            try (PDDocument newDoc = new PDDocument()) {
+                for (int i = 0; i < endPage; i++) {
+                    PDPage page = document.getPage(i);
+                    newDoc.addPage(page);
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                newDoc.save(baos);
 
-            // 안전 모드 설정 추가
-            ReaderProperties properties = new ReaderProperties();
-            reader = new PdfReader(fileStream, properties);
-            reader.setMemorySavingMode(true); // 메모리 절약 모드 활성화
-
-            writer = new PdfWriter(outputStream);
-
-            originalDoc = new PdfDocument(reader);
-            newDoc = new PdfDocument(writer);
-
-            final int totalPageCount = originalDoc.getNumberOfPages();
-            final int endPage = Math.min(pagesToExtract, totalPageCount);
-
-            originalDoc.copyPagesTo(1, endPage, newDoc);
-
-            // 명시적으로 문서 닫기 (역순으로)
-            newDoc.close();
-            originalDoc.close();
-            writer.close();
-            reader.close();
-
-            return new PdfExtractionResult(totalPageCount, outputStream.toByteArray());
-        } catch (Exception e) {
-            closeAllResources(newDoc, originalDoc, writer, reader, outputStream);
-            throw new RuntimeException("PDF 처리 실패", e);
-        }
-    }
-
-    private void closeAllResources(PdfDocument newDoc, PdfDocument originalDoc, PdfWriter writer, PdfReader reader, ByteArrayOutputStream outputStream) {
-        closeQuietly(newDoc, "newDoc");
-        closeQuietly(originalDoc, "originalDoc");
-        closeQuietly(writer, "writer");
-        closeQuietly(reader, "reader");
-        closeQuietly(outputStream, "outputStream");
-    }
-
-    // 리소스를 안전하게 닫는 유틸리티 메서드
-    private void closeQuietly(AutoCloseable resource, String resourceName) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (Exception e) {
-                log.error("{} 닫기 실패: {}", resourceName, e.getMessage());
+                return new PdfExtractionResult(totalPages, baos.toByteArray());
             }
         }
     }
