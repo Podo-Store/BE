@@ -25,7 +25,6 @@ public class ScriptDetailResponseDTO {
     private Long scriptPrice;
     private Boolean performance;
     private Long performancePrice;
-    private String descriptionPath;
     private PlayType playType;
     private ProductStatus checked;
     private String plot;

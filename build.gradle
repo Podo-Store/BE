@@ -51,6 +51,7 @@ dependencies {
 
 	// 워터마크
 	implementation 'com.itextpdf:itext7-core:8.0.2'
+	implementation 'org.apache.pdfbox:pdfbox:3.0.5'
 
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'

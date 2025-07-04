@@ -16,11 +16,13 @@ import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,9 +101,42 @@ public class ProductController {
             // PDF 처리 (트랜잭션 외부에서 수행)
             return productService.generateScriptPreview(preSignedURL, pagesToExtract);
         } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
+            StreamingResponseBody errorBody = outputStream -> {
+                String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                outputStream.write(errorMsg.getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            };
+            return ResponseEntity
+                    .badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(errorBody);
         }
+    }
+
+    @GetMapping("/description")
+    public ResponseEntity<StreamingResponseBody> descriptionView(@RequestParam("script") UUID productId) {
+        try{
+            // 데이터베이스 작업 (트랜잭션 내에서 수행)
+            final ProductEntity product = productService.getProduct(productId);
+            final String s3Key = product.getDescriptionPath();
+
+            if (s3Key == null)
+                throw new RuntimeException("false");
+
+            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
+
+            return productService.generateFullPDF(preSignedURL);
+        } catch(Exception e) {
+                StreamingResponseBody errorBody = outputStream -> {
+                    String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                    outputStream.write(errorMsg.getBytes(StandardCharsets.UTF_8));
+                    outputStream.flush();
+                };
+                return ResponseEntity
+                        .badRequest()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(errorBody);
+            }
     }
 
     @PostMapping("/like/{id}")
@@ -132,10 +167,17 @@ public class ProductController {
             final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
-            return productService.generateFullScriptDirect(preSignedURL);
+            return productService.generateFullPDF(preSignedURL);
         } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body((StreamingResponseBody) resDTO);
+            StreamingResponseBody errorBody = outputStream -> {
+                String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
+                outputStream.write(errorMsg.getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            };
+            return ResponseEntity
+                    .badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(errorBody);
         }
     }
 
