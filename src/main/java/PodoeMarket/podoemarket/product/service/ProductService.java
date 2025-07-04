@@ -96,7 +96,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ScriptDetailResponseDTO getScriptDetailInfo(UserEntity userInfo, UUID productId) {
+    public ScriptDetailResponseDTO getScriptDetailInfo(UserEntity userInfo, UUID productId, int page, int pageSize, ReviewSortType sortType) {
         try {
             // 조회수 증가
             viewCountService.incrementViewForProduct(productId);
@@ -105,6 +105,9 @@ public class ProductService {
 
             String imagePath = script.getImagePath() != null ? bucketURL + URLEncoder.encode(script.getImagePath(), StandardCharsets.UTF_8) : "";
             String descriptionPath = script.getDescriptionPath() != null ? bucketURL + URLEncoder.encode(script.getDescriptionPath(), StandardCharsets.UTF_8) : "";
+
+            Sort sort = createReviewSort(sortType);
+//            final Pageable pageable
 
             return ScriptDetailResponseDTO.builder()
                     .id(script.getId())

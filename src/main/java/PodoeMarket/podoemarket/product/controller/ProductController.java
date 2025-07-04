@@ -73,9 +73,12 @@ public class ProductController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<?> scriptInfo(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("script") UUID productId) {
+    public ResponseEntity<?> scriptInfo(@AuthenticationPrincipal UserEntity userInfo,
+                                        @RequestParam("script") UUID productId,
+                                        @RequestParam(defaultValue = "LIKE_COUNT") ReviewSortType sortType,
+                                        @RequestParam(value = "page", defaultValue = "0") int page) {
         try{
-            final ScriptDetailResponseDTO productInfo = productService.getScriptDetailInfo(userInfo, productId);
+            final ScriptDetailResponseDTO productInfo = productService.getScriptDetailInfo(userInfo, productId, page, 5, sortType);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {
