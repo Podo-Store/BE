@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
+import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
@@ -259,6 +260,31 @@ public class ProductService {
                 throw new RuntimeException("후기 작성자가 아닙니다.");
 
             reviewRepo.delete(review);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Transactional
+    public void updaterReview(final UserEntity userInfo, final UUID id, final ReviewUpdateRequestDTO dto) {
+        try {
+            ReviewEntity review = reviewRepo.findById(id);
+            if (review == null)
+                throw new RuntimeException("후기가 존재하지 않습니다.");
+
+            if (!review.getUser().getId().equals(userInfo.getId()))
+                throw new RuntimeException("후기 작성자가 아닙니다.");
+
+            if (dto.getRating() != null)
+                review.setRating(dto.getRating());
+
+            if (dto.getStandardType() != null)
+                review.setStandardType(dto.getStandardType());
+
+            if (dto.getContent() != null)
+                review.setContent(dto.getContent());
+
+            reviewRepo.save(review);
         } catch (Exception e) {
             throw e;
         }

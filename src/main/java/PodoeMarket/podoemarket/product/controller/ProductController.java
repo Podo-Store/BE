@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
+import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
@@ -203,6 +204,18 @@ public class ProductController {
     public ResponseEntity<?> deleteReview(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try {
             productService.deleteReview(userInfo, id);
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PatchMapping("/review/{id}")
+    public ResponseEntity<?> updateReview(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id, @RequestBody ReviewUpdateRequestDTO dto) {
+        try {
+            productService.updaterReview(userInfo, id, dto);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
