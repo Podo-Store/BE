@@ -2,12 +2,14 @@ package PodoeMarket.podoemarket.product.dto.response;
 
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -45,4 +47,44 @@ public class ScriptDetailResponseDTO {
     private Integer runningTime;
     private Integer scene; // 장
     private Integer act; // 막
+
+    // 후기
+    private ReviewStatisticsDTO reviewStatistics;
+
+    // 후기 리스트
+    private List<ReviewListResponseDTO> reviews;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReviewStatisticsDTO {
+        private Integer totalReviewCount;
+        private Double reviewAverageRating;
+        private Double fiveStarPercent;
+        private Double fourStarPercent;
+        private Double threeStarPercent;
+        private Double twoStarPercent;
+        private Double oneStarPercent;
+        private Double characterPercent;
+        private Double relationPercent;
+        private Double storyPercent;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReviewListResponseDTO {
+        private UUID id;
+        private String nickname;
+        private LocalDateTime date;
+        private Boolean myself; // 본인 작성 여부
+        private Integer rating;
+        private StandardType standardType;
+        private String content;
+        private Boolean isLike;
+        private Long likeCount;
+    }
+
 }
