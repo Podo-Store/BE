@@ -147,7 +147,7 @@ public class ProductController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            String result = productService.toggleLike(userInfo, id);
+            String result = productService.toggleLikeProduct(userInfo, id);
 
             return ResponseEntity.ok().body(result);
         } catch(Exception e) {
@@ -219,6 +219,26 @@ public class ProductController {
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/review/like/{id}")
+    public ResponseEntity<?> reviewLike(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try{
+            if (userInfo == null) {
+                ResponseDTO resDTO = ResponseDTO.builder()
+                        .error("로그인이 필요한 서비스입니다.")
+                        .build();
+
+                return ResponseEntity.badRequest().body(resDTO);
+            }
+
+            String result = productService.toggleLikeReview(userInfo, id);
+
+            return ResponseEntity.ok().body(result);
+        } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }

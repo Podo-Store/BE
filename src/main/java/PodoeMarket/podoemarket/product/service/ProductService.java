@@ -165,10 +165,10 @@ public class ProductService {
     }
 
     @Transactional
-    public String toggleLike(UserEntity userInfo, UUID productId) {
+    public String toggleLikeProduct(UserEntity userInfo, UUID productId) {
         try {
             if (getProductLikeStatus(userInfo, productId)) {
-                deleteLike(userInfo, productId);
+                deleteProductLike(userInfo, productId);
 
                 return "cancel like";
             } else {
@@ -182,7 +182,7 @@ public class ProductService {
                         .product(product)
                         .build();
 
-                createLike(like, productId);
+                createProductLike(like, productId);
 
                 return "like";
             }
@@ -290,6 +290,33 @@ public class ProductService {
         }
     }
 
+    @Transactional
+    public String toggleLikeReview(UserEntity userInfo, UUID reviewId) {
+        try {
+            if (getReviewLikeStatus(userInfo, reviewId)) {
+                deleteReviewLike(userInfo, reviewId);
+
+                return "cancel like";
+            } else {
+                final ReviewEntity review = reviewRepo.findById(reviewId);
+
+                if(review == null)
+                    throw new RuntimeException("후기를 찾을 수 업습니다.");
+
+                final ReviewLikeEntity like = ReviewLikeEntity.builder()
+                        .user(userInfo)
+                        .review(review)
+                        .build();
+
+                createReviewLike(like, reviewId);
+
+                return "like";
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     // ============== private (protected) method ===============
     private Sort createProductSort(ProductSortType productSortType) {
         return productSortType.createSort();
@@ -391,7 +418,7 @@ public class ProductService {
     }
 
     @Transactional
-    protected void deleteLike(final UserEntity userInfo, final UUID productId) {
+    protected void deleteProductLike(final UserEntity userInfo, final UUID productId) {
         try {
             productLikeRepo.delete(productLikeRepo.findByUserAndProductId(userInfo, productId));
             productRepo.decrementLikeCount(productId);
@@ -401,7 +428,7 @@ public class ProductService {
     }
 
     @Transactional
-    protected void createLike(final ProductLikeEntity like, final UUID productId) {
+    protected void createProductLike(final ProductLikeEntity like, final UUID productId) {
         try {
             productLikeRepo.save(like);
             productRepo.incrementLikeCount(productId);
@@ -506,5 +533,25 @@ public class ProductService {
         double ratio = ((double) reviewCnt / totalCnt) * 100.0;
 
         return rounding(ratio);
+    }
+
+    @Transactional
+    protected void deleteReviewLike(final UserEntity userInfo, final UUID reviewId) {
+        try {
+            reviewLikeRepo.delete(reviewLikeRepo.findByUserAndReviewId(userInfo, reviewId));
+            reviewRepo.decrementLikeCount(reviewId);
+        } catch (Exception e) {
+            throw new RuntimeException("좋아요 삭제 실패", e);
+        }
+    }
+
+    @Transactional
+    protected void createReviewLike(final ReviewLikeEntity like, final UUID reviewId) {
+        try {
+            reviewLikeRepo.save(like);
+            reviewRepo.incrementLikeCount(reviewId);
+        } catch (Exception e) {
+            throw new RuntimeException("좋아요 생성 실패", e);
+        }
     }
 }

@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface ReviewLikeRepository extends JpaRepository<ReviewLikeEntity, Long> {
     Boolean existsByUserAndReviewId(UserEntity user, UUID reviewId);
+
+    ReviewLikeEntity findByUserAndReviewId(UserEntity user, UUID reviewId);
 }
