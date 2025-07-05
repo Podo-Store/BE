@@ -48,9 +48,28 @@ public class ScriptDetailResponseDTO {
     private Integer scene; // 장
     private Integer act; // 막
 
-    // 리뷰 리스트
+    // 후기
+    private ReviewStatisticsDTO reviewStatistics;
+
+    // 후기 리스트
     private List<ReviewListResponseDTO> reviews;
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReviewStatisticsDTO {
+        private Integer totalReviewCount;
+        private Double reviewAverageRating;
+        private Double fiveStarPercent;
+        private Double fourStarPercent;
+        private Double threeStarPercent;
+        private Double twoStarPercent;
+        private Double oneStarPercent;
+        private Double characterPercent;
+        private Double relationPercent;
+        private Double storyPercent;
+    }
 
     @Data
     @Builder

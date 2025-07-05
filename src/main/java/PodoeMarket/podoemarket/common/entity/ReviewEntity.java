@@ -33,7 +33,7 @@ public class ReviewEntity {
     @Column
     private StandardType standardType; // 평가 기준
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Builder.Default

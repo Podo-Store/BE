@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.product.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
@@ -103,6 +104,7 @@ public class ProductService {
             final ProductEntity script = productRepo.findById(productId);
             final String scriptImage = generateScriptImgURL(script);
 
+            ScriptDetailResponseDTO.ReviewStatisticsDTO reviewStatistics = getReviewStatistics(productId);
             List<ScriptDetailResponseDTO.ReviewListResponseDTO> reviewList = getReviewList(userInfo, productId, page, pageSize, sortType);
 
             return ScriptDetailResponseDTO.builder()
@@ -129,6 +131,7 @@ public class ProductService {
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
+                    .reviewStatistics(reviewStatistics)
                     .reviews(reviewList)
                     .build();
         } catch (Exception e) {
@@ -438,5 +441,44 @@ public class ProductService {
                         .likeCount(review.getLikeCount())
                         .build()
                 ).toList();
+    }
+
+    private ScriptDetailResponseDTO.ReviewStatisticsDTO getReviewStatistics(final UUID productId) {
+        final Integer totalCount = reviewRepo.countByProductId(productId);
+
+        final Integer fiveStarCount = reviewRepo.countByProductIdAndRating(productId, 5);
+        final Integer fourStarCount = reviewRepo.countByProductIdAndRating(productId, 4);
+        final Integer threeStarCount = reviewRepo.countByProductIdAndRating(productId, 3);
+        final Integer twoStarCount = reviewRepo.countByProductIdAndRating(productId, 2);
+        final Integer oneStarCount = reviewRepo.countByProductIdAndRating(productId, 1);
+
+        final Integer characterCount = reviewRepo.countByProductIdAndStandardType(productId, StandardType.CHARACTER);
+        final Integer relationCount = reviewRepo.countByProductIdAndStandardType(productId, StandardType.RELATION);
+        final Integer storyCount = reviewRepo.countByProductIdAndStandardType(productId, StandardType.STORY);
+
+        final double reviewAverageRating = (double) (5 * fiveStarCount + 4 * fourStarCount + 3 * threeStarCount + 2 * twoStarCount + oneStarCount) / totalCount;
+
+        return ScriptDetailResponseDTO.ReviewStatisticsDTO.builder()
+                .totalReviewCount(totalCount)
+                .reviewAverageRating(rounding(reviewAverageRating))
+                .fiveStarPercent(percentage(fiveStarCount, totalCount))
+                .fourStarPercent(percentage(fourStarCount, totalCount))
+                .threeStarPercent(percentage(threeStarCount, totalCount))
+                .twoStarPercent(percentage(twoStarCount, totalCount))
+                .oneStarPercent(percentage(oneStarCount, totalCount))
+                .characterPercent(percentage(characterCount, totalCount))
+                .relationPercent(percentage(relationCount, totalCount))
+                .storyPercent(percentage(storyCount, totalCount))
+                .build();
+    }
+
+    private double rounding(double value) {
+        return (double) Math.round(value * 100.0) / 100.0;
+    }
+
+    private double percentage(final int reviewCnt, final int totalCnt) {
+        double ratio = ((double) reviewCnt / totalCnt) * 100.0;
+
+        return rounding(ratio);
     }
 }

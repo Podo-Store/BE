@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.repository;
 
 import PodoeMarket.podoemarket.common.entity.ReviewEntity;
+import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,10 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
             @Param("productId") UUID productId,
             Pageable pageable
     );
+
+    Integer countByProductId(UUID productId);
+
+    Integer countByProductIdAndRating(UUID productId, Integer rating);
+
+    Integer countByProductIdAndStandardType(UUID productId, StandardType standardType);
 }
