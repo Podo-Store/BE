@@ -4,18 +4,15 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
-import PodoeMarket.podoemarket.product.dto.response.ReviewListResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
-import PodoeMarket.podoemarket.profile.service.WorkService;
 import PodoeMarket.podoemarket.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +30,6 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
     private final S3Service s3Service;
-    private final WorkService workService;
 
     @GetMapping
     public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
@@ -214,16 +210,4 @@ public class ProductController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
-
-//    @GetMapping("/review")
-//    public ResponseEntity<?> allReviews(@AuthenticationPrincipal UserEntity userInfo, @RequestParam UUID productId, @RequestParam(defaultValue = "LIKE_COUNT") ReviewSortType sortType, @RequestParam(value = "page", defaultValue = "0") int page) {
-//        try {
-//            final List<ReviewListResponseDTO> reviews = productService.getReviewList(page, 5, userInfo, productId, sortType);
-//
-//            return ResponseEntity.ok().body(reviews);
-//        } catch (Exception e) {
-//            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-//            return ResponseEntity.badRequest().body(resDTO);
-//        }
-//    }
 }

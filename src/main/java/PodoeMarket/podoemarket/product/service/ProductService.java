@@ -5,11 +5,11 @@ import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
-import PodoeMarket.podoemarket.product.dto.response.ReviewListResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
+import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,8 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -64,9 +61,9 @@ public class ProductService {
 
             return plays.stream()
                     .map(play -> {
-                        ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+                        final ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
 
-                        String scriptImage = play.getImagePath() != null ? s3Service.generatePreSignedURL(play.getImagePath()) : "";
+                        final String scriptImage = generateScriptImgURL(play);
 
                         productListDTO.setId(play.getId());
                         productListDTO.setTitle(play.getTitle());
@@ -104,11 +101,9 @@ public class ProductService {
             viewCountService.incrementViewForProduct(productId);
 
             final ProductEntity script = productRepo.findById(productId);
+            final String scriptImage = generateScriptImgURL(script);
 
-            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
-
-            Sort sort = createReviewSort(sortType);
-//            final Pageable pageable
+            List<ScriptDetailResponseDTO.ReviewListResponseDTO> reviewList = getReviewList(userInfo, productId, page, pageSize, sortType);
 
             return ScriptDetailResponseDTO.builder()
                     .id(script.getId())
@@ -134,6 +129,7 @@ public class ProductService {
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
+                    .reviews(reviewList)
                     .build();
         } catch (Exception e) {
             throw  e;
@@ -169,6 +165,7 @@ public class ProductService {
         try {
             if (getProductLikeStatus(userInfo, productId)) {
                 deleteLike(userInfo, productId);
+
                 return "cancel like";
             } else {
                 final ProductEntity product = productRepo.findById(productId);
@@ -180,7 +177,9 @@ public class ProductService {
                         .user(userInfo)
                         .product(product)
                         .build();
+
                 createLike(like, productId);
+
                 return "like";
             }
         } catch (Exception e) {
@@ -262,33 +261,6 @@ public class ProductService {
         }
     }
 
-//    public List<ReviewListResponseDTO> getReviewList(int page, int pageSize, UserEntity userInfo, UUID productId, ReviewSortType sortType) {
-//        try {
-//            Sort sort = createReviewSort(sortType);
-//            final Pageable pageable = PageRequest.of(page, pageSize, sort);
-//            final List<ReviewEntity> reviews = reviewRepo.findAllByProductId(productId, pageable);
-//
-//            return reviews.stream()
-//                    .map(review -> {
-//                        ReviewListResponseDTO reviewDTO = new ReviewListResponseDTO();
-//
-//                        reviewDTO.setId(review.getId());
-//                        reviewDTO.setNickname(review.getUser().getNickname());
-//                        reviewDTO.setDate(review.getCreatedAt());
-//                        reviewDTO.setMyself(review.getUser().getId().equals(userInfo.getId()));
-//                        reviewDTO.setRating(review.getRating());
-//                        reviewDTO.setStandardType(review.getStandardType());
-//                        reviewDTO.setContent(review.getContent());
-//                        reviewDTO.setIsLike(getProductLikeStatus(userInfo, review.getId()));
-//                        reviewDTO.setLikeCount(review.getLikeCount());
-//
-//                        return reviewDTO;
-//                    }).toList();
-//        } catch (Exception e) {
-//            throw e;
-//        }
-//    }
-
     // ============== private (protected) method ===============
     private Sort createProductSort(ProductSortType productSortType) {
         return productSortType.createSort();
@@ -296,6 +268,10 @@ public class ProductService {
 
     private Sort createReviewSort(ReviewSortType reviewSortType) {
         return reviewSortType.createSort();
+    }
+
+    private String generateScriptImgURL(ProductEntity product) {
+        return product.getImagePath() != null ? s3Service.generatePreSignedURL(product.getImagePath()) : "";
     }
 
     // PDF 추출 결과를 저장할 클래스
@@ -405,7 +381,7 @@ public class ProductService {
         }
     }
 
-    private int buyStatus(UserEntity userInfo, UUID productId) {
+    private int buyStatus(final UserEntity userInfo, final UUID productId) {
         try {
             if(userInfo == null)
                 return 0;
@@ -431,7 +407,6 @@ public class ProductService {
         } catch (Exception e) {
             return 0; // 오류 발생 시 구매하지 않은 것으로 처리
         }
-
     }
 
     private boolean getReviewLikeStatus(final UserEntity userInfo, final UUID reviewId) {
@@ -443,5 +418,25 @@ public class ProductService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private List<ScriptDetailResponseDTO.ReviewListResponseDTO> getReviewList(final UserEntity userInfo, final UUID productId,
+                                                                              final int page, final int pageSize, final ReviewSortType sortType) {
+        Sort sort = createReviewSort(sortType);
+        final Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+        return reviewRepo.findAllByProductId(productId, pageable).stream()
+                .map(review -> ScriptDetailResponseDTO.ReviewListResponseDTO.builder()
+                        .id(review.getId())
+                        .nickname(review.getUser().getNickname())
+                        .date(review.getCreatedAt())
+                        .myself(review.getUser().getId().equals(userInfo.getId()))
+                        .rating(review.getRating())
+                        .standardType(review.getStandardType())
+                        .content(review.getContent())
+                        .isLike(getReviewLikeStatus(userInfo, review.getId()))
+                        .likeCount(review.getLikeCount())
+                        .build()
+                ).toList();
     }
 }
