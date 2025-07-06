@@ -482,18 +482,21 @@ public class ProductService {
         final Pageable pageable = PageRequest.of(page, pageSize, sort);
 
         return reviewRepo.findAllByProductId(productId, pageable).stream()
-                .map(review -> ScriptDetailResponseDTO.ReviewListResponseDTO.builder()
-                        .id(review.getId())
-                        .nickname(review.getUser().getNickname())
-                        .date(review.getCreatedAt())
-                        .myself(review.getUser().getId().equals(userInfo.getId()))
-                        .rating(review.getRating())
-                        .standardType(review.getStandardType())
-                        .content(review.getContent())
-                        .isLike(getReviewLikeStatus(userInfo, review.getId()))
-                        .likeCount(review.getLikeCount())
-                        .build()
-                ).toList();
+                .map(review -> {
+                    boolean isMyself = userInfo != null && userInfo.getId().equals(review.getUser().getId());
+
+                    return ScriptDetailResponseDTO.ReviewListResponseDTO.builder()
+                            .id(review.getId())
+                            .nickname(review.getUser().getNickname())
+                            .date(review.getCreatedAt())
+                            .myself(isMyself)
+                            .rating(review.getRating())
+                            .standardType(review.getStandardType())
+                            .content(review.getContent())
+                            .isLike(getReviewLikeStatus(userInfo, review.getId()))
+                            .likeCount(review.getLikeCount())
+                            .build();
+                }).toList();
     }
 
     private ScriptDetailResponseDTO.ReviewStatisticsDTO getReviewStatistics(final UUID productId) {
