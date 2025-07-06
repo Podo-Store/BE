@@ -1,6 +1,8 @@
 package PodoeMarket.podoemarket.common.repository;
 
+import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.ReviewEntity;
+import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +40,6 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Modifying
     @Query("UPDATE ReviewEntity r SET r.likeCount = r.likeCount - 1 WHERE r.id = :reviewId")
     void decrementLikeCount(@Param("reviewId") UUID reviewId);
+
+    ReviewEntity findByProductAndUserId(ProductEntity product, UUID userId);
 }

@@ -7,6 +7,7 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
+import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
@@ -217,6 +218,33 @@ public class ProductService {
         }
     }
 
+    public ReviewResponseDTO getWriteReview(final UserEntity userInfo, final UUID productId) {
+        try {
+            if (userInfo == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            final ProductEntity product = productRepo.findById(productId);
+
+            if(product == null)
+                throw new RuntimeException("상품을 찾을 수 없습니다.");
+
+            final ReviewEntity review = reviewRepo.findByProductAndUserId(product, userInfo.getId());
+
+            final String scriptImage = generateScriptImgURL(product);
+
+            return ReviewResponseDTO.builder()
+                    .imagePath(scriptImage)
+                    .title(product.getTitle())
+                    .writer(product.getWriter())
+                    .rating(review != null ? review.getRating() : null)
+                    .standardType(review != null ? review.getStandardType() : null)
+                    .content(review != null ? review.getContent() : null)
+                    .build();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     @Transactional
     public void writeReview(final UserEntity userInfo, final ReviewRequestDTO dto) {
         try {
@@ -235,7 +263,7 @@ public class ProductService {
             final ProductEntity product = productRepo.findById(dto.getProductId());
 
             if(product == null)
-                throw new RuntimeException("상품을 찾을 수 업습니다.");
+                throw new RuntimeException("상품을 찾을 수 없습니다.");
 
             ReviewEntity review = ReviewEntity.builder()
                     .rating(dto.getRating())
