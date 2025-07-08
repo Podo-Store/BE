@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.profile.service;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
@@ -143,7 +144,7 @@ public class WorkService {
     }
 
     @Transactional
-    public void updateProductDetail(DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) throws IOException {
+    public void updateProductDetail(UserEntity userInfo, DetailUpdateRequestDTO dto, MultipartFile[] file1, MultipartFile[] file2) throws IOException {
         try {
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
@@ -165,6 +166,10 @@ public class WorkService {
 
             if(dto.getScene() < 0 || dto.getAct() < 0)
                 throw new RuntimeException("장과 막이 작성되어야 함");
+
+            // 스테이지 별 설정 조건
+            if (userInfo.getStageType() == StageType.SINGLE_GRAPE && dto.getScriptPrice() != 0)
+                throw new RuntimeException("포도알 스테이지에서의 대본 가격은 무료로만 설정 가능합니다.");
 
             final ProductEntity product = productRepo.findById(dto.getId());
 
