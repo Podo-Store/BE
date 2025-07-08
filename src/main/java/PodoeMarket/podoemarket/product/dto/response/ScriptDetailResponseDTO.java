@@ -81,6 +81,7 @@ public class ScriptDetailResponseDTO {
         private String nickname;
         private StageType stageType;
         private LocalDateTime date;
+        private Boolean isEdited; // 수정 여부
         private Boolean myself; // 본인 작성 여부
         private Integer rating;
         private StandardType standardType;

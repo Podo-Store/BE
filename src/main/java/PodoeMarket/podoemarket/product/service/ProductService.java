@@ -297,7 +297,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void updaterReview(final UserEntity userInfo, final UUID id, final ReviewUpdateRequestDTO dto) {
+    public void updateReview(final UserEntity userInfo, final UUID id, final ReviewUpdateRequestDTO dto) {
         try {
             ReviewEntity review = reviewRepo.findById(id);
             if (review == null)
@@ -516,12 +516,14 @@ public class ProductService {
                 .map(review -> {
                     boolean isMyself = userInfo != null && userInfo.getId().equals(review.getUser().getId());
                     StageType stageType = review.getUser().getStageType() != null ? review.getUser().getStageType() : null;
+                    boolean isEdited = !review.getCreatedAt().equals(review.getUpdatedAt());
 
                     return ScriptDetailResponseDTO.ReviewListResponseDTO.builder()
                             .id(review.getId())
                             .nickname(review.getUser().getNickname())
                             .stageType(stageType)
-                            .date(review.getCreatedAt())
+                            .date(!isEdited ? review.getCreatedAt() : review.getUpdatedAt())
+                            .isEdited(isEdited)
                             .myself(isMyself)
                             .rating(review.getRating())
                             .standardType(review.getStandardType())

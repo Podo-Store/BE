@@ -228,7 +228,7 @@ public class ProductController {
     @PatchMapping("/review/{id}")
     public ResponseEntity<?> updateReview(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id, @RequestBody ReviewUpdateRequestDTO dto) {
         try {
-            productService.updaterReview(userInfo, id, dto);
+            productService.updateReview(userInfo, id, dto);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
