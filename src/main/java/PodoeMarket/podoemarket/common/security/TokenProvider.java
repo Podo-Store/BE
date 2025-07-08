@@ -33,6 +33,7 @@ public class TokenProvider {
                 .claim("nickname", user.getNickname())
                 .claim("email", user.getEmail())
                 .claim("auth", user.isAuth())
+                .claim("stageType", user.getStageType())
                 .compact(); // 토큰 생성
     }
 
@@ -52,6 +53,7 @@ public class TokenProvider {
                 .claim("nickname", user.getNickname())
                 .claim("email", user.getEmail())
                 .claim("auth", user.isAuth())
+                .claim("stageType", user.getStageType())
                 .compact();
     }
 
