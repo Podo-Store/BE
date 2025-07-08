@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.product.dto.response;
 
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -78,6 +79,7 @@ public class ScriptDetailResponseDTO {
     public static class ReviewListResponseDTO {
         private UUID id;
         private String nickname;
+        private StageType stageType;
         private LocalDateTime date;
         private Boolean myself; // 본인 작성 여부
         private Integer rating;

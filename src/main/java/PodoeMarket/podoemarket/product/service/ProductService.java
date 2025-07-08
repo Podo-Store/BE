@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.product.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
@@ -38,6 +39,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -513,10 +515,12 @@ public class ProductService {
         return reviewRepo.findAllByProductId(productId, pageable).stream()
                 .map(review -> {
                     boolean isMyself = userInfo != null && userInfo.getId().equals(review.getUser().getId());
+                    StageType stageType = review.getUser().getStageType() != null ? review.getUser().getStageType() : null;
 
                     return ScriptDetailResponseDTO.ReviewListResponseDTO.builder()
                             .id(review.getId())
                             .nickname(review.getUser().getNickname())
+                            .stageType(stageType)
                             .date(review.getCreatedAt())
                             .myself(isMyself)
                             .rating(review.getRating())
