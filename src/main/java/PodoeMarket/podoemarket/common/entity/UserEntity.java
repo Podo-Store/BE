@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.entity;
 
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -41,6 +42,10 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private SocialLoginType socialLoginType;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private StageType stageType;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
