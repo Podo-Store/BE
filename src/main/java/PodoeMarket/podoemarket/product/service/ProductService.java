@@ -233,6 +233,7 @@ public class ProductService {
             final String scriptImage = generateScriptImgURL(product);
 
             return ReviewResponseDTO.builder()
+                    .id(review.getId())
                     .imagePath(scriptImage)
                     .title(product.getTitle())
                     .writer(product.getWriter())
