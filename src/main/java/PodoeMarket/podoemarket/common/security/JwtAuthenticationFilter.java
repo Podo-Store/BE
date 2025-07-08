@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.security;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -66,6 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     user.setNickname(claims.get("nickname", String.class)); // 닉네임 할당
                     user.setEmail(claims.get("email", String.class)); // 이메일 할당
                     user.setAuth((Boolean) claims.get("auth"));
+                    user.setStageType(StageType.valueOf(claims.get("stageType",String.class))); // 스테이지 정보 할당
 
                     // 인증 완료 -> SecurityContextHolder 에 등록 되어야 인증된 사용자!
                     AbstractAuthenticationToken authentication
