@@ -49,6 +49,8 @@ public class ScriptDetailResponseDTO {
     private Integer scene; // 장
     private Integer act; // 막
 
+    private Boolean isReviewWritten; // 후기 작성 여부
+
     // 후기
     private ReviewStatisticsDTO reviewStatistics;
 
