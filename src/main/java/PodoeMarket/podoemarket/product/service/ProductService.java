@@ -107,6 +107,14 @@ public class ProductService {
 
             final ProductEntity script = productRepo.findById(productId);
             final String scriptImage = generateScriptImgURL(script);
+            boolean isReviewWritten = false;
+
+            if (userInfo != null) {
+                final ReviewEntity review = reviewRepo.findByProductAndUserId(script, userInfo.getId());
+
+                if (review != null)
+                    isReviewWritten = true;
+            }
 
             ScriptDetailResponseDTO.ReviewStatisticsDTO reviewStatistics = getReviewStatistics(productId);
             List<ScriptDetailResponseDTO.ReviewListResponseDTO> reviewList = getReviewList(userInfo, productId, page, pageSize, sortType);
@@ -134,6 +142,7 @@ public class ProductService {
                     .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
+                    .isReviewWritten(isReviewWritten)
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
                     .reviewStatistics(reviewStatistics)
                     .reviews(reviewList)

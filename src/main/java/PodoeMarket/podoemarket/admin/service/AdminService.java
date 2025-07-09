@@ -121,7 +121,7 @@ public class AdminService {
 
             if (dto.getProductStatus() == ProductStatus.PASS) {
                 // 포도알 등급 부여
-                if(product.getUser().getStageType() == null) {
+                if(product.getUser().getStageType() == StageType.DEFAULT) {
                     product.getUser().setStageType(StageType.SINGLE_GRAPE);
                     productRepo.save(product);
                 }
