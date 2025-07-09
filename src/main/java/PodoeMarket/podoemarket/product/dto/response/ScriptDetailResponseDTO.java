@@ -63,6 +63,7 @@ public class ScriptDetailResponseDTO {
     @AllArgsConstructor
     public static class ReviewStatisticsDTO {
         private Integer totalReviewCount;
+        private Integer totalReviewPages;
         private Double reviewAverageRating;
         private Double fiveStarPercent;
         private Double fourStarPercent;

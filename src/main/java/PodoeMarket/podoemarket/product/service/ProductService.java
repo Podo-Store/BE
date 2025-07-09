@@ -560,6 +560,7 @@ public class ProductService {
 
         return ScriptDetailResponseDTO.ReviewStatisticsDTO.builder()
                 .totalReviewCount(totalCount)
+                .totalReviewPages((int) Math.ceil((double) totalCount / 5)) // 5개씩 끊어서 전달
                 .reviewAverageRating(rounding(reviewAverageRating))
                 .fiveStarPercent(percentage(fiveStarCount, totalCount))
                 .fourStarPercent(percentage(fourStarCount, totalCount))
