@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.user.service;
 
 import PodoeMarket.podoemarket.common.config.jwt.JwtProperties;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.service.MailSendService;
@@ -98,7 +99,8 @@ public class UserService {
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .email(dto.getEmail())
-                    .auth(false)
+                    .auth(false) // 명시적 선언
+                    .stageType(StageType.DEFAULT) // 명시적 선언
                     .build();
 
             userRepo.save(user);

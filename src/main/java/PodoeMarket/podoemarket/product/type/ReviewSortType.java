@@ -6,10 +6,9 @@ import org.springframework.data.domain.Sort;
 
 @Getter
 @AllArgsConstructor
-public enum SortType {
-    POPULAR("viewCount", Sort.Direction.DESC, true),
+public enum ReviewSortType {
     LIKE_COUNT("likeCount", Sort.Direction.DESC, true),
-    LATEST("createdAt", Sort.Direction.DESC, false);
+    LATEST("createdAt", Sort.Direction.DESC,false);
 
     private final String property;
     private final Sort.Direction direction;

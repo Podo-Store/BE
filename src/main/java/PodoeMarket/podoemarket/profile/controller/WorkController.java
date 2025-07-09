@@ -48,11 +48,12 @@ public class WorkController {
     }
 
     @PostMapping(value = "/detail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> detailUpdate(DetailUpdateRequestDTO dto,
+    public ResponseEntity<?> detailUpdate(@AuthenticationPrincipal UserEntity userInfo,
+                                          DetailUpdateRequestDTO dto,
                                           @RequestPart(value = "scriptImage", required = false) MultipartFile[] file1,
                                           @RequestPart(value = "description", required = false) MultipartFile[] file2) {
         try{
-            workService.updateProductDetail(dto, file1, file2);
+            workService.updateProductDetail(userInfo, dto, file1, file2);
 
             return ResponseEntity.ok().body(true);
         } catch(Exception e) {

@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
 import PodoeMarket.podoemarket.common.repository.OrderRepository;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
@@ -118,8 +119,15 @@ public class AdminService {
 
             productRepo.save(product);
 
-            if (dto.getProductStatus() == ProductStatus.PASS)
+            if (dto.getProductStatus() == ProductStatus.PASS) {
+                // 포도알 등급 부여
+                if(product.getUser().getStageType() == StageType.DEFAULT) {
+                    product.getUser().setStageType(StageType.SINGLE_GRAPE);
+                    productRepo.save(product);
+                }
+
                 mailSendService.joinRegisterPassMail(product.getUser().getEmail(), product.getTitle());
+            }
             else if (dto.getProductStatus() == ProductStatus.REJECT)
                 mailSendService.joinRegisterRejectMail(product.getUser().getEmail(), product.getTitle());
 

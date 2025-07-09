@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.entity;
 
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -42,6 +43,11 @@ public class UserEntity {
     @Column
     private SocialLoginType socialLoginType;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StageType stageType = StageType.DEFAULT;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -77,4 +83,13 @@ public class UserEntity {
     // user : like = 1 : N
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductLikeEntity> like = new ArrayList<>();
+
+    // user : review = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ReviewEntity> review = new ArrayList<>();
+
+    // user : reviewLike = 1 : N
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY
+    )
+    private List<ReviewLikeEntity> reviewLike = new ArrayList<>();
 }

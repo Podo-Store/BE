@@ -32,8 +32,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
             Pageable pageable
     );
 
-
-
     Long countAllByChecked(ProductStatus checked);
 
     Page<ProductEntity> findByTitleContainingOrWriterContaining(String title, String writer, Pageable pageable);
