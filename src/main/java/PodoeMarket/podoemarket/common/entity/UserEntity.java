@@ -43,9 +43,10 @@ public class UserEntity {
     @Column
     private SocialLoginType socialLoginType;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column
-    private StageType stageType;
+    @Column(nullable = false)
+    private StageType stageType = StageType.DEFAULT;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
