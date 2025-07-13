@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -384,7 +385,7 @@ public class ProductService {
 
     // PDF 추출 메서드
     private static byte[] extractPdfFromZip(String preSignedURL) throws IOException {
-        try (InputStream inputStream = new URI(preSignedURL).toURL().openStream();
+        try (InputStream inputStream = new URL(preSignedURL).openStream();
              ZipInputStream zipInputStream = new ZipInputStream(inputStream);
              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             ZipEntry entry;
@@ -403,14 +404,14 @@ public class ProductService {
             }
 
             throw new RuntimeException("ZIP 파일 내에 PDF가 없습니다.");
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     // PDF 추출 메서드 (스트리밍 방식)
     private static void streamPdfFromZip(String preSignedURL, OutputStream outputStream) throws IOException {
-        try (InputStream inputStream = new URI(preSignedURL).toURL().openStream();
+        try (InputStream inputStream = new URL(preSignedURL).openStream();
              ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
             ZipEntry entry;
             boolean found = false;
@@ -433,7 +434,7 @@ public class ProductService {
             if (!found)
                 throw new RuntimeException("ZIP 파일 내에 PDF가 없습니다.");
 
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
