@@ -183,7 +183,7 @@ public class WorkService {
             if(file1 != null && file1.length > 0 && !file1[0].isEmpty())
                 scriptImageFilePath = uploadScriptImage(file1, dto.getTitle(), dto.getId());
             else if (dto.getImagePath() != null)
-                scriptImageFilePath = extractS3KeyFromURL(dto.getImagePath());
+                scriptImageFilePath = product.getImagePath();
             else {
                 if(product.getImagePath() != null) {
                     final String imagePath = product.getImagePath().replace("scriptImage", "delete");
@@ -193,11 +193,11 @@ public class WorkService {
             }
 
             String descriptionFilePath = null;
-            if(file2 != null && file2.length > 0 && !file2[0].isEmpty())
+            if(file2 != null && file2.length > 0 && !file2[0].isEmpty()) // 설명 파일을 새로 업로드한 경우 (기존 파일이 있든 없든 새로 교체함)
                 descriptionFilePath = uploadDescription(file2, dto.getTitle(), dto.getId());
-            else if (dto.getDescriptionPath() != null)
-                descriptionFilePath = extractS3KeyFromURL(dto.getDescriptionPath());
-            else {
+            else if (dto.getDescriptionPath() != null) // 파일을 변경하지 않는 경우
+                descriptionFilePath = product.getDescriptionPath();
+            else { // 기존에 존재하던 설명 파일을 삭제하는 경우
                 if (product.getDescriptionPath() != null) {
                     final String descriptionPath = product.getDescriptionPath().replace("description", "delete");
                     moveFile(bucket, product.getDescriptionPath(), descriptionPath);
@@ -254,24 +254,6 @@ public class WorkService {
     }
 
     // ============= private method ===============
-
-    private String extractS3KeyFromURL(final String S3URL) {
-        try {
-            String decodedUrl = URLDecoder.decode(S3URL, StandardCharsets.UTF_8);
-
-            // 도메인 부분 제거
-            if (decodedUrl.startsWith(bucketURL)) {
-                String key = decodedUrl.substring(bucketURL.length());
-                key = key.replace("\\", "/");
-
-                return key;
-            }
-
-            throw new RuntimeException("올바르지 않은 S3 URL 형식: " + decodedUrl);
-        } catch (Exception e) {
-            throw new RuntimeException("S3 URL에서 키 추출 실패", e);
-        }
-    }
 
     private void deleteFile(final String bucket, final String sourceKey) {
         try {
