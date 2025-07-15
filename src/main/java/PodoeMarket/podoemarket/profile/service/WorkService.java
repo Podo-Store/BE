@@ -344,14 +344,14 @@ public class WorkService {
             final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
             // S3 Key 구성
-            final String S3Key = descriptionBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".pdf";
+            final String S3Key = descriptionBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".zip";
 
             // PDF 파일을 zip으로 압축
             byte[] zippedBytes = compressToZip(files[0]);
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(zippedBytes.length);
-            metadata.setContentType("application/pdf");
+            metadata.setContentType("application/zip");
 
             // 기존 파일 삭제
             final ProductEntity product = productRepo.findById(id);
