@@ -96,7 +96,7 @@ public class RegisterService {
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(zippedBytes.length);
-        metadata.setContentType("application/pdf");
+        metadata.setContentType("application/zip");
 
         try (InputStream inputStream = new ByteArrayInputStream(zippedBytes)) {
             amazonS3.putObject(bucket, S3Key, inputStream, metadata);
