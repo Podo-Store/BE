@@ -39,6 +39,7 @@ public class ScriptDetailResponseDTO {
     private Boolean like;
     private Long likeCount;
     private Long viewCount;
+    private String intention;
 
     // 개요
     private Integer any;
