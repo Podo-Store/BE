@@ -21,6 +21,7 @@ public class DetailUpdateRequestDTO {
     private Long performancePrice;
     private String descriptionPath;
     private String plot;
+    private String intention;
 
     // 개요
     private Integer any;
