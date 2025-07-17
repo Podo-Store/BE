@@ -126,6 +126,7 @@ public class WorkService {
             scriptDetailDTO.setChecked(script.getChecked());
             scriptDetailDTO.setPlayType(script.getPlayType());
             scriptDetailDTO.setPlot(script.getPlot());
+            scriptDetailDTO.setIntention(script.getIntention());
 
             scriptDetailDTO.setBuyStatus(buyStatus);
 

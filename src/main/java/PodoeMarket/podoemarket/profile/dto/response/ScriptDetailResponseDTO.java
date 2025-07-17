@@ -28,6 +28,7 @@ public class ScriptDetailResponseDTO {
     private ProductStatus checked;
     private String plot;
     private LocalDateTime date;
+    private String intention;
 
     // 옵션 선택 드롭다운
     // 0 : 아무것도 구매 X
