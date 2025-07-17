@@ -156,7 +156,7 @@ public class WorkService {
             if(!isValidPlot(dto.getPlot()))
                 throw new RuntimeException("줄거리 유효성 검사 실패");
 
-            if (dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
+            if(dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
                 throw new RuntimeException("등장인물이 0명 이상이어야 함");
 
             if(dto.getStageComment() == null)
@@ -168,7 +168,7 @@ public class WorkService {
             if(dto.getScene() < 0 || dto.getAct() < 0)
                 throw new RuntimeException("장과 막이 작성되어야 함");
 
-            if(dto.getIntention() != null && dto.getIntention().length() > 300)
+            if(!isValidIntention(dto.getIntention()))
                 throw new RuntimeException("작가 의도 300자 초과");
 
             // 스테이지 별 설정 조건
@@ -412,33 +412,59 @@ public class WorkService {
     }
 
     private static boolean isValidTitle(String title) {
-        String regx_title = "^.{1,20}$";
-
-        if(title == null) {
+        if (title == null || title.isBlank()) {
             log.warn("title is null or empty");
             return false;
-        } else if(!Pattern.matches(regx_title, title)) {
+        }
+
+        // 줄바꿈 정규화: \r\n, \r → \n
+        String normalized = title.replace("\r\n", "\n").replace("\r", "");
+
+        // 실제 유니코드 문자 수 (이모지도 1자로 계산됨)
+        int charCount = normalized.codePointCount(0, normalized.length());
+
+        if (charCount < 1 || charCount > 20) {
             log.warn("title is not fit in the rule");
             return false;
-        } else {
+        }
+
             log.info("title valid checked");
             return true;
-        }
     }
 
     private static boolean isValidPlot(String plot) {
-        String regx_plot = "^.{1,150}$";
-
-        if(plot == null) {
+        if (plot == null || plot.isBlank()) {
             log.warn("plot is null or empty");
             return false;
-        } else if(!Pattern.matches(regx_plot, plot)) {
-            log.warn("plot is not fit in the rule");
-            return false;
-        } else {
-            log.info("plot valid checked");
-            return true;
         }
+
+        // 줄바꿈 정규화: \r\n, \r → \n
+        String normalized = plot.replace("\r\n", "\n").replace("\r", "");
+
+        // 실제 유니코드 문자 수 (이모지도 1자로 계산됨)
+        int charCount = normalized.codePointCount(0, normalized.length());
+
+        if (charCount < 1 || charCount > 150) {
+            log.warn("plot length is invalid: {}", charCount);
+            return false;
+        }
+
+        log.info("plot valid checked");
+        return true;
+    }
+
+
+    private static boolean isValidIntention(String intention) {
+        if (intention != null) {
+            // 줄바꿈 처리: \r\n 또는 \r 제거하여 모두 \n로 통일
+            String normalized = intention.replace("\r\n", "\n").replace("\r", "");
+
+            // 진짜 '문자 수' 기준으로 계산 (이모지도 1자로 계산됨)
+            int actualLength = normalized.codePointCount(0, normalized.length());
+
+            return actualLength <= 300;
+        } else
+            return true;
     }
 
     private void deleteScripts(final ProductEntity product) {
