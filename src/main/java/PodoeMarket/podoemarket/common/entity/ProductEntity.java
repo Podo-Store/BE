@@ -118,7 +118,7 @@ public class ProductEntity {
     @ColumnDefault("0")
     private Boolean isDelete = false; // 삭제 여부
 
-    @Column
+    @Column(length = 1000)
     private String intention; // 작품 의도
 
     @Column(nullable = false, updatable = false)

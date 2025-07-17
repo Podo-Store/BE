@@ -167,6 +167,9 @@ public class WorkService {
             if(dto.getScene() < 0 || dto.getAct() < 0)
                 throw new RuntimeException("장과 막이 작성되어야 함");
 
+            if(dto.getIntention() != null && dto.getIntention().length() > 300)
+                throw new RuntimeException("작가 의도 300자 초과");
+
             // 스테이지 별 설정 조건
             if (userInfo.getStageType() == StageType.SINGLE_GRAPE && dto.getScriptPrice() != 0)
                 throw new RuntimeException("포도알 스테이지에서의 대본 가격은 무료로만 설정 가능합니다.");
@@ -174,7 +177,7 @@ public class WorkService {
             final ProductEntity product = productRepo.findById(dto.getId());
 
             if(product == null)
-                throw new RuntimeException("상품을 찾을 수 업습니다.");
+                throw new RuntimeException("상품을 찾을 수 없습니다.");
 
             if(product.getChecked() == ProductStatus.WAIT)
                 throw new RuntimeException("등록 심사 중인 작품");
@@ -213,6 +216,7 @@ public class WorkService {
             product.setPerformancePrice(dto.getPerformancePrice());
             product.setDescriptionPath(descriptionFilePath);
             product.setPlot(dto.getPlot());
+            product.setIntention(dto.getIntention());
 
             // 개요
             product.setAny(dto.getAny());
