@@ -140,6 +140,7 @@ public class ProductService {
                     .runningTime(script.getRunningTime())
                     .scene(script.getScene())
                     .act(script.getAct())
+                    .intention(script.getIntention())
                     .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
