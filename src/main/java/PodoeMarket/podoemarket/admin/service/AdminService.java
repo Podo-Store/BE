@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -145,20 +148,33 @@ public class AdminService {
     public byte[] downloadFile(final String fileKey) {
         try (S3Object s3Object = amazonS3.getObject(bucket, fileKey);
              InputStream inputStream = s3Object.getObjectContent();
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+             ByteArrayOutputStream zipBuffer = new ByteArrayOutputStream()) {
 
-            // 버퍼를 사용하여 데이터 읽기
             byte[] buffer = new byte[4096];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
+                zipBuffer.write(buffer, 0, bytesRead);
             }
 
-            return outputStream.toByteArray();
-        } catch (AmazonS3Exception e) {
-            throw new RuntimeException("S3에서 파일을 찾을 수 없습니다: " + fileKey);
+            // ZIP 해제
+            try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipBuffer.toByteArray()))) {
+                ZipEntry entry = zipInputStream.getNextEntry();
+
+                if (entry != null) {
+                    ByteArrayOutputStream pdfBuffer = new ByteArrayOutputStream();
+
+                    // ZIP 안의 실제 PDF 바이트만 꺼냄
+                    while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+                        pdfBuffer.write(buffer, 0, bytesRead);
+                    }
+
+                    return pdfBuffer.toByteArray();
+                } else {
+                    throw new RuntimeException("ZIP 파일 안에 PDF가 없습니다.");
+                }
+            }
         } catch (IOException e) {
-            throw new RuntimeException("파일 다운로드 중 오류가 발생했습니다: " + fileKey);
+            throw new RuntimeException("파일 다운로드 중 오류 발생: " + fileKey, e);
         }
     }
 
