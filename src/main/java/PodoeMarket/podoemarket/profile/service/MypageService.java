@@ -74,29 +74,31 @@ public class MypageService {
     @Transactional
     public UserInfoResponseDTO updateUserAccount(UserEntity userInfo, ProfileUpdateRequestDTO dto) {
         try {
-            if (!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword()))
+            if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword()))
                 throw new RuntimeException("비밀번호가 일치하지 않음");
-
-            isValidPw(dto.getPassword());
-            userInfo.setPassword(pwdEncoder.encode(dto.getPassword()));
-
-            isValidNickname(dto.getNickname());
-            userInfo.setNickname(dto.getNickname());
 
             UserEntity user = userRepo.findById(userInfo.getId());
 
-            if (user == null)
+            if(user == null)
                 throw new RuntimeException("로그인이 필요한 서비스입니다.");
 
-            if (userInfo.getPassword() != null && !userInfo.getPassword().isBlank())
+            if(userInfo.getPassword() != null && !userInfo.getPassword().isBlank())
                 user.setPassword(userInfo.getPassword());
+
+            isValidPw(dto.getPassword());
+            user.setPassword(pwdEncoder.encode(dto.getPassword()));
+
+            if(!dto.getNickname().isBlank()) {
+                isValidNickname(dto.getNickname());
+                user.setNickname(dto.getNickname());
+            }
 
             // 모든 작품의 작가명 변경
             List<ProductEntity> products = productRepo.findAllByUserId(userInfo.getId());
 
-            for (ProductEntity product : productRepo.findAllByUserId(userInfo.getId())) {
+            for(ProductEntity product : productRepo.findAllByUserId(userInfo.getId()))
                 product.setWriter(userInfo.getNickname());
-            }
+
             productRepo.saveAll(products);
             userRepo.save(user);
 
