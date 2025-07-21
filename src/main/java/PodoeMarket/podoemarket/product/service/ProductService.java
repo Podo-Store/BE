@@ -109,8 +109,12 @@ public class ProductService {
             final ProductEntity script = productRepo.findById(productId);
             final String scriptImage = generateScriptImgURL(script);
             boolean isReviewWritten = false;
+            boolean isMine = false;
 
             if (userInfo != null) {
+                if (script.getUser().getId().equals(userInfo.getId()))
+                    isMine = true;
+
                 final ReviewEntity review = reviewRepo.findByProductAndUserId(script, userInfo.getId());
 
                 if (review != null)
@@ -146,6 +150,7 @@ public class ProductService {
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .isReviewWritten(isReviewWritten)
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
+                    .isMine(isMine)
                     .reviewStatistics(reviewStatistics)
                     .reviews(reviewList)
                     .build();
@@ -278,6 +283,9 @@ public class ProductService {
 
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
+
+            if (userInfo.getId().equals(product.getUser().getId()))
+                throw new RuntimeException("본인 작품의 후기는 작성할 수 없습니다.");
 
             ReviewEntity review = ReviewEntity.builder()
                     .rating(dto.getRating())
