@@ -52,6 +52,8 @@ public class ScriptDetailResponseDTO {
 
     private Boolean isReviewWritten; // 후기 작성 여부
 
+    private Boolean isMine; // 본인 작품 여부
+
     // 후기
     private ReviewStatisticsDTO reviewStatistics;
 
