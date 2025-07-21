@@ -109,8 +109,12 @@ public class ProductService {
             final ProductEntity script = productRepo.findById(productId);
             final String scriptImage = generateScriptImgURL(script);
             boolean isReviewWritten = false;
+            boolean isMine = false;
 
             if (userInfo != null) {
+                if (script.getUser().getId().equals(userInfo.getId()))
+                    isMine = true;
+
                 final ReviewEntity review = reviewRepo.findByProductAndUserId(script, userInfo.getId());
 
                 if (review != null)
@@ -146,6 +150,7 @@ public class ProductService {
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .isReviewWritten(isReviewWritten)
                     .viewCount(viewCountService.getProductViewCount(productId)) // 총 조회수
+                    .isMine(isMine)
                     .reviewStatistics(reviewStatistics)
                     .reviews(reviewList)
                     .build();
