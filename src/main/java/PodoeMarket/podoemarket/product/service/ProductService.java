@@ -279,6 +279,9 @@ public class ProductService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
+            if (userInfo.getId().equals(product.getUser().getId()))
+                throw new RuntimeException("본인 작품의 후기는 작성할 수 없습니다.");
+
             ReviewEntity review = ReviewEntity.builder()
                     .rating(dto.getRating())
                     .standardType(dto.getStandardType())
