@@ -35,12 +35,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -238,7 +235,7 @@ public class ProductService {
 
     public ReviewResponseDTO getWriteReview(final UserEntity userInfo, final UUID productId) {
         try {
-            if (userInfo == null)
+            if(userInfo == null)
                 throw new RuntimeException("로그인이 필요한 서비스입니다.");
 
             final ProductEntity product = productRepo.findById(productId);
@@ -268,15 +265,15 @@ public class ProductService {
     public void writeReview(final UserEntity userInfo, final ReviewRequestDTO dto) {
         try {
             // 평점이 존재하고, 범위가 1 ~ 5인지
-            if (dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5)
+            if(dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5)
                 throw new RuntimeException("평점이 올바르지 않습니다.");
 
             // 평가 기준이 존재하는가
-            if (dto.getStandardType() == null)
+            if(dto.getStandardType() == null)
                 throw new RuntimeException("평가 기준을 선택해주세요.");
 
             // 내용이 50자 이상인지 확인
-            if (dto.getContent().length() < 50)
+            if(dto.getContent().length() < 50)
                 throw new RuntimeException("평가 내용을 50자 이상 작성해주세요.");
 
             final ProductEntity product = productRepo.findById(dto.getProductId());
@@ -284,8 +281,11 @@ public class ProductService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
-            if (userInfo.getId().equals(product.getUser().getId()))
+            if(userInfo.getId().equals(product.getUser().getId()))
                 throw new RuntimeException("본인 작품의 후기는 작성할 수 없습니다.");
+
+            if(reviewRepo.existsByProductAndUserId(product, userInfo.getId()))
+                throw new RuntimeException("후기는 하나만 작성 가능합니다.");
 
             ReviewEntity review = ReviewEntity.builder()
                     .rating(dto.getRating())

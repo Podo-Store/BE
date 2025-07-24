@@ -42,4 +42,6 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     void decrementLikeCount(@Param("reviewId") UUID reviewId);
 
     ReviewEntity findByProductAndUserId(ProductEntity product, UUID userId);
+
+    Boolean existsByProductAndUserId(ProductEntity product, UUID userId);
 }
