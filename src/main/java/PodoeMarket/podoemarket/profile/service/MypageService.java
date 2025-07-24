@@ -91,15 +91,16 @@ public class MypageService {
             if(!dto.getNickname().isBlank()) {
                 isValidNickname(dto.getNickname());
                 user.setNickname(dto.getNickname());
+
+                // 모든 작품의 작가명 변경
+                List<ProductEntity> products = productRepo.findAllByUserId(userInfo.getId());
+
+                for(ProductEntity product : productRepo.findAllByUserId(userInfo.getId()))
+                    product.setWriter(user.getNickname());
+
+                productRepo.saveAll(products);
             }
 
-            // 모든 작품의 작가명 변경
-            List<ProductEntity> products = productRepo.findAllByUserId(userInfo.getId());
-
-            for(ProductEntity product : productRepo.findAllByUserId(userInfo.getId()))
-                product.setWriter(userInfo.getNickname());
-
-            productRepo.saveAll(products);
             userRepo.save(user);
 
             return UserInfoResponseDTO.builder()
