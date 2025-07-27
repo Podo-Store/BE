@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -198,6 +199,7 @@ public class MailSendService {
     }
 
     // 회원가입 완료
+    @Async
     public void joinSignupEmail(final String email) {
         String setFrom = username;
         String title = "[포도상점] 회원가입이 완료되었습니다.";
