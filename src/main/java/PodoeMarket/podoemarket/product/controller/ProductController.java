@@ -94,7 +94,7 @@ public class ProductController {
             final ProductEntity product = productService.getProduct(productId);
             final String s3Key = product.getFilePath();
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
-            int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 3 : 1;
+            int pagesToExtract = (product.getPlayType() == PlayType.LONG) ? 4 : 2;
 
             // PDF 처리 (트랜잭션 외부에서 수행)
             return productService.generateScriptPreview(preSignedURL, pagesToExtract);
