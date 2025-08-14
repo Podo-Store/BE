@@ -65,10 +65,14 @@ jobs:
         cat ./appspec.yml
 
     - name: Create .env for Docker Compose
-      run: |
-        mkdir -p deploy
-        echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" > ./deploy/.env
       shell: bash
+      run: |
+        set -euo pipefail
+        rm -rf deploy
+        mkdir -p deploy
+        # Bash 확장 방지를 위해 작은따옴표로 감싸고, printf로 줄바꿈까지 정확히 작성
+        printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' > deploy/.env
+
 
     - name: zip file 생성
       run: |
