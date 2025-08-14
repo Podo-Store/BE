@@ -1,78 +1,64 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_DIR="/home/ubuntu/app"
-cd "$APP_DIR"
+LOG=/home/ubuntu/deploy.log
+exec >>"$LOG" 2>&1
+echo "=== ApplicationStart $(date '+%F %T') ==="
 
-DOCKER_COMPOSE="sudo docker-compose"   # 네 환경 유지
+cd /home/ubuntu/app
+
+# docker-compose / compose 둘 다 대응
+if command -v docker-compose >/dev/null 2>&1; then
+  DC="sudo docker-compose"
+else
+  DC="sudo docker compose"
+fi
+
 DOCKER="sudo docker"
-DOCKER_APP_NAME="spring"
-NETWORK_NAME="app-network"
-REDIS_CONTAINER_NAME="redis"
+DOCKER_APP_NAME=spring
+NETWORK_NAME=app-network
+REDIS_CONTAINER_NAME=redis
 
-# .env 필수
-if [[ ! -f ".env" ]]; then
-  echo "[ERROR] .env not found in ${APP_DIR}"
-  exit 1
+# .env 존재만 확인 (값은 읽지 않음)
+if [ ! -f .env ]; then
+  echo "[ERROR] .env not found"; exit 1
 fi
 
-# .env 로드 (REDIS_PASSWORD 등)
-set -o allexport
-source .env
-set +o allexport
-
-# 네트워크 없으면 생성
-if ! $DOCKER network ls | grep -q "$NETWORK_NAME"; then
-  echo "Docker 네트워크가 없습니다. $NETWORK_NAME를 생성합니다."
-  $DOCKER network create $NETWORK_NAME
+# 네트워크 생성
+if ! $DOCKER network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}$"; then
+  echo "[INFO] create network ${NETWORK_NAME}"
+  $DOCKER network create ${NETWORK_NAME}
 fi
 
-# Redis 상태 확인 후 없으면 기동 (포트 미노출, requirepass/protected-mode)
-IS_REDIS_RUNNING=$($DOCKER ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q)
+# Redis 없으면 compose로 올림 (항상 --env-file 사용)
+IS_REDIS_RUNNING=$($DOCKER ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q || true)
 if [ -z "$IS_REDIS_RUNNING" ]; then
-  echo "Redis 실행 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-  $DOCKER_COMPOSE --env-file .env -f docker-compose.redis.yml up -d
-
-  # 간단 헬스체크
-  sleep 3
-  if ! $DOCKER exec -i ${REDIS_CONTAINER_NAME} redis-cli -a "${REDIS_PASSWORD}" PING | grep -q PONG; then
-    echo "배포 중단 - Redis AUTH PING 실패 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-    exit 1
+  echo "[INFO] Redis up via compose"
+  $DC --env-file .env -f docker-compose.redis.yml up -d
+  sleep 8
+  IS_REDIS_RUNNING=$($DOCKER ps --filter "name=${REDIS_CONTAINER_NAME}" --filter "status=running" -q || true)
+  if [ -z "$IS_REDIS_RUNNING" ]; then
+    echo "[ERROR] Redis container failed to start"; exit 1
   fi
 fi
-echo "Redis 상태: $($DOCKER ps -a --filter name=redis --format '{{.Status}}')" >> /home/ubuntu/deploy.log
 
-# 현재 BLUE 실행 여부
-EXIST_BLUE=$($DOCKER_COMPOSE -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml ps | grep Up)
-
-echo "배포 시작일자 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-
+# Blue/Green (항상 --env-file)
+EXIST_BLUE=$($DC -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml ps | grep Up || true)
 if [ -z "$EXIST_BLUE" ]; then
-  echo "blue 배포 시작 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-  $DOCKER_COMPOSE --env-file .env -p ${DOCKER_APP_NAME}-blue  -f docker-compose.blue.yml  up -d --build
-
-  sleep 10
-
-  echo "green 중단 시작 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-  $DOCKER_COMPOSE -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml stop || true
-  $DOCKER_COMPOSE -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml rm -f || true
-
-  $DOCKER image prune -af || true
-  echo "green 중단 완료 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
+  echo "[INFO] blue up"
+  $DC -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml --env-file .env up -d --build
+  sleep 20
+  echo "[INFO] stop/remove green"
+  $DC -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml stop || true
+  $DC -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml rm -f || true
 else
-  echo "green 배포 시작 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-  $DOCKER_COMPOSE --env-file .env -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml up -d --build
-
-  sleep 10
-
-  echo "blue 중단 시작 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-  $DOCKER_COMPOSE -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml stop || true
-  $DOCKER_COMPOSE -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml rm -f || true
-
-  $DOCKER image prune -af || true
-  echo "blue 중단 완료 : $(date '+%F %T')" >> /home/ubuntu/deploy.log
+  echo "[INFO] green up"
+  $DC -p ${DOCKER_APP_NAME}-green -f docker-compose.green.yml --env-file .env up -d --build
+  sleep 20
+  echo "[INFO] stop/remove blue"
+  $DC -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml stop || true
+  $DC -p ${DOCKER_APP_NAME}-blue -f docker-compose.blue.yml rm -f || true
 fi
 
-echo "배포 종료  : $(date '+%F %T')" >> /home/ubuntu/deploy.log
-echo "===================== 배포 완료 =====================" >> /home/ubuntu/deploy.log
-echo >> /home/ubuntu/deploy.log
+$DOCKER image prune -af || true
+echo "=== ApplicationStart done $(date '+%F %T') ==="
