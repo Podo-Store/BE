@@ -51,4 +51,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Modifying
     @Query("UPDATE ProductEntity p SET p.likeCount = p.likeCount - 1 WHERE p.id = :productId")
     void decrementLikeCount(@Param("productId") UUID productId);
+
+    @Modifying
+    @Query("update ProductEntity p set p.viewCount = COALESCE(p.viewCount,0) + :delta where p.id = :id")
+    void incrementViewCount(@Param("id") UUID id, @Param("delta") long delta);
 }
