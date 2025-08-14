@@ -72,7 +72,6 @@ jobs:
 
     - name: zip file 생성
       run: |
-        mkdir deploy
         cp ./docker/docker-compose.blue.yml ./deploy/
         cp ./docker/docker-compose.green.yml ./deploy/
         cp ./docker/docker-compose.redis.yml ./deploy/
@@ -81,7 +80,6 @@ jobs:
         cp ./scripts/*.sh ./deploy/
         cp ./build/libs/*.jar ./deploy/
         zip -r -qq -j ./spring-build.zip ./deploy
-
 
     - name: AWS 연결
       uses: aws-actions/configure-aws-credentials@v1
