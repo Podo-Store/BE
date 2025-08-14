@@ -64,9 +64,18 @@ jobs:
         echo "appspec.yml file found, contents:"
         cat ./appspec.yml
 
+    - name: Create .env for Docker Compose
+      shell: bash
+      run: |
+        set -euo pipefail
+        rm -rf deploy
+        mkdir -p deploy
+        # Bash 확장 방지를 위해 작은따옴표로 감싸고, printf로 줄바꿈까지 정확히 작성
+        printf 'REDIS_PASSWORD=%s\n' '${{ secrets.REDIS_PASSWORD }}' > deploy/.env
+
+
     - name: zip file 생성
       run: |
-        mkdir deploy
         cp ./docker/docker-compose.blue.yml ./deploy/
         cp ./docker/docker-compose.green.yml ./deploy/
         cp ./docker/docker-compose.redis.yml ./deploy/
@@ -75,7 +84,6 @@ jobs:
         cp ./scripts/*.sh ./deploy/
         cp ./build/libs/*.jar ./deploy/
         zip -r -qq -j ./spring-build.zip ./deploy
-
 
     - name: AWS 연결
       uses: aws-actions/configure-aws-credentials@v1

@@ -16,6 +16,7 @@ services:
       - TZ=Asia/Seoul
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
     stop_grace_period: 10s
 
 networks:
