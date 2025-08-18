@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.admin.service;
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
+import PodoeMarket.podoemarket.admin.dto.response.StatisticsResponseDTO;
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
@@ -10,9 +11,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
-import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.common.repository.OrderRepository;
-import PodoeMarket.podoemarket.common.repository.ProductRepository;
+import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -45,6 +44,8 @@ public class AdminService {
     private final ProductRepository productRepo;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
+    private final UserRepository userRepo;
+    private final ReviewRepository reviewRepo;
     private final AmazonS3 amazonS3;
     private final MailSendService mailSendService;
 
@@ -300,6 +301,53 @@ public class AdminService {
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("상품 제목 업데이트 실패", e);
+        }
+    }
+
+    public StatisticsResponseDTO getStatistics() {
+        try {
+            return StatisticsResponseDTO.builder()
+                    .userCnt(getUserCount())
+                    .scriptCnt(getScriptCount())
+                    .viewCnt(getViewCount())
+                    .reviewCnt(getReviewCount())
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("통계 조회 실패", e);
+        }
+    }
+
+    // ================= private method =================
+
+    private Long getUserCount() {
+        try {
+            return userRepo.count();
+        } catch (Exception e) {
+            throw new RuntimeException("유저 카운트 조회 실패", e);
+        }
+    }
+
+    private Long getScriptCount() {
+        try {
+            return productRepo.count();
+        } catch (Exception e) {
+            throw new RuntimeException("작품 카운트 조회 실패", e);
+        }
+    }
+
+    private Long getViewCount() {
+        try {
+            return productRepo.sumViewCount();
+        } catch (Exception e) {
+            throw new RuntimeException("조회수 카운트 조회 실패", e);
+        }
+    }
+
+    private Long getReviewCount() {
+        try {
+            return reviewRepo.count();
+        } catch (Exception e) {
+            throw new RuntimeException("후기 카운트 조회 실패", e);
         }
     }
 }
