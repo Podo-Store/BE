@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.UpdateTitleRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.UpdateWriterRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
+import PodoeMarket.podoemarket.admin.dto.response.StatisticsResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
@@ -184,6 +185,20 @@ public class AdminController {
             adminService.updateWriter(dto.getProductId(), dto.getWriter());
 
             return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getStatistics(@AuthenticationPrincipal UserEntity userInfo) {
+        try {
+            adminService.checkAuth(userInfo);
+
+            final StatisticsResponseDTO resDTO = adminService.getStatistics();
+
+            return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
