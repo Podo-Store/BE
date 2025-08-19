@@ -308,7 +308,7 @@ public class AdminService {
         try {
             return StatisticsResponseDTO.builder()
                     .userCnt(getUserCount())
-                    .scriptCnt(getScriptCount())
+                    .scriptCnt(getCheckedCount(ProductStatus.PASS))
                     .viewCnt(getViewCount())
                     .reviewCnt(getReviewCount())
                     .build();
@@ -324,14 +324,6 @@ public class AdminService {
             return userRepo.count();
         } catch (Exception e) {
             throw new RuntimeException("유저 카운트 조회 실패", e);
-        }
-    }
-
-    private Long getScriptCount() {
-        try {
-            return productRepo.count();
-        } catch (Exception e) {
-            throw new RuntimeException("작품 카운트 조회 실패", e);
         }
     }
 
