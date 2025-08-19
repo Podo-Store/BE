@@ -40,8 +40,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     Page<ProductEntity> findByTitleContainingOrWriterContainingAndChecked(String title, String writer, ProductStatus checked, Pageable pageable);
 
-    List<ProductEntity> findAllByCheckedAndUpdatedAt(ProductStatus checked, LocalDateTime updatedAt);
-
     List<ProductEntity> findAllByIsDeleteAndUpdatedAt(Boolean isDelete, LocalDateTime updatedAt);
 
     @Modifying
