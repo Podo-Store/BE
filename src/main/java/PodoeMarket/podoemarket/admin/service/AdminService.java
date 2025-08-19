@@ -355,13 +355,6 @@ public class AdminService {
         }
     }
 
-    private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
-        final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
-
-        if(amazonS3.doesObjectExist(bucket, sourceKey))
-            amazonS3.copyObject(copyFile);
-    }
-
     private void deleteFile(final String bucket, final String sourceKey) {
         if(amazonS3.doesObjectExist(bucket, sourceKey))
             amazonS3.deleteObject(bucket, sourceKey);
