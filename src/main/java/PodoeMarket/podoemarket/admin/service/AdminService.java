@@ -14,9 +14,10 @@ import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +31,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -49,6 +52,7 @@ public class AdminService {
     private final ReviewRepository reviewRepo;
     private final AmazonS3 amazonS3;
     private final MailSendService mailSendService;
+    private final StringRedisTemplate redisTemplate;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -341,7 +345,30 @@ public class AdminService {
 
     private Long getViewCount() {
         try {
-            return productRepo.sumViewCount();
+            long total = productRepo.sumViewCount();
+
+            // Redis Delta 합계
+            var conn = redisTemplate.getConnectionFactory().getConnection();
+            try(var cursor = conn.scan(
+                    ScanOptions.scanOptions().match("product:views:delta:*").count(1000).build())) {
+                while (cursor.hasNext()) {
+                    String key = new String(cursor.next(), StandardCharsets.UTF_8);
+                    String val = redisTemplate.opsForValue().get(key);
+
+                    if(val != null) {
+                        try {
+                            total += Long.parseLong(val);
+                        } catch (NumberFormatException ignore) {}
+                    }
+                }
+            } finally {
+                try {
+                    conn.close();
+                } catch (Exception ignore) {}
+            }
+
+            return total;
+
         } catch (Exception e) {
             throw new RuntimeException("조회수 카운트 조회 실패", e);
         }
