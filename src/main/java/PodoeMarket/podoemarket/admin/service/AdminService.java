@@ -15,6 +15,7 @@ import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -132,8 +133,19 @@ public class AdminService {
 
                 mailSendService.joinRegisterPassMail(product.getUser().getEmail(), product.getTitle());
             }
-            else if (dto.getProductStatus() == ProductStatus.REJECT)
+            else if (dto.getProductStatus() == ProductStatus.REJECT) {
                 mailSendService.joinRegisterRejectMail(product.getUser().getEmail(), product.getTitle());
+
+                deleteFile(bucket, product.getFilePath()); // 작품 파일
+
+                if(product.getDescriptionPath() != null)
+                    deleteFile(bucket, product.getDescriptionPath()); // 작품 설명 파일
+
+                if(product.getImagePath() != null)
+                    deleteFile(bucket, product.getImagePath()); // 작품 이미지 파일
+
+                productRepo.delete(product);
+            }
 
         } catch (Exception e) {
             throw new RuntimeException("상품 업데이트 실패", e);
@@ -341,5 +353,17 @@ public class AdminService {
         } catch (Exception e) {
             throw new RuntimeException("후기 카운트 조회 실패", e);
         }
+    }
+
+    private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
+        final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
+
+        if(amazonS3.doesObjectExist(bucket, sourceKey))
+            amazonS3.copyObject(copyFile);
+    }
+
+    private void deleteFile(final String bucket, final String sourceKey) {
+        if(amazonS3.doesObjectExist(bucket, sourceKey))
+            amazonS3.deleteObject(bucket, sourceKey);
     }
 }
