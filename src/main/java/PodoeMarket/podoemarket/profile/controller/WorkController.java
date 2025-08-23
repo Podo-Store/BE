@@ -73,4 +73,16 @@ public class WorkController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @DeleteMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelRegister(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try {
+            workService.cancelRegister(id, userInfo.getId());
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

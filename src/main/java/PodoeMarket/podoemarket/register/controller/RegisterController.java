@@ -19,11 +19,11 @@ public class RegisterController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> scriptRegister(@AuthenticationPrincipal UserEntity userInfo, @RequestPart("script") MultipartFile[] files) {
-        try{
+        try {
             registerService.registerScript(userInfo, files);
 
             return ResponseEntity.ok().body(true);
-        } catch(Exception e) {
+        } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
