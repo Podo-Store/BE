@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream;
 @Service
 @Transactional(readOnly = true)
 public class RegisterService {
-    private final ProductRepository fileRepo;
+    private final ProductRepository productRepo;
     private final UserRepository userRepo;
     private final AmazonS3 amazonS3;
     private final MailSendService mailSendService;
@@ -63,7 +63,7 @@ public class RegisterService {
                     .user(userInfo)
                     .build();
 
-            fileRepo.save(script);
+            productRepo.save(script);
 
             mailSendService.joinRegisterEmail(userInfo.getEmail(), normalizedTitle);
         } catch (Exception e) {
