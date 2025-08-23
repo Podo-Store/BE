@@ -28,13 +28,10 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -55,9 +52,6 @@ public class WorkService {
 
     @Value("${cloud.aws.s3.folder.folderName2}")
     private String scriptImageBucketFolder;
-
-    @Value("${cloud.aws.s3.url}")
-    private String bucketURL;
 
     public WorkListResponseDTO getUserWorks(final UserEntity userInfo) {
         try {
@@ -240,7 +234,7 @@ public class WorkService {
             final ProductEntity product = productRepo.findById(productId);
 
             if(product == null)
-                throw new RuntimeException("상품을 찾을 수 없습니다.");
+                throw new RuntimeException("작품을 찾을 수 없습니다.");
 
             if(!product.getUser().getId().equals(userId))
                 throw new RuntimeException("작가가 아님");
@@ -253,6 +247,28 @@ public class WorkService {
 
             product.setIsDelete(true);
             productRepo.save(product);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Transactional
+    public void cancelRegister(final UUID productId, final UUID userId) {
+        try {
+            final ProductEntity product = productRepo.findById(productId);
+
+            if(product == null)
+                throw new RuntimeException("작품을 찾을 수 없습니다.");
+
+            if(!product.getUser().getId().equals(userId))
+                throw new RuntimeException("작가가 아닙니다.");
+
+            if(product.getChecked() != ProductStatus.WAIT)
+                throw new RuntimeException("심사 중이 아닙니다.");
+
+            deleteFile(bucket, product.getFilePath());
+
+            productRepo.delete(product);
         } catch (Exception e) {
             throw e;
         }

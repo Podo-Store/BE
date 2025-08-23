@@ -15,7 +15,6 @@ import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +33,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -383,7 +381,11 @@ public class AdminService {
     }
 
     private void deleteFile(final String bucket, final String sourceKey) {
-        if(amazonS3.doesObjectExist(bucket, sourceKey))
-            amazonS3.deleteObject(bucket, sourceKey);
+        try {
+            if(amazonS3.doesObjectExist(bucket, sourceKey))
+                amazonS3.deleteObject(bucket, sourceKey);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 삭제 실패", e);
+        }
     }
 }
