@@ -4,7 +4,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
-import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.JsonObject;
@@ -78,14 +78,14 @@ public class OAuthService {
     }
 
     // 소셜 로그인 메서드
-    public SignInResponseDTO socialSignIn(final UserEntity user) {
+    public TokenCreateResponseDTO socialSignIn(final UserEntity user) {
         try {
             final UserEntity signInUser = userRepo.findByUserId(user.getUserId());
 
             if(signInUser == null)
                 throw new RuntimeException("사용자를 찾을 수 없습니다.");
 
-            return SignInResponseDTO.builder()
+            return TokenCreateResponseDTO.builder()
                     .nickname(signInUser.getNickname())
                     .auth(signInUser.isAuth())
                     .accessToken(tokenProvider.createAccessToken(user))
