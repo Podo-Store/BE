@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignInResponseDTO {
+public class TokenCreateResponseDTO {
     private String nickname;
     private Boolean auth;
     private String accessToken; // jwt 저장공간

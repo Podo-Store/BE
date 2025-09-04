@@ -4,7 +4,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
-import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import PodoeMarket.podoemarket.user.service.OAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class OauthController {
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
             if (oauthService.checkUserId(user.getUserId())) {
-                final SignInResponseDTO resDTO = oauthService.socialSignIn(user);
+                final TokenCreateResponseDTO resDTO = oauthService.socialSignIn(user);
 
                 mailService.joinSignupEmail(user.getEmail());
 
