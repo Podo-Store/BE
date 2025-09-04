@@ -10,7 +10,7 @@ import PodoeMarket.podoemarket.service.VerificationService;
 import PodoeMarket.podoemarket.user.dto.request.*;
 import PodoeMarket.podoemarket.user.dto.response.FindPasswordResponseDTO;
 import PodoeMarket.podoemarket.user.dto.response.FindUserIdResponseDTO;
-import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import PodoeMarket.podoemarket.user.dto.response.TokenResponseDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -71,7 +71,7 @@ public class UserService {
     }
 
     @Transactional
-    public void create(final SignUpRequestDTO dto) {
+    public TokenCreateResponseDTO create(final SignUpRequestDTO dto) {
         try {
             if(!isValidUserId(dto.getUserId()))
                 throw new RuntimeException("아이디 유효성 검사 실패");
@@ -94,7 +94,7 @@ public class UserService {
             if(userRepo.existsByNickname(dto.getNickname()))
                 throw new RuntimeException("이미 존재하는 닉네임");
 
-            UserEntity user = UserEntity.builder()
+            UserEntity userInfo = UserEntity.builder()
                     .userId(dto.getUserId())
                     .password(pwdEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
@@ -103,20 +103,27 @@ public class UserService {
                     .stageType(StageType.DEFAULT) // 명시적 선언
                     .build();
 
-            userRepo.save(user);
+            final UserEntity user = userRepo.save(userInfo);
             verificationService.deleteData(dto.getAuthNum()); // 인증 번호 확인 후, redis 상에서 즉시 삭제
             mailService.joinSignupEmail(dto.getEmail());
+
+            return TokenCreateResponseDTO.builder()
+                    .nickname(dto.getNickname())
+                    .auth(false)
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .refreshToken(tokenProvider.createRefreshToken(user))
+                    .build();
         } catch (Exception e){
             throw e;
         }
     }
 
-    public SignInResponseDTO getByCredentials(final String userId, final String password){
+    public TokenCreateResponseDTO getCredentialsSignIn(final String userId, final String password){
         try {
             final UserEntity user = userRepo.findByUserId(userId);
 
             if(user != null && pwdEncoder.matches(password, user.getPassword())) {
-                return SignInResponseDTO.builder()
+                return TokenCreateResponseDTO.builder()
                         .nickname(user.getNickname())
                         .auth(user.isAuth())
                         .accessToken(tokenProvider.createAccessToken(user))

@@ -6,7 +6,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.FindPasswordResponseDTO;
 import PodoeMarket.podoemarket.user.dto.response.FindUserIdResponseDTO;
-import PodoeMarket.podoemarket.user.dto.response.SignInResponseDTO;
+import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import PodoeMarket.podoemarket.user.dto.response.TokenResponseDTO;
 import PodoeMarket.podoemarket.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -117,9 +117,9 @@ public class UserController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
 
-            userService.create(dto);
+            final TokenCreateResponseDTO user = userService.create(dto);
 
-            return ResponseEntity.ok().body(true);
+            return ResponseEntity.ok().body(user);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
@@ -129,7 +129,7 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody SignInRequestDTO dto) {
         try{
-            final SignInResponseDTO user = userService.getByCredentials(dto.getUserId(), dto.getPassword());
+            final TokenCreateResponseDTO user = userService.getCredentialsSignIn(dto.getUserId(), dto.getPassword());
 
             return ResponseEntity.ok().body(user);
         } catch(Exception e) {
