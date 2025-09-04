@@ -55,4 +55,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     Page<OrderItemEntity> findOrderItemsByKeywordAndOrderStatus(@Param("keyword") String keyword,
                                                                   @Param("orderStatus") OrderStatus orderStatus,
                                                                   Pageable pageable);
+
+    Boolean existsByProductIdAndUserId(UUID productId, UUID userId);
 }
