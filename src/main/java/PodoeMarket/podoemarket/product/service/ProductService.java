@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -58,36 +59,36 @@ public class ProductService {
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
-            Sort sort = createProductSort(sortType);
-            final Pageable pageable = PageRequest.of(page, pageSize, sort);
-            final List<ProductEntity> plays = productRepo.findAllValidPlays(playType, ProductStatus.PASS, pageable);
+            // POPULAR(조회수 기준 정렬)는 Java단에서 처리
+            if (sortType == ProductSortType.POPULAR) {
+                List<ProductEntity> plays = productRepo.findAllValidPlays(
+                        playType,
+                        ProductStatus.PASS,
+                        PageRequest.of(page, pageSize, Sort.unsorted()) // 정렬 직접 처리
+                );
 
-            return plays.stream()
-                    .map(play -> {
-                        final ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+                return plays.stream()
+                        .map(play -> getListDto(userInfo, play))
+                        .sorted(Comparator.comparingLong(ScriptListResponseDTO.ProductListDTO::getViewCount).reversed())
+                        .limit(pageSize)
+                        .toList();
+            } else {
+                Sort sort = createProductSort(sortType);
+                List<ProductEntity> plays = productRepo.findAllValidPlays(
+                        playType,
+                        ProductStatus.PASS,
+                        PageRequest.of(page, pageSize, sort)
+                );
 
-                        final String scriptImage = generateScriptImgURL(play);
-
-                        productListDTO.setId(play.getId());
-                        productListDTO.setTitle(play.getTitle());
-                        productListDTO.setWriter(play.getWriter());
-                        productListDTO.setImagePath(scriptImage);
-                        productListDTO.setScript(play.getScript());
-                        productListDTO.setScriptPrice(play.getScriptPrice());
-                        productListDTO.setPerformance(play.getPerformance());
-                        productListDTO.setPerformancePrice(play.getPerformancePrice());
-                        productListDTO.setDate(play.getCreatedAt());
-                        productListDTO.setChecked(play.getChecked());
-                        productListDTO.setLike(getProductLikeStatus(userInfo, play.getId()));
-                        productListDTO.setLikeCount(play.getLikeCount());
-                        productListDTO.setViewCount(viewCountService.getProductViewCount(play.getId()));
-
-                        return productListDTO;
-                    }).toList();
+                return plays.stream()
+                        .map(play -> getListDto(userInfo, play))
+                        .toList();
+            }
         } catch (Exception e) {
-            throw e;
+            throw new RuntimeException("작품 목록 조회 실패", e);
         }
     }
+
 
     public ProductEntity getProduct(UUID id) {
         try {
@@ -611,5 +612,27 @@ public class ProductService {
         } catch (Exception e) {
             throw new RuntimeException("좋아요 생성 실패", e);
         }
+    }
+
+    private ScriptListResponseDTO.ProductListDTO getListDto(final UserEntity userInfo, final ProductEntity play) {
+        ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+
+        final String scriptImage = generateScriptImgURL(play);
+
+        productListDTO.setId(play.getId());
+        productListDTO.setTitle(play.getTitle());
+        productListDTO.setWriter(play.getWriter());
+        productListDTO.setImagePath(scriptImage);
+        productListDTO.setScript(play.getScript());
+        productListDTO.setScriptPrice(play.getScriptPrice());
+        productListDTO.setPerformance(play.getPerformance());
+        productListDTO.setPerformancePrice(play.getPerformancePrice());
+        productListDTO.setDate(play.getCreatedAt());
+        productListDTO.setChecked(play.getChecked());
+        productListDTO.setLike(getProductLikeStatus(userInfo, play.getId()));
+        productListDTO.setLikeCount(play.getLikeCount());
+        productListDTO.setViewCount(viewCountService.getProductViewCount(play.getId()));
+
+        return productListDTO;
     }
 }

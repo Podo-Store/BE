@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort;
 @Getter
 @AllArgsConstructor
 public enum ProductSortType {
-    POPULAR("viewCount", Sort.Direction.DESC, true),
+    POPULAR("viewCount", Sort.Direction.DESC, true), // JPA 정렬 무시
     LIKE_COUNT("likeCount", Sort.Direction.DESC, true),
     LATEST("createdAt", Sort.Direction.DESC, false);
 
