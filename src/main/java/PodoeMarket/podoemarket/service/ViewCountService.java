@@ -23,13 +23,15 @@ public class ViewCountService {
     private final StringRedisTemplate redisTemplate;
     private final ProductRepository productRepo;
 
-    // 비로그인 사용자의 조회 확인 (쿠키는 컨트롤러에서 처리)
+    private static final String DELTA_PREFIX = "product:views:delta:";
+
+    // 조회수 증가 (Delta만)
     public void incrementViewForProduct(UUID productId) {
-        final String deltaKey = "product:views:delta:" + productId.toString();
+        final String deltaKey = DELTA_PREFIX + productId.toString();
         redisTemplate.opsForValue().increment(deltaKey);
     }
 
-    // 상품의 현재 조회수 조회(DB 기준선 + 델타)
+    // 조회수 조회(DB + Delta)
     public Long getProductViewCount(UUID productId) {
         long base = 0L;
         final ProductEntity product = productRepo.findById(productId);
@@ -37,7 +39,7 @@ public class ViewCountService {
         if(product != null && product.getViewCount() != null)
             base = product.getViewCount();
 
-        final String deltaViewCountKey = "product:views:delta:" + productId.toString();
+        final String deltaViewCountKey = DELTA_PREFIX + productId.toString();
         final String deltaCount = redisTemplate.opsForValue().get(deltaViewCountKey);
         final long delta = (deltaCount != null) ? Long.parseLong(deltaCount) : 0L;
 
@@ -54,17 +56,14 @@ public class ViewCountService {
             conn = redisTemplate.getConnectionFactory().getConnection();
 
             ScanOptions options = ScanOptions.scanOptions()
-                    .match("product:views:delta:*")
+                    .match(DELTA_PREFIX + "*")
                     .count(500)
                     .build();
 
             try(Cursor<byte[]> cursor = conn.scan(options)) {
                 while(cursor.hasNext()) {
                     String key = new String(cursor.next(), StandardCharsets.UTF_8);
-                    String idStr = key.substring("product:views:delta:".length());
-                    UUID productId = UUID.fromString(idStr);
-
-                    // 원자적 GET+DEL (지원 시)
+                    UUID productId = UUID.fromString(key.substring(DELTA_PREFIX.length()));
                     String deltaStr = redisTemplate.opsForValue().getAndDelete(key);
 
                     if(deltaStr == null)
