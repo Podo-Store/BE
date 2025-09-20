@@ -37,8 +37,8 @@ public class ProductController {
     public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
         try{
             final ScriptListResponseDTO lists = new ScriptListResponseDTO(
-                    productService.getPlayList(0, userInfo, PlayType.LONG, 10, sortType),
-                    productService.getPlayList(0, userInfo, PlayType.SHORT, 10, sortType)
+                    productService.getPlayList(0, userInfo, PlayType.LONG, 20, sortType).stream().limit(10).toList(),
+                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20, sortType).stream().limit(10).toList()
             );
 
             return ResponseEntity.ok().body(lists);
