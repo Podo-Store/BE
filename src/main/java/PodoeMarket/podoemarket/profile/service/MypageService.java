@@ -166,12 +166,21 @@ public class MypageService {
 
             for (OrderItemEntity orderItem : allOrderItems) {
                 final OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO orderItemDTO =  new OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO();
+
                 orderItemDTO.setId(orderItem.getId());
                 orderItemDTO.setTitle(orderItem.getProduct().getTitle());
                 orderItemDTO.setScript(orderItem.getScript());
 
-                if(orderItem.getProduct() != null) { // 삭제된 작품이 아닐 경우
-                    String encodedScriptImage = orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
+                if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
+                    orderItemDTO.setDelete(true);
+                    orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
+                } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
+                    orderItemDTO.setDelete(true);
+                    orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
+                } else { // 정상 작품
+                    String encodedScriptImage = orderItem.getProduct().getImagePath() != null
+                            ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
+                            : "";
 
                     orderItemDTO.setDelete(false);
                     orderItemDTO.setWriter(orderItem.getProduct().getWriter());
@@ -180,9 +189,6 @@ public class MypageService {
                     orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getProduct().getScriptPrice() : 0);
                     orderItemDTO.setProductId(orderItem.getProduct().getId());
                     orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
-                } else { // 삭제된 작품일 경우
-                    orderItemDTO.setDelete(true);
-                    orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
                 }
 
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
@@ -217,6 +223,7 @@ public class MypageService {
 
                     // 각 주문 항목에 대한 제품 정보 가져옴
                     final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
+
                     orderItemDTO.setId(orderItem.getId());
                     orderItemDTO.setTitle(orderItem.getProduct().getTitle());
                     orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
@@ -226,8 +233,18 @@ public class MypageService {
                     else
                         orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
 
-                    if(orderItem.getProduct() != null) { // 삭제된 작품이 아닐 경우
-                        String encodedScriptImage = orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8) : "";
+                    if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
+                        orderItemDTO.setDelete(true);
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
+                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                    } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
+                        orderItemDTO.setDelete(true);
+                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
+                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                    } else { // 정상 작품
+                        String encodedScriptImage = orderItem.getProduct().getImagePath() != null
+                                ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
+                                : "";
 
                         orderItemDTO.setDelete(false);
                         orderItemDTO.setWriter(orderItem.getProduct().getWriter());
@@ -237,10 +254,6 @@ public class MypageService {
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                         orderItemDTO.setProductId(orderItem.getProduct().getId());
                         orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
-                    } else { // 삭제된 작품일 경우
-                        orderItemDTO.setDelete(true);
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
-                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                     }
 
                     final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
