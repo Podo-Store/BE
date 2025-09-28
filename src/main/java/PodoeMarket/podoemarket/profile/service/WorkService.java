@@ -244,9 +244,6 @@ public class WorkService {
 
             // 탈퇴와 동일한 파일 삭제 처리 필요
             deleteScripts(product);
-
-            product.setIsDelete(true);
-            productRepo.save(product);
         } catch (Exception e) {
             throw e;
         }
@@ -498,6 +495,8 @@ public class WorkService {
                 deleteFile(bucket, product.getDescriptionPath());
                 product.setDescriptionPath(descriptionPath);
             }
+
+            product.setIsDelete(true);
 
             productRepo.save(product);
         } catch (Exception e) {
