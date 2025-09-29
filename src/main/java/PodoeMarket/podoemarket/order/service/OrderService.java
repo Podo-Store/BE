@@ -192,6 +192,7 @@ public class OrderService {
                 orderItem.setPerformanceAmount(orderItemDTO.getPerformanceAmount());
                 orderItem.setPerformancePrice(performancePrice);
                 orderItem.setTotalPrice(totalPrice);
+                orderItem.setWriteId(product.getUser().getId());
                 orderItem.setUser(user);
 
                 return orderItem;
