@@ -50,6 +50,9 @@ public class OrderItemEntity {
     @Column(nullable = false)
     private Long totalPrice;
 
+    @Column
+    private UUID writeId;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
