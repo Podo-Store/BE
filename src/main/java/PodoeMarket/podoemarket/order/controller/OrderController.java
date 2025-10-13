@@ -26,6 +26,10 @@ public class OrderController {
     @GetMapping("/item")
     public ResponseEntity<?> getPurchaseInfo(@AuthenticationPrincipal UserEntity userInfo, @ModelAttribute OrderInfoRequestDTO dto) {
         try {
+            // 어드민이 인가된 계정만 결제 창 진입 가능
+            if(!userInfo.isAuth())
+                throw new RuntimeException("어드민 권한이 존재하지 않습니다.");
+
             OrderItemResponseDTO item = orderService.getOrderItemInfo(userInfo, dto);
 
             return ResponseEntity.ok().body(item);
