@@ -237,7 +237,7 @@ public class WorkService {
                 throw new RuntimeException("작품을 찾을 수 없습니다.");
 
             if(!product.getUser().getId().equals(userId))
-                throw new RuntimeException("작가가 아님");
+                throw new RuntimeException("작가가 아닙니다.");
 
             if(product.getChecked() == ProductStatus.WAIT)
                 throw new RuntimeException("심사 중");
@@ -269,6 +269,22 @@ public class WorkService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    @Transactional
+    public void changeScript(final UUID productId, final UUID userId) {
+        final ProductEntity product = productRepo.findById(productId);
+
+        if(product == null)
+            throw new RuntimeException("작품을 찾을 수 없습니다.");
+
+        if(!product.getUser().getId().equals(userId))
+            throw new RuntimeException("작가가 아닙니다.");
+
+        // 파일 처리 필요
+
+        product.setChecked(ProductStatus.RE_WAIT);
+        productRepo.save(product);
     }
 
     // ============= private method ===============
@@ -465,7 +481,6 @@ public class WorkService {
         log.info("plot valid checked");
         return true;
     }
-
 
     private static boolean isValidIntention(String intention) {
         if (intention != null) {

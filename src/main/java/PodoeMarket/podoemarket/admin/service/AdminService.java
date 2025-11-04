@@ -72,6 +72,7 @@ public class AdminService {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
 
+            // 질문 2) PASS + RE_PASS를 같이 보여줄 건지, 다르게 보여줄 건지 확인 필요
             if (search == null || search.trim().isEmpty()) {
                 if (status == null) // 검색어 X, 전체 O
                     return productRepo.findAll(pageRequest);

@@ -85,4 +85,17 @@ public class WorkController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @PostMapping("/changeScript/{id}")
+    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try {
+            // 질문 1) 재심사 대기 중에 심사 취소 시, 이전 파일로 돌아가는건가?
+            workService.changeScript(id, userInfo.getId());
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }
