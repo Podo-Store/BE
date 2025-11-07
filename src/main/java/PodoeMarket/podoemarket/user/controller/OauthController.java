@@ -39,7 +39,7 @@ public class OauthController {
 
                 return ResponseEntity.ok().body(resDTO);
             } else {
-                // 새 사용자는 저장
+                // 새 사용자는 저장 -> 동일 이메일 확인 필요
                 oauthService.create(user);
 
                 return ResponseEntity.ok().body(true);
