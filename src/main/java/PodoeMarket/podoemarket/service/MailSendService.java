@@ -368,6 +368,11 @@ public class MailSendService {
         mailSend(setFrom, email, title, content);
     }
 
+    // 재심사 등록 신청 완료
+    public void joinReviewEmail(final String email, final String scriptTitle) {
+
+    }
+
     // 이메일 전송
     public void mailSend(final String setFrom, final String toMail, final String title, final String content) {
         MimeMessage message = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
