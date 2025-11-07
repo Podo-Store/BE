@@ -87,10 +87,9 @@ public class WorkController {
     }
 
     @PostMapping("/changeScript/{id}")
-    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id, @RequestPart("script") MultipartFile[] files) {
         try {
-            // 질문 1) 재심사 대기 중에 심사 취소 시, 이전 파일로 돌아가는건가?
-            workService.changeScript(id, userInfo.getId());
+            workService.changeScript(id, userInfo, files);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {

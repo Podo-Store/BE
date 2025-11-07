@@ -121,6 +121,9 @@ public class ProductEntity {
     @Column(length = 1000)
     private String intention; // 작품 의도
 
+    @Column
+    private String tempFilePath; // 재심사를 위한 임시 파일 저장소
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

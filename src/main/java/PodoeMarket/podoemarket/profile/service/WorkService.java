@@ -53,6 +53,9 @@ public class WorkService {
     @Value("${cloud.aws.s3.folder.folderName2}")
     private String scriptImageBucketFolder;
 
+    @Value("${cloud.aws.s3.folder.folderName1}")
+    private String scriptBucketFolder;
+
     public WorkListResponseDTO getUserWorks(final UserEntity userInfo) {
         try {
             final List<ProductEntity> products = productRepo.findAllByUserId(userInfo.getId());
@@ -272,19 +275,23 @@ public class WorkService {
     }
 
     @Transactional
-    public void changeScript(final UUID productId, final UUID userId) {
+    public void changeScript(final UUID productId, final UserEntity user, MultipartFile[] files) throws IOException {
         final ProductEntity product = productRepo.findById(productId);
 
         if(product == null)
             throw new RuntimeException("작품을 찾을 수 없습니다.");
 
-        if(!product.getUser().getId().equals(userId))
+        if(!product.getUser().getId().equals(user.getId()))
             throw new RuntimeException("작가가 아닙니다.");
 
         // 파일 처리 필요
+        String tempFilePath = uploadScript(files, user.getNickname());
 
+        product.setTempFilePath(tempFilePath);
         product.setChecked(ProductStatus.RE_WAIT);
         productRepo.save(product);
+
+        // 메일 전송 로직 필요
     }
 
     // ============= private method ===============
@@ -405,6 +412,38 @@ public class WorkService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    protected String uploadScript(MultipartFile[] files, String writer) throws IOException {
+        if(files[0].isEmpty())
+            throw new RuntimeException("선택된 파일이 없음");
+        else if(files.length > 1)
+            throw new RuntimeException("파일 수가 1개를 초과함");
+
+        if (!Objects.equals(files[0].getContentType(), "application/pdf"))
+            throw new RuntimeException("contentType is not PDF");
+
+        // 파일 이름 가공
+        final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        // S3 Key 구성
+        final String S3Key = scriptBucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".zip";
+
+        // PDF 파일을 zip으로 압축
+        byte[] zippedBytes = compressToZip(files[0]);
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(zippedBytes.length);
+        metadata.setContentType("application/zip");
+
+        try (InputStream inputStream = new ByteArrayInputStream(zippedBytes)) {
+            amazonS3.putObject(bucket, S3Key, inputStream, metadata);
+        }
+
+        return S3Key;
     }
 
     private static byte[] compressToZip(MultipartFile file) throws IOException {
