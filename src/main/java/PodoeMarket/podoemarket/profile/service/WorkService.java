@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.S3Service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -43,6 +44,7 @@ public class WorkService {
     private final ProductRepository productRepo;
     private final AmazonS3 amazonS3;
     private final S3Service s3Service;
+    private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -292,6 +294,7 @@ public class WorkService {
         productRepo.save(product);
 
         // 메일 전송 로직 필요
+        mailSendService.joinReviewEmail(user.getEmail(), product.getTitle());
     }
 
     // ============= private method ===============
