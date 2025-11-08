@@ -286,6 +286,9 @@ public class WorkService {
         if(!product.getUser().getId().equals(user.getId()))
             throw new RuntimeException("작가가 아닙니다.");
 
+        if(product.getChecked() == ProductStatus.RE_WAIT)
+            throw new RuntimeException("재심사 결과 대기 중에는 재신청이 불가합니다.");
+
         // 파일 처리 필요
         String tempFilePath = uploadScript(files, user.getNickname());
 

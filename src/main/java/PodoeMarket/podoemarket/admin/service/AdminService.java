@@ -14,6 +14,7 @@ import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -68,21 +69,20 @@ public class AdminService {
         }
     }
 
-    public Page<ProductEntity> getAllProducts(final String search, final ProductStatus status, final int page) {
+    public Page<ProductEntity> getAllProducts(final String search, final List<ProductStatus> status, final int page) {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
 
-            // 질문 2) PASS + RE_PASS를 같이 보여줄 건지, 다르게 보여줄 건지 확인 필요
             if (search == null || search.trim().isEmpty()) {
-                if (status == null) // 검색어 X, 전체 O
+                if (status == null) // 검색어 X, 전체
                     return productRepo.findAll(pageRequest);
                 else // 검색어 X, 전체 X
-                    return productRepo.findByChecked(status, pageRequest);
+                    return productRepo.findByCheckedIn(status, pageRequest);
             } else {
                 if (status == null) // 검색어 O, 전체 O
                     return productRepo.findByTitleContainingOrWriterContaining(search, search, pageRequest);
                 else // 검색어 O, 전체 X
-                    return productRepo.findByTitleContainingOrWriterContainingAndChecked(search, search, status, pageRequest);
+                    return productRepo.findByTitleContainingOrWriterContainingAndCheckedIn(search, search, status, pageRequest);
             }
         } catch (Exception e) {
             throw new RuntimeException("상품 목록 조회 실패", e);
@@ -122,32 +122,54 @@ public class AdminService {
             if (dto.getPlayType() != null)
                 product.setPlayType(dto.getPlayType());
 
-            if (dto.getProductStatus() != null)
-                product.setChecked(dto.getProductStatus());
-
             productRepo.save(product);
 
-            if (dto.getProductStatus() == ProductStatus.PASS) {
-                // 포도알 등급 부여
-                if(product.getUser().getStageType() == StageType.DEFAULT) {
-                    product.getUser().setStageType(StageType.SINGLE_GRAPE);
-                    productRepo.save(product);
-                }
+            if (dto.getProductStatus() != null && dto.getProductStatus() == ProductStatus.PASS) {
+                // 작품이 처음 신청되었을 때
+                if(product.getChecked() == ProductStatus.WAIT) {
+                    // 포도알 등급 부여
+                    if(product.getUser().getStageType() == StageType.DEFAULT)
+                        product.getUser().setStageType(StageType.SINGLE_GRAPE);
 
-                mailSendService.joinRegisterPassMail(product.getUser().getEmail(), product.getTitle());
+                    product.setChecked(ProductStatus.PASS);
+                    productRepo.save(product);
+
+                    mailSendService.joinRegisterPassMail(product.getUser().getEmail(), product.getTitle());
+                } else if(product.getChecked() == ProductStatus.RE_WAIT) { // 작품이 재심사 신청되었을 때
+                    product.setChecked(ProductStatus.RE_PASS);
+
+                    final String filePath = product.getFilePath().replace("script", "delete");
+                    moveFile(bucket, product.getFilePath(), filePath);
+                    deleteFile(bucket, product.getFilePath());
+
+                    product.setFilePath(product.getTempFilePath());
+                    product.setTempFilePath(null);
+
+                    productRepo.save(product);
+
+                    mailSendService.joinReviewPassEmail(product.getUser().getEmail(), product.getTitle());
+                }
             }
             else if (dto.getProductStatus() == ProductStatus.REJECT) {
-                mailSendService.joinRegisterRejectMail(product.getUser().getEmail(), product.getTitle());
+                // 작품이 처음 신청되었을 떄
+                if(product.getChecked() == ProductStatus.WAIT) {
+                    mailSendService.joinRegisterRejectMail(product.getUser().getEmail(), product.getTitle());
 
-                deleteFile(bucket, product.getFilePath()); // 작품 파일
+                    deleteFile(bucket, product.getFilePath()); // 작품 파일
 
-                if(product.getDescriptionPath() != null)
-                    deleteFile(bucket, product.getDescriptionPath()); // 작품 설명 파일
+                    if (product.getDescriptionPath() != null)
+                        deleteFile(bucket, product.getDescriptionPath()); // 작품 설명 파일
 
-                if(product.getImagePath() != null)
-                    deleteFile(bucket, product.getImagePath()); // 작품 이미지 파일
+                    if (product.getImagePath() != null)
+                        deleteFile(bucket, product.getImagePath()); // 작품 이미지 파일
 
-                productRepo.delete(product);
+                    productRepo.delete(product);
+                } else if(product.getChecked() == ProductStatus.RE_WAIT) {
+                    product.setChecked(ProductStatus.RE_REJECT);
+                    productRepo.save(product);
+
+                    mailSendService.joinReviewRejectEmail(product.getUser().getEmail(), product.getTitle());
+                }
             }
 
         } catch (Exception e) {
@@ -387,6 +409,17 @@ public class AdminService {
                 amazonS3.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
             throw new RuntimeException("파일 삭제 실패", e);
+        }
+    }
+
+    private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
+        try {
+            final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
+
+            if(amazonS3.doesObjectExist(bucket, sourceKey))
+                amazonS3.copyObject(copyFile);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 이동 실패", e);
         }
     }
 }
