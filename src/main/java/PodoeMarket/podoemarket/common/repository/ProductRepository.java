@@ -23,22 +23,23 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     @Query("SELECT p FROM ProductEntity p " +
             "WHERE p.playType = :playType " +
-            "AND p.checked = :checked " +
+            "AND p.checked IN :statuses " +
             "AND p.isDelete = false " +
             "AND (p.script = true OR p.performance = true)")
     List<ProductEntity> findAllValidPlays(
             @Param("playType") PlayType playType,
-            @Param("checked") ProductStatus checked,
+            @Param("statuses") List<ProductStatus> statuses,
             Pageable pageable
     );
+
 
     Long countAllByChecked(ProductStatus checked);
 
     Page<ProductEntity> findByTitleContainingOrWriterContaining(String title, String writer, Pageable pageable);
 
-    Page<ProductEntity> findByChecked(ProductStatus productStatus, Pageable pageable);
+    Page<ProductEntity> findByCheckedIn(List<ProductStatus> checked, Pageable pageable);
 
-    Page<ProductEntity> findByTitleContainingOrWriterContainingAndChecked(String title, String writer, ProductStatus checked, Pageable pageable);
+    Page<ProductEntity> findByTitleContainingOrWriterContainingAndCheckedIn(String title, String writer, List<ProductStatus> checked, Pageable pageable);
 
     List<ProductEntity> findAllByIsDeleteAndUpdatedAt(Boolean isDelete, LocalDateTime updatedAt);
 

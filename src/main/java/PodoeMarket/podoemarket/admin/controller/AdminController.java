@@ -25,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,10 +45,20 @@ public class AdminController {
         try {
             adminService.checkAuth(userInfo);
 
-            final Long productPassCnt = adminService.getCheckedCount(ProductStatus.PASS);
-            final Long productWaitCnt = adminService.getCheckedCount(ProductStatus.WAIT);
+            final Long productPassCnt = adminService.getCheckedCount(ProductStatus.PASS) + adminService.getCheckedCount(ProductStatus.RE_PASS);
+            final Long productWaitCnt = adminService.getCheckedCount(ProductStatus.WAIT) +  adminService.getCheckedCount(ProductStatus.RE_WAIT);
 
-            final Page<ProductEntity> products = adminService.getAllProducts(search, status, page);
+            List<ProductStatus> statuses = new ArrayList<>();
+            if(status == ProductStatus.PASS)
+                statuses = List.of(ProductStatus.PASS, ProductStatus.RE_PASS);
+            else if(status == ProductStatus.WAIT)
+                statuses = List.of(ProductStatus.WAIT, ProductStatus.RE_WAIT);
+            else if(status == ProductStatus.REJECT)
+                statuses = List.of(ProductStatus.REJECT,  ProductStatus.RE_REJECT);
+            else if(status == null)
+                statuses = null;
+
+            final Page<ProductEntity> products = adminService.getAllProducts(search, statuses, page);
             final Long productCnt = products.getTotalElements();
             final List<ProductManagementResponseDTO.ProductDTO> productList = adminService.getProductList(products);
 
