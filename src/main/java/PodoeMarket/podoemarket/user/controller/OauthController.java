@@ -2,14 +2,18 @@ package PodoeMarket.podoemarket.user.controller;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
-import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import PodoeMarket.podoemarket.user.service.OAuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,9 +30,11 @@ public class OauthController {
         return ResponseEntity.ok().body(redirectURL);
     }
 
+    // 배포 시에 리디렉트 url 변경 필요
     @GetMapping(value = "/{socialLoginType}/callback")
-    public ResponseEntity<?> callback(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
-                                      @RequestParam(name = "code") String code) {
+    public void callback(@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
+                                      @RequestParam(name = "code") String code,
+                                      HttpServletResponse response) throws IOException {
         try {
             final UserEntity user = oauthService.requestUser(socialLoginType, code);
 
@@ -37,16 +43,31 @@ public class OauthController {
 
                 mailService.joinSignupEmail(user.getEmail());
 
-                return ResponseEntity.ok().body(resDTO);
+                // 프론트로 리디렉트(JWT와 닉네임 등 전달)
+                String redirectUrl = String.format(
+                        "http://localhost:3000/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
+                        resDTO.getAccessToken(),
+                        resDTO.getRefreshToken(),
+                        URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
+                );
+//                String redirectUrl = String.format(
+//                        "https://www.podo-store.com/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
+//                        resDTO.getAccessToken(),
+//                        resDTO.getRefreshToken(),
+//                        URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
+//                );
+
+                response.sendRedirect(redirectUrl);
             } else {
                 // 새 사용자는 저장
                 oauthService.create(user);
-
-                return ResponseEntity.ok().body(true);
+                response.sendRedirect("http://localhost:3000/auth/callback?signup=true");
+//                response.sendRedirect("https://www.podo-store.com/auth/callback?signup=true");
             }
         } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
+            e.printStackTrace();
+            response.sendRedirect("http://localhost:3000/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
+//            response.sendRedirect("https://www.podo-store.com/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
         }
     }
 }

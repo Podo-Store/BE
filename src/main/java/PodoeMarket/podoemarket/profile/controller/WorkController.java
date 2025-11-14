@@ -85,4 +85,16 @@ public class WorkController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @PostMapping("/changeScript/{id}")
+    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id, @RequestPart("script") MultipartFile[] files) {
+        try {
+            workService.changeScript(id, userInfo, files);
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }

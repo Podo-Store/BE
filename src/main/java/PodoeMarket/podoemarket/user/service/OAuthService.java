@@ -92,7 +92,7 @@ public class OAuthService {
                     .refreshToken(tokenProvider.createRefreshToken(user))
                     .build();
         } catch (RuntimeException e) {
-            throw new RuntimeException("소셜 로그인 실패", e);
+            throw e;
         }
     }
 
@@ -109,7 +109,7 @@ public class OAuthService {
                 throw new RuntimeException("userId가 올바르지 않음");
 
             if(userRepo.existsByUserId(userId))
-                throw new RuntimeException("이미 존재하는 UserId");
+                throw new RuntimeException("이미 존재하는 userId");
 
             // 이메일
             if(email == null || email.isBlank())
@@ -136,7 +136,7 @@ public class OAuthService {
 
             userRepo.save(userEntity);
         } catch (Exception e) {
-            throw new RuntimeException("회원가입 실패", e);
+            throw e;
         }
     }
 

@@ -59,16 +59,18 @@ public class ProductService {
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
+            List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
+
             // POPULAR(조회수 기준 정렬)는 Java단에서 처리
             if (sortType == ProductSortType.POPULAR) {
                 List<ProductEntity> plays = productRepo.findAllValidPlays(
                         playType,
-                        ProductStatus.PASS,
+                        validStatuses,
                         PageRequest.of(page, pageSize, Sort.unsorted()) // 정렬 직접 처리
                 );
 
                 return plays.stream()
-                        .map(play -> getListDto(userInfo, play))
+                        .map(play -> getListDTO(userInfo, play))
                         .sorted(Comparator.comparingLong(ScriptListResponseDTO.ProductListDTO::getViewCount).reversed())
                         .limit(pageSize)
                         .toList();
@@ -76,12 +78,12 @@ public class ProductService {
                 Sort sort = createProductSort(sortType);
                 List<ProductEntity> plays = productRepo.findAllValidPlays(
                         playType,
-                        ProductStatus.PASS,
+                        validStatuses,
                         PageRequest.of(page, pageSize, sort)
                 );
 
                 return plays.stream()
-                        .map(play -> getListDto(userInfo, play))
+                        .map(play -> getListDTO(userInfo, play))
                         .toList();
             }
         } catch (Exception e) {
@@ -614,7 +616,7 @@ public class ProductService {
         }
     }
 
-    private ScriptListResponseDTO.ProductListDTO getListDto(final UserEntity userInfo, final ProductEntity play) {
+    private ScriptListResponseDTO.ProductListDTO getListDTO(final UserEntity userInfo, final ProductEntity play) {
         ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
 
         final String scriptImage = generateScriptImgURL(play);

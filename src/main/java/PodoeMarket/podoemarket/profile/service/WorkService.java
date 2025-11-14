@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.WorkListResponseDTO;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.S3Service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -43,6 +44,7 @@ public class WorkService {
     private final ProductRepository productRepo;
     private final AmazonS3 amazonS3;
     private final S3Service s3Service;
+    private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -52,6 +54,9 @@ public class WorkService {
 
     @Value("${cloud.aws.s3.folder.folderName2}")
     private String scriptImageBucketFolder;
+
+    @Value("${cloud.aws.s3.folder.folderName1}")
+    private String scriptBucketFolder;
 
     public WorkListResponseDTO getUserWorks(final UserEntity userInfo) {
         try {
@@ -237,7 +242,7 @@ public class WorkService {
                 throw new RuntimeException("작품을 찾을 수 없습니다.");
 
             if(!product.getUser().getId().equals(userId))
-                throw new RuntimeException("작가가 아님");
+                throw new RuntimeException("작가가 아닙니다.");
 
             if(product.getChecked() == ProductStatus.WAIT)
                 throw new RuntimeException("심사 중");
@@ -269,6 +274,30 @@ public class WorkService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    @Transactional
+    public void changeScript(final UUID productId, final UserEntity user, MultipartFile[] files) throws IOException {
+        final ProductEntity product = productRepo.findById(productId);
+
+        if(product == null)
+            throw new RuntimeException("작품을 찾을 수 없습니다.");
+
+        if(!product.getUser().getId().equals(user.getId()))
+            throw new RuntimeException("작가가 아닙니다.");
+
+        if(product.getChecked() == ProductStatus.RE_WAIT)
+            throw new RuntimeException("재심사 결과 대기 중에는 재신청이 불가합니다.");
+
+        // 파일 처리 필요
+        String tempFilePath = uploadScript(files, user.getNickname());
+
+        product.setTempFilePath(tempFilePath);
+        product.setChecked(ProductStatus.RE_WAIT);
+        productRepo.save(product);
+
+        // 메일 전송 로직 필요
+        mailSendService.joinReviewEmail(user.getEmail(), product.getTitle());
     }
 
     // ============= private method ===============
@@ -391,6 +420,38 @@ public class WorkService {
         }
     }
 
+    protected String uploadScript(MultipartFile[] files, String writer) throws IOException {
+        if(files[0].isEmpty())
+            throw new RuntimeException("선택된 파일이 없음");
+        else if(files.length > 1)
+            throw new RuntimeException("파일 수가 1개를 초과함");
+
+        if (!Objects.equals(files[0].getContentType(), "application/pdf"))
+            throw new RuntimeException("contentType is not PDF");
+
+        // 파일 이름 가공
+        final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
+        final Date time = new Date();
+        final String name = files[0].getOriginalFilename();
+        final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+
+        // S3 Key 구성
+        final String S3Key = scriptBucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".zip";
+
+        // PDF 파일을 zip으로 압축
+        byte[] zippedBytes = compressToZip(files[0]);
+
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(zippedBytes.length);
+        metadata.setContentType("application/zip");
+
+        try (InputStream inputStream = new ByteArrayInputStream(zippedBytes)) {
+            amazonS3.putObject(bucket, S3Key, inputStream, metadata);
+        }
+
+        return S3Key;
+    }
+
     private static byte[] compressToZip(MultipartFile file) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
@@ -465,7 +526,6 @@ public class WorkService {
         log.info("plot valid checked");
         return true;
     }
-
 
     private static boolean isValidIntention(String intention) {
         if (intention != null) {
