@@ -35,6 +35,9 @@ public class OrdersEntity {
     @Column(nullable = false)
     private OrderStatus orderStatus = OrderStatus.WAIT;
 
+    @Column
+    private String tid;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

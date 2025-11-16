@@ -8,13 +8,16 @@ import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.order.service.OrderService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -60,6 +63,20 @@ public class OrderController {
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PostMapping("/return")
+    public void nicePaySuccess(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
+        try {
+            // Service가 redirect URL(String)만 반환함
+            String redirectURL = orderService.handleNicepayReturn(params);
+
+            // 성공 시 프론트 성공 페이지로 리다이렉트
+            response.sendRedirect(redirectURL);
+        } catch(Exception e) {
+            // 실패 시 프론트 실패 페이지로 리다이렉트
+            response.sendRedirect("https://www.podo-store.com/purchase/abort");
         }
     }
 }
