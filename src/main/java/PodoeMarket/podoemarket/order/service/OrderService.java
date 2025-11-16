@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.order.service;
 import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
+import PodoeMarket.podoemarket.order.dto.response.NicepayApproveResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
 import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
@@ -13,15 +14,23 @@ import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -37,6 +46,12 @@ public class OrderService {
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
+
+    @Value("${nicepay.client-id}")
+    private String clientId;
+
+    @Value("${nicepay.secret-key}")
+    private String secretKey;
 
     public OrderItemResponseDTO getOrderItemInfo(UserEntity userInfo, OrderInfoRequestDTO dto) {
         try {
@@ -118,6 +133,75 @@ public class OrderService {
             return orderInfo;
         } catch (Exception e) {
             throw e;
+        }
+    }
+
+    @Transactional
+    public String handleNicepayReturn(Map<String, String> params) {
+        log.info("NICEPAY RETURN PARAMS = {}", params);
+
+        try {
+            String resultCode = params.get("authResultCode");
+            String authToken = params.get("authToken");
+            String tid = params.get("tid");
+            String orderIdStr = params.get("orderId");
+            String amount = params.get("amount") != null ? params.get("amt") : params.get("amount");
+
+            if (orderIdStr == null) {
+                throw new RuntimeException("orderId가 존재하지 않음");
+            }
+
+            Long orderId = Long.valueOf(orderIdStr);
+
+            // 1) 인증 결과 실패
+            if (!"0000".equals(resultCode)) {
+                throw new RuntimeException("인증 실패");
+            }
+
+            // 2) NICEPAY 서버 승인 API 호출
+            NicepayApproveResponseDTO approveResult = callApprove(authToken, amount);
+
+            if (approveResult == null || !"0000".equals(approveResult.getResultCode())) {
+                throw new RuntimeException("승인 API 실패");
+            }
+
+            // 3) DB 주문 상태 업데이트
+            OrdersEntity order = orderRepo.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+
+            order.setTid(tid);
+            order.setOrderStatus(OrderStatus.PASS);
+
+            log.info("결제 완료 처리됨: orderId={}, tid={}", orderId, tid);
+
+            // 4) 성공 redirect URL 반환
+            return "https://www.podo-store.com/purchase/success?orderId=" + orderId;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public NicepayApproveResponseDTO callApprove(String tid, String amount) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://webapi.nicepay.co.kr/webapi/payments/approve";
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("clientId", clientId);
+        body.add("secretKey", secretKey);
+        body.add("tid", tid);
+        body.add("amount", amount);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<NicepayApproveResponseDTO> res = restTemplate.postForEntity(url, entity, NicepayApproveResponseDTO.class);
+
+            return res.getBody();
+        } catch (Exception e) {
+            log.error("승인 API 호출 실패", e);
+            return null;
         }
     }
 
