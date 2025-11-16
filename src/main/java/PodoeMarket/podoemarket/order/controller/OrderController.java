@@ -66,6 +66,7 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/return")
     @PostMapping("/return")
     public void nicePaySuccess(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
         try {
