@@ -140,10 +140,7 @@ public class OrderService {
 
         try {
             String resultCode = params.get("authResultCode");
-            String authToken = params.get("authToken");
-            String tid = params.get("tid");
             String orderIdStr = params.get("orderId");
-            String amount = params.get("amount") != null ? params.get("amt") : params.get("amount");
 
             if (orderIdStr == null) {
                 throw new RuntimeException("orderId가 존재하지 않음");
@@ -151,60 +148,22 @@ public class OrderService {
 
             Long orderId = Long.valueOf(orderIdStr);
 
-            // 1) 인증 결과 실패
+            // 인증 결과 실패
             if (!"0000".equals(resultCode)) {
                 throw new RuntimeException("인증 실패");
-            }
-
-            // 2) NICEPAY 서버 승인 API 호출
-            NicepayApproveResponseDTO approveResult = callApprove(authToken, amount);
-
-            if (approveResult == null || !"0000".equals(approveResult.getResultCode())) {
-                throw new RuntimeException("승인 API 실패");
             }
 
             // 3) DB 주문 상태 업데이트
             OrdersEntity order = orderRepo.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 
-            order.setTid(tid);
             order.setOrderStatus(OrderStatus.PASS);
 
-            log.info("결제 완료 처리됨: orderId={}, tid={}", orderId, tid);
+            log.info("결제 완료 처리됨: orderId={}", orderId);
 
             // 4) 성공 redirect URL 반환
             return "https://www.podo-store.com/purchase/success?orderId=" + orderId;
         } catch (Exception e) {
             throw e;
-        }
-    }
-
-    public NicepayApproveResponseDTO callApprove(String tid, String amount) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "https://api.nicepay.co.kr/v1/payments/approve";
-
-        // Basic Auth 생성
-        String auth = clientId + ":" + secretKey;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Basic " + encodedAuth);
-
-        // body는 JSON
-        Map<String, Object> body = new HashMap<>();
-        body.put("tid", tid);
-        body.put("amount", Integer.parseInt(amount));
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
-        try {
-            ResponseEntity<NicepayApproveResponseDTO> res = restTemplate.postForEntity(url, entity, NicepayApproveResponseDTO.class);
-
-            log.info("승인 API 응답 = {}", res.getBody());
-            return res.getBody();
-        } catch (Exception e) {
-            log.error("승인 API 호출 실패", e);
-            return null;
         }
     }
 
