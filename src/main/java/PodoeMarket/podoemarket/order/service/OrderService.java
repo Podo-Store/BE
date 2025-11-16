@@ -155,8 +155,8 @@ public class OrderService {
 
             // 3) DB 주문 상태 업데이트
             OrdersEntity order = orderRepo.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
-
             order.setOrderStatus(OrderStatus.PASS);
+            orderRepo.save(order);
 
             log.info("결제 완료 처리됨: orderId={}", orderId);
 
