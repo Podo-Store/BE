@@ -29,9 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -184,20 +182,25 @@ public class OrderService {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://api.nicepay.co.kr/v1/payments/approve";
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("clientId", clientId);
-        body.add("secretKey", secretKey);
-        body.add("tid", tid);
-        body.add("amount", amount);
+        // Basic Auth 생성
+        String auth = clientId + ":" + secretKey;
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Basic " + encodedAuth);
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+        // body는 JSON
+        Map<String, Object> body = new HashMap<>();
+        body.put("tid", tid);
+        body.put("amount", Integer.parseInt(amount));
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<NicepayApproveResponseDTO> res = restTemplate.postForEntity(url, entity, NicepayApproveResponseDTO.class);
 
+            log.info("승인 API 응답 = {}", res.getBody());
             return res.getBody();
         } catch (Exception e) {
             log.error("승인 API 호출 실패", e);
