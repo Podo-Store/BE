@@ -182,7 +182,7 @@ public class OrderService {
 
     public NicepayApproveResponseDTO callApprove(String tid, String amount) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://webapi.nicepay.co.kr/webapi/payments/approve";
+        String url = "https://api.nicepay.co.kr/v1/payments/approve";
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("clientId", clientId);
