@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
@@ -190,7 +189,6 @@ public class MypageService {
                     orderItemDTO.setChecked(orderItem.getProduct().getChecked());
                     orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getProduct().getScriptPrice() : 0);
                     orderItemDTO.setProductId(orderItem.getProduct().getId());
-                    orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                 }
 
                 // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
@@ -257,7 +255,6 @@ public class MypageService {
                         orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                         orderItemDTO.setProductId(orderItem.getProduct().getId());
-                        orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                     }
 
                     final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
@@ -304,9 +301,6 @@ public class MypageService {
     public ApplyResponseDTO getApplyInfo(final UUID orderItemId) {
         try {
             final OrderItemEntity orderItem = getOrderItem(orderItemId);
-
-            if(orderItem.getOrder().getOrderStatus() != OrderStatus.PASS)
-                throw new RuntimeException("결제 상태를 확인해주십시오.");
 
             final ApplicantEntity applicant = applicantRepo.findByOrderItemId(orderItemId);
 
@@ -377,9 +371,6 @@ public class MypageService {
 
             if(!orderItem.getScript())
                 throw new RuntimeException("대본을 구매하세요");
-
-            if(orderItem.getOrder().getOrderStatus() != OrderStatus.PASS)
-                throw new RuntimeException("결제 상태를 확인해주세요");
 
             expire(orderItem.getCreatedAt());
 

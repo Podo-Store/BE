@@ -45,7 +45,6 @@ public class OrderScriptsResponseDTO {
             private Long scriptPrice;
 
             private UUID productId;
-            private OrderStatus orderStatus;
         }
     }
 }
