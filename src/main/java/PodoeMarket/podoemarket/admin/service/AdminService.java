@@ -31,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -173,12 +172,6 @@ public class AdminService {
 
         } catch (Exception e) {
             throw new RuntimeException("상품 업데이트 실패", e);
-        }
-    }
-
-    public void checkExpire(final LocalDateTime updatedAt, final ProductStatus productStatus) {
-        if (productStatus == ProductStatus.REJECT && updatedAt.isAfter(LocalDateTime.now().plusDays(7))) {
-            throw new RuntimeException("등록 거절 이후 7일이 지났습니다.");
         }
     }
 

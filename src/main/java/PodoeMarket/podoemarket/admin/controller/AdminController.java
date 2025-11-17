@@ -95,7 +95,6 @@ public class AdminController {
 
             // 거절 일주일 뒤부터 작품 삭제 - updateAt, REJECT 조합으로 결정
             final ProductEntity product = adminService.getProduct(productId);
-            adminService.checkExpire(product.getUpdatedAt(), product.getChecked());
 
             final String filePath = product.getFilePath();
             final String title = product.getTitle();
