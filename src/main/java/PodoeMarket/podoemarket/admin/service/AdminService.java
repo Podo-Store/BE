@@ -216,14 +216,6 @@ public class AdminService {
         }
     }
 
-    public Long getOrderStatusCount(final OrderStatus orderStatus) {
-        try {
-            return orderRepo.countAllByOrderStatus(orderStatus);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 상태 카운트 조회 실패", e);
-        }
-    }
-
     // 검색어가 없을 경우
     @Transactional
     public OrderManagementResponseDTO getAllOrders(final OrderStatus orderStatus, final int page) {
@@ -243,7 +235,6 @@ public class AdminService {
                             .title(order.getOrderItem().getFirst().getProduct().getTitle())
                             .writer(order.getOrderItem().getFirst().getProduct().getWriter())
                             .customer(order.getOrderItem().getFirst().getUser().getNickname())
-                            .orderStatus(order.getOrderStatus())
                             .script(order.getOrderItem().getFirst().getScript())
                             .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
                             .totalPrice(order.getTotalPrice())
@@ -278,7 +269,6 @@ public class AdminService {
                             .title(orderItem.getProduct().getTitle())
                             .writer(orderItem.getProduct().getWriter())
                             .customer(orderItem.getUser().getNickname())
-                            .orderStatus(orderItem.getOrder().getOrderStatus())
                             .script(orderItem.getScript())
                             .performanceAmount(orderItem.getPerformanceAmount())
                             .totalPrice(orderItem.getTotalPrice())
@@ -291,23 +281,6 @@ public class AdminService {
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("주문 항목 검색 실패", e);
-        }
-    }
-
-    public OrdersEntity orders(final Long orderId) {
-        try {
-            return orderRepo.findOrderById(orderId);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 조회 실패", e);
-        }
-    }
-
-    @Transactional
-    public void updateOrder(final OrdersEntity order) {
-        try {
-            orderRepo.save(order);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 업데이트 실패", e);
         }
     }
 
