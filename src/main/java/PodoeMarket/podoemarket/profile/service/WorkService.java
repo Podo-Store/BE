@@ -110,7 +110,7 @@ public class WorkService {
 
             ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
             String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
-            String descriptionTitle = script.getDescriptionPath() != null ?  script.getDescriptionPath().split("/")[1] : "";
+            String descriptionTitle = !script.getDescriptionPath().isEmpty() ?  script.getDescriptionPath().split("/")[1] : "";
 
             scriptDetailDTO.setId(script.getId());
             scriptDetailDTO.setTitle(script.getTitle());
@@ -406,7 +406,7 @@ public class WorkService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
-            if(product.getDescriptionPath() != null)
+            if(!product.getDescriptionPath().isEmpty())
                 deleteFile(bucket, product.getDescriptionPath());
 
             // 저장
