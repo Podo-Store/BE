@@ -36,12 +36,11 @@ public class OauthController {
                                       @RequestParam(name = "code") String code,
                                       HttpServletResponse response) throws IOException {
         try {
-            final UserEntity user = oauthService.requestUser(socialLoginType, code);
+            final UserEntity oauthUser = oauthService.requestUser(socialLoginType, code);
 
-            if (oauthService.checkUserId(user.getUserId())) {
-                final TokenCreateResponseDTO resDTO = oauthService.socialSignIn(user);
-
-                mailService.joinSignupEmail(user.getEmail());
+            if (oauthService.checkUserId(oauthUser.getUserId())) {
+                UserEntity dbUser = oauthService.getUserInfo(oauthUser.getUserId());
+                final TokenCreateResponseDTO resDTO = oauthService.socialSignIn(dbUser);
 
                 // 프론트로 리디렉트(JWT와 닉네임 등 전달)
                 String redirectUrl = String.format(
@@ -60,7 +59,12 @@ public class OauthController {
                 response.sendRedirect(redirectUrl);
             } else {
                 // 새 사용자는 저장
-                oauthService.create(user);
+                oauthService.create(oauthUser);
+
+                UserEntity dbUser = oauthService.getUserInfo(oauthUser.getUserId());
+
+                mailService.joinSignupEmail(dbUser.getEmail());
+
                 response.sendRedirect("http://localhost:3000/auth/callback?signup=true");
 //                response.sendRedirect("https://www.podo-store.com/auth/callback?signup=true");
             }

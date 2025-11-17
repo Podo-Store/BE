@@ -88,8 +88,8 @@ public class OAuthService {
             return TokenCreateResponseDTO.builder()
                     .nickname(signInUser.getNickname())
                     .auth(signInUser.isAuth())
-                    .accessToken(tokenProvider.createAccessToken(user))
-                    .refreshToken(tokenProvider.createRefreshToken(user))
+                    .accessToken(tokenProvider.createAccessToken(signInUser))
+                    .refreshToken(tokenProvider.createRefreshToken(signInUser))
                     .build();
         } catch (RuntimeException e) {
             throw e;
@@ -142,6 +142,19 @@ public class OAuthService {
 
     public Boolean checkUserId(final String userId) {
         return userRepo.existsByUserId(userId);
+    }
+
+    public UserEntity getUserInfo(final String userId){
+        try {
+            final UserEntity user = userRepo.findByUserId(userId);
+
+            if(user == null)
+                throw new RuntimeException("사용자를 찾을 수 없습니다.");
+
+            return user;
+        } catch (Exception e){
+            throw e;
+        }
     }
 
     // ================= private method =================
