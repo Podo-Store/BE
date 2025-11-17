@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -256,10 +255,5 @@ public class OrderService {
         } catch (Exception e) {
             throw new RuntimeException("주문 정보 조회 실패", e);
         }
-    }
-
-    private String formatPrice(long totalPrice) {
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        return formatter.format(totalPrice);
     }
 }

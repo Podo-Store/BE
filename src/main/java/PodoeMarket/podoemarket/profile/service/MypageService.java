@@ -561,8 +561,8 @@ public class MypageService {
     }
 
     private void expire(final LocalDateTime time) {
-        if(LocalDateTime.now().isAfter(time.plusYears(1)))
-            throw new RuntimeException("구매 후 1년 경과");
+        if(LocalDateTime.now().isAfter(time.plusMonths(3)))
+            throw new RuntimeException("구매 후 3개월 경과");
     }
 
     private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
