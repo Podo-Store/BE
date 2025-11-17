@@ -8,16 +8,13 @@ import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.order.service.OrderService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
