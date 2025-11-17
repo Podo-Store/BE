@@ -1,12 +1,10 @@
 package PodoeMarket.podoemarket.common.entity;
 
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -29,11 +27,6 @@ public class OrdersEntity {
 
     @Column(nullable = false)
     private Integer paymentMethod; // 0: 0원, 1: 계좌이체
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrderStatus orderStatus = OrderStatus.WAIT;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

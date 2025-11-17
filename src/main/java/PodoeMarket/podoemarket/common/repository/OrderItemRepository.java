@@ -1,7 +1,6 @@
 package PodoeMarket.podoemarket.common.repository;
 
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,20 +40,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     """)
     Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
                                                   Pageable pageable);
-
-    @Query("""
-    SELECT oi FROM OrderItemEntity oi
-    JOIN oi.product p
-    JOIN p.user u
-    JOIN oi.order o
-    WHERE (p.title LIKE %:keyword%
-    OR p.writer LIKE %:keyword%
-    OR u.nickname LIKE %:keyword%)
-    AND(o.orderStatus = :orderStatus)
-    """)
-    Page<OrderItemEntity> findOrderItemsByKeywordAndOrderStatus(@Param("keyword") String keyword,
-                                                                  @Param("orderStatus") OrderStatus orderStatus,
-                                                                  Pageable pageable);
 
     Boolean existsByProductIdAndUserId(UUID productId, UUID userId);
 }
