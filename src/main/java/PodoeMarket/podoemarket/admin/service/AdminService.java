@@ -8,7 +8,6 @@ import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.*;
@@ -216,25 +215,14 @@ public class AdminService {
         }
     }
 
-    public Long getOrderStatusCount(final OrderStatus orderStatus) {
-        try {
-            return orderRepo.countAllByOrderStatus(orderStatus);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 상태 카운트 조회 실패", e);
-        }
-    }
-
     // 검색어가 없을 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrders(final OrderStatus orderStatus, final int page) {
+    public OrderManagementResponseDTO getAllOrders(final int page) {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
             final Page<OrdersEntity> orders;
 
-            if (orderStatus == null) // 검색어 X, 전체 O
-                orders = orderRepo.findAll(pageRequest);
-            else // 검색어 X, 전체 X
-                orders = orderRepo.findAllByOrderStatus(orderStatus, pageRequest);
+            orders = orderRepo.findAll(pageRequest);
 
             List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                     .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
@@ -243,7 +231,6 @@ public class AdminService {
                             .title(order.getOrderItem().getFirst().getProduct().getTitle())
                             .writer(order.getOrderItem().getFirst().getProduct().getWriter())
                             .customer(order.getOrderItem().getFirst().getUser().getNickname())
-                            .orderStatus(order.getOrderStatus())
                             .script(order.getOrderItem().getFirst().getScript())
                             .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
                             .totalPrice(order.getTotalPrice())
@@ -261,15 +248,12 @@ public class AdminService {
 
     // 검색어가 있는 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrderItems(final String search, final OrderStatus orderStatus, final int page) {
+    public OrderManagementResponseDTO getAllOrderItems(final String search, final int page) {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
             final Page<OrderItemEntity> orders;
 
-            if (orderStatus == null) // 검색어 O, 전체 O
-                orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
-            else // 검색어 O, 전체 X
-                orders = orderItemRepo.findOrderItemsByKeywordAndOrderStatus(search, orderStatus, pageRequest);
+            orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
 
             List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                     .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()
@@ -278,7 +262,6 @@ public class AdminService {
                             .title(orderItem.getProduct().getTitle())
                             .writer(orderItem.getProduct().getWriter())
                             .customer(orderItem.getUser().getNickname())
-                            .orderStatus(orderItem.getOrder().getOrderStatus())
                             .script(orderItem.getScript())
                             .performanceAmount(orderItem.getPerformanceAmount())
                             .totalPrice(orderItem.getTotalPrice())
@@ -291,23 +274,6 @@ public class AdminService {
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("주문 항목 검색 실패", e);
-        }
-    }
-
-    public OrdersEntity orders(final Long orderId) {
-        try {
-            return orderRepo.findOrderById(orderId);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 조회 실패", e);
-        }
-    }
-
-    @Transactional
-    public void updateOrder(final OrdersEntity order) {
-        try {
-            orderRepo.save(order);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 업데이트 실패", e);
         }
     }
 

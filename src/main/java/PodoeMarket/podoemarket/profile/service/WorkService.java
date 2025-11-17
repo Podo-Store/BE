@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.IIOImage;
@@ -27,12 +28,15 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -109,8 +113,13 @@ public class WorkService {
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
             ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
-            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
-            String descriptionTitle = script.getDescriptionPath() != null ?  script.getDescriptionPath().split("/")[1] : "";
+            String scriptImage = script.getImagePath() != null
+                    ? s3Service.generatePreSignedURL(script.getImagePath())
+                    : "";
+            String descriptionPath = script.getDescriptionPath();
+            String descriptionTitle = (StringUtils.hasText(descriptionPath) && descriptionPath.contains("/"))
+                    ? descriptionPath.split("/")[1]
+                    : "";
 
             scriptDetailDTO.setId(script.getId());
             scriptDetailDTO.setTitle(script.getTitle());
@@ -406,7 +415,7 @@ public class WorkService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
-            if(product.getDescriptionPath() != null)
+            if(StringUtils.hasText(product.getDescriptionPath()))
                 deleteFile(bucket, product.getDescriptionPath());
 
             // 저장
@@ -465,8 +474,33 @@ public class WorkService {
         }
     }
 
+    // 모든 이미지를 JPEGWriter가 처리 가능한 RGB Bitmap으로 변환
+    private static BufferedImage forceRGB(BufferedImage img) {
+        BufferedImage rgbImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+
+        Graphics2D g = rgbImage.createGraphics();
+        g.setComposite(AlphaComposite.Src);
+        g.drawImage(img, 0, 0, Color.WHITE, null);
+        g.dispose();
+
+        return rgbImage;
+    }
+
     private static byte[] compressImage(MultipartFile file, float quality) throws IOException {
-        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+        BufferedImage originalImage;
+        try (InputStream in = file.getInputStream()) {
+            originalImage = ImageIO.read(in);
+
+            if (originalImage == null)
+                throw new IOException("이미지 읽기 실패");
+        }
+
+        // JPEGWriter가 안전하게 처리할 수 있도록 복잡한 color model(PNG 등) → BGR RGB로 완전히 변환
+        BufferedImage bufferedImage = forceRGB(originalImage);
+
+        // 원본 메모리 해제 (대형 PNG 7000px 이상일 때 필수)
+        originalImage.flush();
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         // JPEG writer
