@@ -109,8 +109,7 @@ public class OrderService {
                     .performancePrice(orderItem.getFirst().getPerformancePrice())
                     .build();
 
-            String formatPrice = formatPrice(order.getTotalPrice());
-            mailSendService.joinPaymentEmail(order.getUser().getEmail(), formatPrice);
+            mailSendService.joinOrderEmail(order.getUser().getEmail(), orderInfo.getTitle());
 
             return orderInfo;
         } catch (Exception e) {
