@@ -8,7 +8,6 @@ import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.*;
@@ -218,15 +217,12 @@ public class AdminService {
 
     // 검색어가 없을 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrders(final OrderStatus orderStatus, final int page) {
+    public OrderManagementResponseDTO getAllOrders(final int page) {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
             final Page<OrdersEntity> orders;
 
-            if (orderStatus == null) // 검색어 X, 전체 O
-                orders = orderRepo.findAll(pageRequest);
-            else // 검색어 X, 전체 X
-                orders = orderRepo.findAllByOrderStatus(orderStatus, pageRequest);
+            orders = orderRepo.findAll(pageRequest);
 
             List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                     .map(order -> OrderManagementResponseDTO.OrderDTO.builder()
@@ -252,15 +248,12 @@ public class AdminService {
 
     // 검색어가 있는 경우
     @Transactional
-    public OrderManagementResponseDTO getAllOrderItems(final String search, final OrderStatus orderStatus, final int page) {
+    public OrderManagementResponseDTO getAllOrderItems(final String search, final int page) {
         try {
             final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
             final Page<OrderItemEntity> orders;
 
-            if (orderStatus == null) // 검색어 O, 전체 O
-                orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
-            else // 검색어 O, 전체 X
-                orders = orderItemRepo.findOrderItemsByKeywordAndOrderStatus(search, orderStatus, pageRequest);
+            orders = orderItemRepo.findOrderItemsByKeyword(search, pageRequest);
 
             List<OrderManagementResponseDTO.OrderDTO> orderList = orders.getContent().stream()
                     .map(orderItem -> OrderManagementResponseDTO.OrderDTO.builder()

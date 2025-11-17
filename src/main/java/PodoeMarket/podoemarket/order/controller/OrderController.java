@@ -65,18 +65,4 @@ public class OrderController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
-
-    @PostMapping("/return")
-    public void nicePaySuccess(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
-        try {
-            // Service가 redirect URL(String)만 반환함
-            String redirectURL = orderService.handleNicepayReturn(params);
-
-            // 성공 시 프론트 성공 페이지로 리다이렉트
-            response.sendRedirect(redirectURL);
-        } catch(Exception e) {
-            // 실패 시 프론트 실패 페이지로 리다이렉트
-            response.sendRedirect("https://www.podo-store.com/purchase/abort");
-        }
-    }
 }

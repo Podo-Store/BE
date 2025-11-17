@@ -1,6 +1,5 @@
 package PodoeMarket.podoemarket.profile.dto.response;
 
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;

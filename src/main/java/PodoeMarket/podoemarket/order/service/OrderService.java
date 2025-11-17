@@ -1,9 +1,7 @@
 package PodoeMarket.podoemarket.order.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
-import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
-import PodoeMarket.podoemarket.order.dto.response.NicepayApproveResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
 import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
@@ -14,17 +12,10 @@ import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -44,12 +35,6 @@ public class OrderService {
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
-
-    @Value("${nicepay.client-id}")
-    private String clientId;
-
-    @Value("${nicepay.secret-key}")
-    private String secretKey;
 
     public OrderItemResponseDTO getOrderItemInfo(UserEntity userInfo, OrderInfoRequestDTO dto) {
         try {
@@ -87,7 +72,6 @@ public class OrderService {
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
-                    .orderStatus(OrderStatus.WAIT)
                     .build();
 
             final OrdersEntity orders = orderCreate(order, dto, userInfo);
@@ -129,39 +113,6 @@ public class OrderService {
             mailSendService.joinPaymentEmail(order.getUser().getEmail(), formatPrice);
 
             return orderInfo;
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    @Transactional
-    public String handleNicepayReturn(Map<String, String> params) {
-        log.info("NICEPAY RETURN PARAMS = {}", params);
-
-        try {
-            String resultCode = params.get("authResultCode");
-            String orderIdStr = params.get("orderId");
-
-            if (orderIdStr == null) {
-                throw new RuntimeException("orderId가 존재하지 않음");
-            }
-
-            Long orderId = Long.valueOf(orderIdStr);
-
-            // 인증 결과 실패
-            if (!"0000".equals(resultCode)) {
-                throw new RuntimeException("인증 실패");
-            }
-
-            // 3) DB 주문 상태 업데이트
-            OrdersEntity order = orderRepo.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
-            order.setOrderStatus(OrderStatus.PASS);
-            orderRepo.save(order);
-
-            log.info("결제 완료 처리됨: orderId={}", orderId);
-
-            // 4) 성공 redirect URL 반환
-            return "https://www.podo-store.com/purchase/success?orderId=" + orderId;
         } catch (Exception e) {
             throw e;
         }
