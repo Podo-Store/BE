@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.IIOImage;
@@ -109,8 +110,13 @@ public class WorkService {
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
             ScriptDetailResponseDTO scriptDetailDTO = new ScriptDetailResponseDTO();
-            String scriptImage = script.getImagePath() != null ? s3Service.generatePreSignedURL(script.getImagePath()) : "";
-            String descriptionTitle = !script.getDescriptionPath().isEmpty() ?  script.getDescriptionPath().split("/")[1] : "";
+            String scriptImage = script.getImagePath() != null
+                    ? s3Service.generatePreSignedURL(script.getImagePath())
+                    : "";
+            String descriptionPath = script.getDescriptionPath();
+            String descriptionTitle = (StringUtils.hasText(descriptionPath) && descriptionPath.contains("/"))
+                    ? descriptionPath.split("/")[1]
+                    : "";
 
             scriptDetailDTO.setId(script.getId());
             scriptDetailDTO.setTitle(script.getTitle());
@@ -406,7 +412,7 @@ public class WorkService {
             if(product == null)
                 throw new RuntimeException("상품을 찾을 수 없습니다.");
 
-            if(!product.getDescriptionPath().isEmpty())
+            if(StringUtils.hasText(product.getDescriptionPath()))
                 deleteFile(bucket, product.getDescriptionPath());
 
             // 저장
