@@ -78,10 +78,8 @@ public class OAuthService {
     }
 
     // 소셜 로그인 메서드
-    public TokenCreateResponseDTO socialSignIn(final UserEntity user) {
+    public TokenCreateResponseDTO socialSignIn(final UserEntity signInUser) {
         try {
-            final UserEntity signInUser = userRepo.findByUserId(user.getUserId());
-
             if(signInUser == null)
                 throw new RuntimeException("사용자를 찾을 수 없습니다.");
 
@@ -140,18 +138,9 @@ public class OAuthService {
         }
     }
 
-    public Boolean checkUserId(final String userId) {
-        return userRepo.existsByUserId(userId);
-    }
-
     public UserEntity getUserInfo(final String userId){
         try {
-            final UserEntity user = userRepo.findByUserId(userId);
-
-            if(user == null)
-                throw new RuntimeException("사용자를 찾을 수 없습니다.");
-
-            return user;
+            return userRepo.findByUserId(userId);
         } catch (Exception e){
             throw e;
         }
