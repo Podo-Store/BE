@@ -196,7 +196,7 @@ public class OrderService {
 
             ordersEntity.setOrderItem(orderItems);
             ordersEntity.setTotalPrice(orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum());
-            ordersEntity.setTid(ordersEntity.getTid());
+            ordersEntity.setTid(orderRequestDTO.getTid());
 
             return orderRepo.save(ordersEntity);
         } catch (Exception e) {
