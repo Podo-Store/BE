@@ -71,6 +71,7 @@ public class OrderService {
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
+                    .tid(dto.getTid())
                     .build();
 
             final OrdersEntity orders = orderCreate(order, dto, userInfo);
@@ -195,6 +196,7 @@ public class OrderService {
 
             ordersEntity.setOrderItem(orderItems);
             ordersEntity.setTotalPrice(orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum());
+            ordersEntity.setTid(ordersEntity.getTid());
 
             return orderRepo.save(ordersEntity);
         } catch (Exception e) {
