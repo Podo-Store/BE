@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NicepayCancelResponseDTO {
     private String resultCode;
-    private String resultMessage;
+    private String resultMsg;
     private String tid; // 결제 승인 키
     private String cancelledTid; // 취소 거래 키 (전체취소면 동일, 부분취소는 다를 수 있음)
     private Long orderId;
@@ -36,6 +36,17 @@ public class NicepayCancelResponseDTO {
     private Boolean issuedCashReceipt;
     private String receiptUrl;
     private String mallUserId;
+
+    // 할인 정보
+    private Coupon coupon;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Coupon {
+        private Integer couponAmt;
+    }
 
     // 카드 정보
     private Card card;

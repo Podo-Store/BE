@@ -469,9 +469,23 @@ public class MypageService {
                 throw new RuntimeException("환불 사유는 1 ~ 50자까지 가능");
 
             if(Duration.between(orderItem.getCreatedAt(), LocalDateTime.now()).toDays() > 14)
-                throw new RuntimeException("구매 후 2주가 지나 환불 불가");
+                throw new RuntimeException("구매 후 2주가 경과되어 환불 불가");
 
-            nicepayCancel(orderItem.getOrder().getTid(), dto.getRefundAmount(), orderItem.getOrder().getId(), dto.getReason());
+            // Nicepay 환불용 orderId 생성
+            String refundOrderId = generatedRefundOrderId(orderItem.getOrder().getId());
+
+            NicepayCancelResponseDTO res = nicepayCancel(
+                    orderItem.getOrder().getTid(),
+                    dto.getRefundAmount(),
+                    refundOrderId,
+                    dto.getReason());
+
+            if(res == null || !"0000".equals(res.getResultCode())) {
+                String error = (res != null) ? res.getResultMsg() : "환불 실패";
+
+                log.error("환불 실패: tid={}, resultCode={}, msg={}", orderItem.getOrder().getTid(), res.getResultCode(), error);
+                throw new RuntimeException("환불 처리 실패: " + error);
+            }
 
             final RefundEntity refund = RefundEntity.builder()
                     .quantity(dto.getRefundAmount())
@@ -738,7 +752,11 @@ public class MypageService {
         }
     }
 
-    private void nicepayCancel(String tid, int cancelAmount, Long orderId, String reason) {
+    private String generatedRefundOrderId(final Long orderId) {
+        return orderId + "-R-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private NicepayCancelResponseDTO nicepayCancel(String tid, int cancelAmount, String refundOrderId, String reason) {
         try {
             String ediDate = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             String signString = tid + ediDate + secretKey;
@@ -749,7 +767,7 @@ public class MypageService {
 
             Map<String, Object> body = Map.of(
                     "reason", reason,
-                    "orderId", String.valueOf(orderId),
+                    "orderId", refundOrderId,
                     "cancelAmt", cancelAmount,
                     "ediDate", ediDate,
                     "signData", signData
@@ -767,6 +785,8 @@ public class MypageService {
                     entity,
                     NicepayCancelResponseDTO.class
             );
+
+            return res.getBody();
         } catch (Exception e) {
             log.error("환불 API 오류 발생", e);
             throw new RuntimeException("나이스페이 환불 실패", e);
