@@ -456,7 +456,8 @@ public class MypageService {
     @Transactional
     public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) {
         try {
-            final OrderItemEntity orderItem = getOrderItem(userInfo.getId());
+            final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
+
             final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
             final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
             final long refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
@@ -563,14 +564,10 @@ public class MypageService {
     }
 
     private OrderItemEntity getOrderItem(final UUID orderItemId) {
-        try {
-            if(orderItemRepo.findById(orderItemId) == null)
-                throw new RuntimeException("일치하는 구매 목록 없음");
+        if(orderItemRepo.findById(orderItemId) == null)
+            throw new RuntimeException("일치하는 구매 목록 없음");
 
-            return orderItemRepo.findById(orderItemId);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 항목 조회 실패", e);
-        }
+        return orderItemRepo.findById(orderItemId);
     }
 
     private void deleteFile(final String bucket, final String sourceKey) {
@@ -771,6 +768,7 @@ public class MypageService {
                     NicepayCancelResponseDTO.class
             );
         } catch (Exception e) {
+            log.error("환불 API 오류 발생", e);
             throw new RuntimeException("나이스페이 환불 실패", e);
         }
     }
