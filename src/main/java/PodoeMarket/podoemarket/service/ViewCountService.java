@@ -45,8 +45,8 @@ public class ViewCountService {
         return base + delta;
     }
 
-    // 6시간마다 Redis에서 MySQL에 백업
-    @Scheduled(cron = "0 0 0,6,12,18 * * *") // 매일 0시, 6시, 12시, 18시에 실행
+    // 1시간마다 Redis에서 MySQL에 백업
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void flushDeltaToDB() {
         log.info("작품 조회수 델타 동기화 시작");
