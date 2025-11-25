@@ -14,7 +14,7 @@ public class NicepayCancelResponseDTO {
     private String resultMsg;
     private String tid; // 결제 승인 키
     private String cancelledTid; // 취소 거래 키 (전체취소면 동일, 부분취소는 다를 수 있음)
-    private Long orderId;
+    private String orderId;
     private String ediDate;          // 응답 전문 생성일시
     private String signature;        // 위변조 검증용 signData
     private String status;           // 상태 (paid/ready/failed/cancelled/partialCancelled/expired)
