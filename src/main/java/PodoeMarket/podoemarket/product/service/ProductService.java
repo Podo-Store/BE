@@ -37,7 +37,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -61,36 +60,20 @@ public class ProductService {
         try {
             List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
 
-            // POPULAR(조회수 기준 정렬)는 Java단에서 처리
-            if (sortType == ProductSortType.POPULAR) {
-                List<ProductEntity> plays = productRepo.findAllValidPlays(
-                        playType,
-                        validStatuses,
-                        PageRequest.of(page, pageSize, Sort.unsorted()) // 정렬 직접 처리
-                );
+            Sort sort = createProductSort(sortType);
+            List<ProductEntity> plays = productRepo.findAllValidPlays(
+                    playType,
+                    validStatuses,
+                    PageRequest.of(page, pageSize, sort)
+            );
 
-                return plays.stream()
-                        .map(play -> getListDTO(userInfo, play))
-                        .sorted(Comparator.comparingLong(ScriptListResponseDTO.ProductListDTO::getViewCount).reversed())
-                        .limit(pageSize)
-                        .toList();
-            } else {
-                Sort sort = createProductSort(sortType);
-                List<ProductEntity> plays = productRepo.findAllValidPlays(
-                        playType,
-                        validStatuses,
-                        PageRequest.of(page, pageSize, sort)
-                );
-
-                return plays.stream()
-                        .map(play -> getListDTO(userInfo, play))
-                        .toList();
-            }
+            return plays.stream()
+                    .map(play -> getListDTO(userInfo, play))
+                    .toList();
         } catch (Exception e) {
             throw new RuntimeException("작품 목록 조회 실패", e);
         }
     }
-
 
     public ProductEntity getProduct(UUID id) {
         try {
