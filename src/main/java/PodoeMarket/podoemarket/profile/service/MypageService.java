@@ -22,6 +22,10 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +36,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -66,6 +76,12 @@ public class MypageService {
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
+
+    @Value("${nicepay.client-key}")
+    private String clientKey;
+
+    @Value("${nicepay.secret-key}")
+    private String secretKey;
 
     private final Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
 
@@ -440,7 +456,8 @@ public class MypageService {
     @Transactional
     public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) {
         try {
-            final OrderItemEntity orderItem = getOrderItem(userInfo.getId());
+            final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
+
             final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
             final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
             final long refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
@@ -451,6 +468,25 @@ public class MypageService {
             if(dto.getReason().isEmpty() || dto.getReason().length() > 50)
                 throw new RuntimeException("환불 사유는 1 ~ 50자까지 가능");
 
+            if(Duration.between(orderItem.getCreatedAt(), LocalDateTime.now()).toDays() > 14)
+                throw new RuntimeException("구매 후 2주가 경과되어 환불 불가");
+
+            // Nicepay 환불용 orderId 생성
+            String refundOrderId = generatedRefundOrderId(orderItem.getOrder().getId());
+
+            NicepayCancelResponseDTO res = nicepayCancel(
+                    orderItem.getOrder().getTid(),
+                    dto.getRefundAmount(),
+                    refundOrderId,
+                    dto.getReason());
+
+            if(res == null || !"0000".equals(res.getResultCode())) {
+                String error = (res != null) ? res.getResultMsg() : "환불 실패";
+
+                log.error("환불 실패: tid={}, resultCode={}, msg={}", orderItem.getOrder().getTid(), res.getResultCode(), error);
+                throw new RuntimeException("환불 처리 실패: " + error);
+            }
+
             final RefundEntity refund = RefundEntity.builder()
                     .quantity(dto.getRefundAmount())
                     .price(refundPrice)
@@ -460,6 +496,7 @@ public class MypageService {
                     .build();
 
             refundRepo.save(refund);
+
         } catch (Exception e) {
             throw e;
         }
@@ -541,14 +578,10 @@ public class MypageService {
     }
 
     private OrderItemEntity getOrderItem(final UUID orderItemId) {
-        try {
-            if(orderItemRepo.findById(orderItemId) == null)
-                throw new RuntimeException("일치하는 구매 목록 없음");
+        if(orderItemRepo.findById(orderItemId) == null)
+            throw new RuntimeException("일치하는 구매 목록 없음");
 
-            return orderItemRepo.findById(orderItemId);
-        } catch (Exception e) {
-            throw new RuntimeException("주문 항목 조회 실패", e);
-        }
+        return orderItemRepo.findById(orderItemId);
     }
 
     private void deleteFile(final String bucket, final String sourceKey) {
@@ -716,6 +749,47 @@ public class MypageService {
             productRepo.save(product);
         } catch (Exception e) {
             throw new RuntimeException("작품 파일 삭제 실패", e);
+        }
+    }
+
+    private String generatedRefundOrderId(final Long orderId) {
+        return orderId + "-R-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private NicepayCancelResponseDTO nicepayCancel(String tid, int cancelAmount, String refundOrderId, String reason) {
+        try {
+            String ediDate = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String signString = tid + ediDate + secretKey;
+            String signData = sha256Hex(signString);
+
+            String auth = clientKey + ":" + secretKey;
+            String encodedKey = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+
+            Map<String, Object> body = Map.of(
+                    "reason", reason,
+                    "orderId", refundOrderId,
+                    "cancelAmt", cancelAmount,
+                    "ediDate", ediDate,
+                    "signData", signData
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Basic " + encodedKey);
+
+            HttpEntity<?> entity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+
+            ResponseEntity<NicepayCancelResponseDTO> res = restTemplate.postForEntity(
+                    "https://api.nicepay.co.kr/v1/payments/" + tid + "/cancel",
+                    entity,
+                    NicepayCancelResponseDTO.class
+            );
+
+            return res.getBody();
+        } catch (Exception e) {
+            log.error("환불 API 오류 발생", e);
+            throw new RuntimeException("나이스페이 환불 실패", e);
         }
     }
 }

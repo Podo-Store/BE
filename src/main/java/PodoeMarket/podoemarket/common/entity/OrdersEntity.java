@@ -28,6 +28,9 @@ public class OrdersEntity {
     @Column(nullable = false)
     private Integer paymentMethod; // 0: 0원, 1: 계좌이체
 
+    @Column
+    private String tid; // nicepay에서 날라오는 결제 승인 키
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

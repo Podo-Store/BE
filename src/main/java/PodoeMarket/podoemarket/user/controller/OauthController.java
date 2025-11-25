@@ -36,20 +36,27 @@ public class OauthController {
                                       @RequestParam(name = "code") String code,
                                       HttpServletResponse response) throws IOException {
         try {
-            final UserEntity user = oauthService.requestUser(socialLoginType, code);
+            final UserEntity oauthUser = oauthService.requestUser(socialLoginType, code);
+            UserEntity dbUser = oauthService.getUserInfo(oauthUser.getUserId());
 
-            if (oauthService.checkUserId(user.getUserId())) {
-                final TokenCreateResponseDTO resDTO = oauthService.socialSignIn(user);
+            if (dbUser == null) {
+                // 새 사용자는 저장
+                oauthService.create(oauthUser);
 
-                mailService.joinSignupEmail(user.getEmail());
+                dbUser = oauthService.getUserInfo(oauthUser.getUserId());
+                mailService.joinSignupEmail(dbUser.getEmail());
+            }
 
-                // 프론트로 리디렉트(JWT와 닉네임 등 전달)
-                String redirectUrl = String.format(
-                        "http://localhost:3000/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
-                        resDTO.getAccessToken(),
-                        resDTO.getRefreshToken(),
-                        URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
-                );
+            // 토큰 발급
+            final TokenCreateResponseDTO resDTO = oauthService.socialSignIn(dbUser);
+
+            // 프론트로 리디렉트(JWT와 닉네임 등 전달)
+            String redirectUrl = String.format(
+                    "http://localhost:3000/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
+                    resDTO.getAccessToken(),
+                    resDTO.getRefreshToken(),
+                    URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
+            );
 //                String redirectUrl = String.format(
 //                        "https://www.podo-store.com/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
 //                        resDTO.getAccessToken(),
@@ -57,13 +64,7 @@ public class OauthController {
 //                        URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
 //                );
 
-                response.sendRedirect(redirectUrl);
-            } else {
-                // 새 사용자는 저장
-                oauthService.create(user);
-                response.sendRedirect("http://localhost:3000/auth/callback?signup=true");
-//                response.sendRedirect("https://www.podo-store.com/auth/callback?signup=true");
-            }
+            response.sendRedirect(redirectUrl);
         } catch(Exception e) {
             e.printStackTrace();
             response.sendRedirect("http://localhost:3000/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
