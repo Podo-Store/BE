@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefundRequestDTO {
-    private UUID orderItemId;
+    private String orderItemId;
     private Integer refundAmount;
     private String reason;
 }
