@@ -476,7 +476,7 @@ public class MypageService {
 
             NicepayCancelResponseDTO res = nicepayCancel(
                     orderItem.getOrder().getTid(),
-                    dto.getRefundAmount(),
+                    refundPrice,
                     refundOrderId,
                     dto.getReason());
 
@@ -756,7 +756,7 @@ public class MypageService {
         return orderId + "-R-" + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private NicepayCancelResponseDTO nicepayCancel(String tid, int cancelAmount, String refundOrderId, String reason) {
+    private NicepayCancelResponseDTO nicepayCancel(String tid, long cancelAmount, String refundOrderId, String reason) {
         try {
             String ediDate = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             String signString = tid + ediDate + secretKey;
