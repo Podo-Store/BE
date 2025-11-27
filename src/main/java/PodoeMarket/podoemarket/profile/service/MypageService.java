@@ -5,10 +5,8 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.profile.dto.request.ApplyRequestDTO;
-import PodoeMarket.podoemarket.profile.dto.request.RefundRequestDTO;
+import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
-import PodoeMarket.podoemarket.profile.dto.request.ProfileUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.*;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -85,7 +83,7 @@ public class MypageService {
 
     private final Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
 
-    // 사용자 계정 정보 업데이트
+    // 사용자 계정 정보 업데이트 - 삭제 예정
     @Transactional
     public UserInfoResponseDTO updateUserAccount(UserEntity userInfo, ProfileUpdateRequestDTO dto) {
         try {
@@ -132,6 +130,60 @@ public class MypageService {
         }
     }
 
+    @Transactional
+    public void updatePassword(UserEntity userInfo, PasswordUpdateRequestDTO dto) {
+        try {
+            if (dto.getPassword() == null || dto.getConfirmPassword() == null)
+                throw new RuntimeException("비밀번호를 입력하세요.");
+
+            if(!dto.getPassword().isBlank() && !dto.getPassword().equals(dto.getConfirmPassword()))
+                throw new RuntimeException("비밀번호가 일치하지 않음");
+
+            UserEntity user = userRepo.findById(userInfo.getId());
+
+            if(user == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            isValidPw(dto.getPassword());
+
+            user.setPassword(pwdEncoder.encode(dto.getPassword()));
+
+            userRepo.save(user);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Transactional
+    public NicknameUpdateResponseDTO updateNickname(UserEntity userInfo, NicknameUpdateRequestDTO dto) {
+        try {
+            UserEntity user = userRepo.findById(userInfo.getId());
+
+            if(user == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            if (!Objects.equals(user.getNickname(), dto.getNickname()) && userRepo.existsByNickname(dto.getNickname()))
+                throw new RuntimeException("이미 사용 중인 닉네임");
+
+            isValidNickname(dto.getNickname());
+
+            user.setNickname(dto.getNickname());
+
+            // 모든 작품의 작가명 변경
+            for(ProductEntity product : productRepo.findAllByUserId(userInfo.getId()))
+                product.setWriter(user.getNickname());
+
+            // save() 없이 자동 저장 - Transactional 선언
+            return NicknameUpdateResponseDTO.builder()
+                    .nickname(user.getNickname())
+                    .accessToken(tokenProvider.createAccessToken(user))
+                    .refreshToken(tokenProvider.createRefreshToken(user))
+                    .build();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     public Boolean checkUser(final UUID id, final String password) {
         try{
             final UserEntity originalUser = userRepo.findById(id);
@@ -155,8 +207,9 @@ public class MypageService {
             return ProfileInfoResponseDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
-                    .nickname(user.getNickname())
                     .email(user.getEmail())
+                    .socialLoginType(user.getSocialLoginType())
+                    .nickname(user.getNickname())
                     .build();
         } catch (Exception e) {
             throw e;
