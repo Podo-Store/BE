@@ -38,6 +38,18 @@ public class MypageController {
         }
     }
 
+    @GetMapping("/account")
+    public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
+        try {
+            final ProfileInfoResponseDTO profile = mypageService.getProfileInfo(userInfo.getId());
+
+            return ResponseEntity.ok().body(profile);
+        }catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody EnterCheckRequestDTO dto){
         try{
@@ -51,18 +63,6 @@ public class MypageController {
                 return ResponseEntity.badRequest().body(resDTO);
             }
         } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
-    @GetMapping("/account")
-    public ResponseEntity<?> account(@AuthenticationPrincipal UserEntity userInfo){
-        try {
-            final ProfileInfoResponseDTO profile = mypageService.getProfileInfo(userInfo.getId());
-
-            return ResponseEntity.ok().body(profile);
-        }catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
@@ -100,9 +100,34 @@ public class MypageController {
     @PostMapping("/update")
     public ResponseEntity<?> updateAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody ProfileUpdateRequestDTO dto) {
         try{
+            // 삭제 예정
             UserInfoResponseDTO resUserDTO = mypageService.updateUserAccount(userInfo, dto);
 
             return ResponseEntity.ok().body(resUserDTO);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PatchMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@AuthenticationPrincipal UserEntity userInfo, @RequestBody PasswordUpdateRequestDTO dto) {
+        try{
+            mypageService.updatePassword(userInfo, dto);
+
+            return ResponseEntity.ok().body(true);
+        } catch(Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @PatchMapping("/updateNickname")
+    public ResponseEntity<?> updateNickname(@AuthenticationPrincipal UserEntity userInfo, @RequestBody NicknameUpdateRequestDTO dto) {
+        try{
+            NicknameUpdateResponseDTO resDTO = mypageService.updateNickname(userInfo, dto);
+
+            return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
