@@ -20,6 +20,7 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -267,6 +268,7 @@ public class MypageService {
 
             // DateOrderDTO로 변환하여 OrderScriptsResponseDTO 생성 및 반환
             List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO> orderList = orderItemsGroupedByDate.entrySet().stream()
+                    .sorted(Map.Entry.<LocalDate, List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO>>comparingByKey().reversed())
                     .map(entry -> new OrderScriptsResponseDTO.DateScriptOrderResponseDTO(entry.getKey(), entry.getValue()))
                     .collect(Collectors.toList());
 
@@ -334,6 +336,7 @@ public class MypageService {
 
             // DateOrderDTO로 변환
             List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO> orderList = OrderItems.entrySet().stream()
+                    .sorted(Map.Entry.<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>>comparingByKey().reversed())
                     .map(entry -> new OrderPerformanceResponseDTO.DatePerformanceOrderDTO(entry.getKey(), entry.getValue()))
                     .collect(Collectors.toList());
 
