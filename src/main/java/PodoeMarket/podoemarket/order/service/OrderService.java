@@ -189,6 +189,8 @@ public class OrderService {
                 orderItem.setPerformancePrice(performancePrice);
                 orderItem.setTotalPrice(totalPrice);
                 orderItem.setWriteId(product.getUser().getId());
+                orderItem.setWriter(product.getWriter());
+                orderItem.setTitle(product.getTitle());
                 orderItem.setUser(user);
 
                 return orderItem;
