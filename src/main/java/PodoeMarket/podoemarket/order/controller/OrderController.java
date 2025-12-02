@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -42,10 +43,10 @@ public class OrderController {
     }
 
     @PostMapping("/item")
-    public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo,
+    public void purchase(@AuthenticationPrincipal UserEntity userInfo,
                                       @RequestBody OrderRequestDTO dto,
                                       HttpServletRequest req,
-                                      HttpServletResponse res) {
+                                      HttpServletResponse res) throws IOException {
         try {
             String resultCode = req.getParameter("resultCode");
             String tid = req.getParameter("tid");
@@ -56,13 +57,12 @@ public class OrderController {
             if (!"0000".equals(resultCode))
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
 
-            List<OrderCompleteResponseDTO> resDTO = orderService.purchaseProduct(userInfo, dto, req.getParameter("tid"));
-            res.sendRedirect("https://podo-store.com/purchase/success");
+            long orderId = orderService.purchaseProduct(userInfo, dto, req.getParameter("tid"));
+            String redirectUrl = String.format("https://podo-store.com/purchase/success?orderId=%d", orderId);
 
-            return ResponseEntity.ok().body(resDTO);
+            res.sendRedirect(redirectUrl);
         } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
+            res.sendRedirect("https://www.podo-store.com/purchase/abort");
         }
     }
 
