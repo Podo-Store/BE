@@ -48,6 +48,10 @@ public class OrderController {
                                       HttpServletResponse res) {
         try {
             String resultCode = req.getParameter("resultCode");
+            String tid = req.getParameter("tid");
+
+            log.info("dto: {}", dto.toString());
+            log.info("resultCode = {}, tid = {}", resultCode, tid);
 
             if (!"0000".equals(resultCode))
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
