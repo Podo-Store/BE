@@ -66,12 +66,12 @@ public class OrderService {
     }
 
     @Transactional
-    public List<OrderCompleteResponseDTO> purchaseProduct(UserEntity userInfo, OrderRequestDTO dto) {
+    public List<OrderCompleteResponseDTO> purchaseProduct(UserEntity userInfo, OrderRequestDTO dto, String tid) {
         try {
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
-                    .tid(dto.getTid())
+                    .tid(tid)
                     .build();
 
             final OrdersEntity orders = orderCreate(order, dto, userInfo);
@@ -196,7 +196,7 @@ public class OrderService {
 
             ordersEntity.setOrderItem(orderItems);
             ordersEntity.setTotalPrice(orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum());
-            ordersEntity.setTid(orderRequestDTO.getTid());
+            ordersEntity.setTid(ordersEntity.getTid());
 
             return orderRepo.save(ordersEntity);
         } catch (Exception e) {

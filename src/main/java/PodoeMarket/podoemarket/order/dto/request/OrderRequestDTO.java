@@ -16,7 +16,6 @@ public class OrderRequestDTO {
     ApplicantDTO applicant;
     List<OrderItemDTO> orderItem;
     private int paymentMethod;
-    private String tid;
 
     @Data
     @Builder
