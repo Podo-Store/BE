@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.order.service.OrderService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -40,9 +41,9 @@ public class OrderController {
     }
 
     @PostMapping("/item")
-    public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderRequestDTO dto) {
+    public ResponseEntity<?> purchase(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderRequestDTO dto, HttpServletRequest req) {
         try {
-            List<OrderCompleteResponseDTO> resDTO = orderService.purchaseProduct(userInfo, dto);
+            List<OrderCompleteResponseDTO> resDTO = orderService.purchaseProduct(userInfo, dto, req.getParameter("tid"));
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
