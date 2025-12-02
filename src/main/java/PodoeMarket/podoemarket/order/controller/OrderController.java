@@ -53,6 +53,7 @@ public class OrderController {
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
 
             List<OrderCompleteResponseDTO> resDTO = orderService.purchaseProduct(userInfo, dto, req.getParameter("tid"));
+            res.sendRedirect("https://podo-store.com/purchase/success");
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
