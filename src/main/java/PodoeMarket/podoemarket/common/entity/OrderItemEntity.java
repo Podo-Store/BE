@@ -53,6 +53,12 @@ public class OrderItemEntity {
     @Column
     private UUID writeId;
 
+    @Column(nullable = false)
+    private String writer;
+
+    @Column(nullable = false)
+    private String title;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
