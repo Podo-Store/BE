@@ -27,7 +27,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class WebConfig implements WebMvcConfigurer {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final String[] swaggerPath = {"/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/error"};
-    private final String[] permitPath = {"/", "/auth/**", "/scripts/**", "/user/**", "/mailLogo.png", "/api/**", "/admin/**", "/introduce/**"};
+    private final String[] permitPath = {"/", "/auth/**", "/scripts/**", "/user/**", "/mailLogo.png", "/api/**", "/admin/**", "/introduce/**", "/order/**"};
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

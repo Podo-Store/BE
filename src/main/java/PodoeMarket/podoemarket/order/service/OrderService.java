@@ -66,7 +66,7 @@ public class OrderService {
     }
 
     @Transactional
-    public List<OrderCompleteResponseDTO> purchaseProduct(UserEntity userInfo, OrderRequestDTO dto, String tid) {
+    public long purchaseProduct(UserEntity userInfo, OrderRequestDTO dto, String tid) {
         try {
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
@@ -87,7 +87,9 @@ public class OrderService {
                 createApplicant(applicant);
             }
 
-            return orderResult(orders);
+            return orders.getId();
+
+//            return orderResult(orders);
         } catch (Exception e) {
             throw e;
         }
