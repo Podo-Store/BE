@@ -88,8 +88,6 @@ public class OrderService {
             }
 
             return orders.getId();
-
-//            return orderResult(orders);
         } catch (Exception e) {
             throw e;
         }
@@ -191,6 +189,8 @@ public class OrderService {
                 orderItem.setPerformancePrice(performancePrice);
                 orderItem.setTotalPrice(totalPrice);
                 orderItem.setWriteId(product.getUser().getId());
+                orderItem.setWriter(product.getWriter());
+                orderItem.setTitle(product.getTitle());
                 orderItem.setUser(user);
 
                 return orderItem;

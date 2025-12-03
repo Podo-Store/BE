@@ -237,24 +237,22 @@ public class MypageService {
                 final OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO orderItemDTO =  new OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO();
 
                 orderItemDTO.setId(orderItem.getId());
-                orderItemDTO.setTitle(orderItem.getProduct().getTitle());
+                orderItemDTO.setTitle(orderItem.getTitle());
+                orderItemDTO.setWriter(orderItem.getWriter());
                 orderItemDTO.setScript(orderItem.getScript());
 
                 if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
                     orderItemDTO.setDelete(true);
                     orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
-                    orderItemDTO.setWriter(userRepo.existsById(orderItem.getWriteId()) ? orderItem.getProduct().getWriter() : null);
                 } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
                     orderItemDTO.setDelete(true);
                     orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getScriptPrice() : 0);
-                    orderItemDTO.setWriter(userRepo.existsById(orderItem.getWriteId()) ? orderItem.getProduct().getWriter() : null);
                 } else { // 정상 작품
                     String encodedScriptImage = orderItem.getProduct().getImagePath() != null
                             ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
                             : "";
 
                     orderItemDTO.setDelete(false);
-                    orderItemDTO.setWriter(orderItem.getProduct().getWriter());
                     orderItemDTO.setImagePath(encodedScriptImage);
                     orderItemDTO.setChecked(orderItem.getProduct().getChecked());
                     orderItemDTO.setScriptPrice(orderItem.getScript() ? orderItem.getProduct().getScriptPrice() : 0);
@@ -296,7 +294,8 @@ public class MypageService {
                     final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
 
                     orderItemDTO.setId(orderItem.getId());
-                    orderItemDTO.setTitle(orderItem.getProduct().getTitle());
+                    orderItemDTO.setTitle(orderItem.getTitle());
+                    orderItemDTO.setWriter(orderItem.getWriter());
                     orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
                     if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1)))
@@ -308,19 +307,16 @@ public class MypageService {
                         orderItemDTO.setDelete(true);
                         orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                        orderItemDTO.setWriter(userRepo.existsById(orderItem.getWriteId()) ? orderItem.getProduct().getWriter() : null);
                     } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
                         orderItemDTO.setDelete(true);
                         orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
                         orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                        orderItemDTO.setWriter(userRepo.existsById(orderItem.getWriteId()) ? orderItem.getProduct().getWriter() : null);
                     } else { // 정상 작품
                         String encodedScriptImage = orderItem.getProduct().getImagePath() != null
                                 ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
                                 : "";
 
                         orderItemDTO.setDelete(false);
-                        orderItemDTO.setWriter(orderItem.getProduct().getWriter());
                         orderItemDTO.setImagePath(encodedScriptImage);
                         orderItemDTO.setChecked(orderItem.getProduct().getChecked());
                         orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
