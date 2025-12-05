@@ -1,13 +1,9 @@
 package PodoeMarket.podoemarket.order.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
-import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
-import PodoeMarket.podoemarket.common.repository.ApplicantRepository;
-import PodoeMarket.podoemarket.common.repository.OrderItemRepository;
-import PodoeMarket.podoemarket.common.repository.OrderRepository;
-import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.service.MailSendService;
@@ -30,6 +26,7 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final ApplicantRepository applicantRepo;
+    private final UserRepository userRepo;
     private final MailSendService mailSendService;
 
     @Value("${cloud.aws.s3.url}")
@@ -66,8 +63,10 @@ public class OrderService {
     }
 
     @Transactional
-    public long purchaseProduct(UserEntity userInfo, OrderRequestDTO dto, String tid) {
+    public long purchaseProduct(OrderRequestDTO dto, String tid) {
         try {
+            final UserEntity userInfo = getUserInfo(dto.getUserId());
+
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
@@ -226,25 +225,6 @@ public class OrderService {
         }
     }
 
-    private List<OrderCompleteResponseDTO> orderResult(final OrdersEntity ordersEntity) {
-        try {
-            List<OrderItemEntity> orderItems = orderItemRepo.findByOrderId(ordersEntity.getId());
-
-            return orderItems.stream().map(orderItem ->
-                    OrderCompleteResponseDTO.builder()
-                            .id(ordersEntity.getId())
-                            .orderDate(ordersEntity.getCreatedAt())
-                            .orderNum(ordersEntity.getId())
-                            .scriptPrice(orderItem.getScriptPrice())
-                            .performancePrice(orderItem.getPerformancePrice())
-                            .totalPrice(orderItem.getTotalPrice())
-                            .build()
-            ).toList();
-        } catch (Exception e) {
-            throw new RuntimeException("주문 결과 조회 실패", e);
-        }
-    }
-
     private List<OrderItemEntity> getOrderItem(final Long orderId) {
         try {
             return orderItemRepo.findByOrderId(orderId);
@@ -258,6 +238,14 @@ public class OrderService {
             return orderRepo.findById(orderId).orElse(null);
         } catch (Exception e) {
             throw new RuntimeException("주문 정보 조회 실패", e);
+        }
+    }
+
+    private UserEntity getUserInfo(final UUID id) {
+        try {
+            return userRepo.findById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("유저 정보 조회 실패", e);
         }
     }
 }
