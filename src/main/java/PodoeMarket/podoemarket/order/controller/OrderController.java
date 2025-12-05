@@ -54,9 +54,7 @@ public class OrderController {
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
                 return;
             }
-            ObjectMapper mapper = new ObjectMapper();
-            String dtoString = mapper.readValue(mallReserved, String.class);
-            OrderRequestDTO dto = mapper.readValue(dtoString, OrderRequestDTO.class);
+            OrderRequestDTO dto = new ObjectMapper().readValue(mallReserved, OrderRequestDTO.class);
 
             long orderId = orderService.purchaseProduct(dto, req.getParameter("tid"));
             String redirectUrl = String.format("https://podo-store.com/purchase/success?orderId=%d", orderId);
