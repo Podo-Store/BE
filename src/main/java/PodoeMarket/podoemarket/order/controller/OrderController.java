@@ -4,7 +4,6 @@ import PodoeMarket.podoemarket.common.entity.*;
 import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
-import PodoeMarket.podoemarket.order.dto.response.OrderCompleteResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderInfoResponseDTO;
 import PodoeMarket.podoemarket.order.dto.response.OrderItemResponseDTO;
 import PodoeMarket.podoemarket.order.service.OrderService;
@@ -18,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -44,9 +42,7 @@ public class OrderController {
     }
 
     @PostMapping("/item")
-    public void purchase(@AuthenticationPrincipal UserEntity userInfo,
-                                      HttpServletRequest req,
-                                      HttpServletResponse res) throws IOException {
+    public void purchase(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try {
             String resultCode = req.getParameter("resultCode");
             String tid = req.getParameter("tid");
@@ -60,7 +56,7 @@ public class OrderController {
             }
             OrderRequestDTO dto = new ObjectMapper().readValue(mallReserved, OrderRequestDTO.class);
 
-            long orderId = orderService.purchaseProduct(userInfo, dto, req.getParameter("tid"));
+            long orderId = orderService.purchaseProduct(dto, req.getParameter("tid"));
             String redirectUrl = String.format("https://podo-store.com/purchase/success?orderId=%d", orderId);
 
             res.sendRedirect(redirectUrl);
