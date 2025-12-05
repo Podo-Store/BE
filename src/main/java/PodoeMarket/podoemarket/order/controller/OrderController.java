@@ -48,16 +48,14 @@ public class OrderController {
             String tid = req.getParameter("tid");
             String mallReserved = req.getParameter("mallReserved");
 
-            log.info("resultCode={}, tid={}, mallReserved={}", resultCode, tid, mallReserved);
-
             if (!"0000".equals(resultCode)) {
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
                 return;
             }
             OrderRequestDTO dto = new ObjectMapper().readValue(mallReserved, OrderRequestDTO.class);
 
-            long orderId = orderService.purchaseProduct(dto, req.getParameter("tid"));
-            String redirectUrl = String.format("https://podo-store.com/purchase/success?orderId=%d", orderId);
+            long orderId = orderService.purchaseProduct(dto, tid);
+            String redirectUrl = String.format("https://www.podo-store.com/purchase/success?orderId=%d", orderId);
 
             res.sendRedirect(redirectUrl);
         } catch(Exception e) {
