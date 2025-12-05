@@ -20,7 +20,6 @@ import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -526,11 +525,13 @@ public class MypageService {
             // Nicepay 환불용 orderId 생성
             String refundOrderId = generatedRefundOrderId(orderItem.getOrder().getId());
 
-            NicepayCancelResponseDTO res = nicepayCancel(
-                    orderItem.getOrder().getTid(),
-                    refundPrice,
-                    refundOrderId,
-                    dto.getReason());
+            NicepayCancelResponseDTO res;
+
+            if(refundPrice == possiblePrice)
+                res = requestCancelToNicepay(orderItem.getOrder().getTid(), refundOrderId, dto.getReason(), null);
+            else
+                res = requestCancelToNicepay(orderItem.getOrder().getTid(), refundOrderId, dto.getReason(), refundPrice);
+
 
             if(res == null || !"0000".equals(res.getResultCode())) {
                 String error = (res != null) ? res.getResultMsg() : "환불 실패";
@@ -808,7 +809,7 @@ public class MypageService {
         return orderId + "-R-" + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private NicepayCancelResponseDTO nicepayCancel(String tid, long cancelAmount, String refundOrderId, String reason) {
+    private NicepayCancelResponseDTO requestCancelToNicepay(String tid, String refundOrderId, String reason, Long cancelAmount) {
         try {
             String ediDate = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             String signString = tid + ediDate + secretKey;
@@ -817,13 +818,14 @@ public class MypageService {
             String auth = clientKey + ":" + secretKey;
             String encodedKey = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
-            Map<String, Object> body = Map.of(
-                    "reason", reason,
-                    "orderId", refundOrderId,
-                    "cancelAmt", cancelAmount,
-                    "ediDate", ediDate,
-                    "signData", signData
-            );
+            Map<String, Object> body = new HashMap<>();
+            body.put("reason", reason);
+            body.put("orderId", refundOrderId);
+            body.put("ediDate", ediDate);
+            body.put("signData", signData);
+
+            if (cancelAmount != null) // 부분 취소
+                body.put("cancelAmount", cancelAmount);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -839,7 +841,7 @@ public class MypageService {
             );
 
             return res.getBody();
-        } catch (Exception e) {
+         } catch (Exception e) {
             log.error("환불 API 오류 발생", e);
             throw new RuntimeException("나이스페이 환불 실패", e);
         }
