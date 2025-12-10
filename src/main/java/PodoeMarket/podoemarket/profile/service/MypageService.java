@@ -297,7 +297,7 @@ public class MypageService {
                     orderItemDTO.setWriter(orderItem.getWriter());
                     orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
-                    if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusYears(1)))
+                    if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusWeeks(2)))
                         orderItemDTO.setPossibleCount(0);
                     else
                         orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
