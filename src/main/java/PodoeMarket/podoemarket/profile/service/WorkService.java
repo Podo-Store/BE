@@ -336,19 +336,21 @@ public class WorkService {
             if(files.length > 1)
                 throw new RuntimeException("작품 이미지가 1개를 초과함");
 
-            if(!Objects.equals(files[0].getContentType(), "image/jpeg") &&
-                    !Objects.equals(files[0].getContentType(), "image/jpg") &&
-                    !Objects.equals(files[0].getContentType(), "image/png"))
-                throw new RuntimeException("ScriptImage file type is only jpg and png");
+            MultipartFile file = files[0];
 
-            // 파일 이름 가공
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            final Date time = new Date();
-            final String name = files[0].getOriginalFilename();
-            final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+            // MIME 타입 체크
+            String contentType = file.getContentType();
+            if (!"image/jpeg".equals(contentType) &&
+                    !"image/jpg".equals(contentType) &&
+                    !"image/png".equals(contentType)) {
+                throw new RuntimeException("이미지 파일은 jpg 또는 png만 허용됩니다.");
+            }
 
             // S3 Key 구성
-            final String S3Key = scriptImageBucketFolder + fileName[0] + "/" + title + "/" + dateFormat.format(time) + ".jpg";
+            final String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
+            final String name = files[0].getOriginalFilename();
+            final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
+            final String S3Key = scriptImageBucketFolder + fileName[0] + "/" + title + "/" + date + ".jpg";
 
             // 기존 파일 삭제
             final ProductEntity product = productRepo.findById(id);
@@ -359,9 +361,8 @@ public class WorkService {
             if(product.getImagePath() != null)
                 deleteFile(bucket, product.getImagePath());
 
-            // 이미지 압축 (ex. 품질 0.7 = 70%)
-            float quality = 0.7f;
-            byte[] compressedImage = compressImage(files[0], quality);
+            // 이미지 압축, 리사이즈 진행 (ex. 품질 0.7 = 70%)
+            byte[] compressedImage = compressImage(files[0], 466, 0.7f);
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(compressedImage.length);
@@ -486,7 +487,7 @@ public class WorkService {
         return rgbImage;
     }
 
-    private static byte[] compressImage(MultipartFile file, float quality) throws IOException {
+    private static byte[] compressImage(MultipartFile file, int targetSize, float quality) throws IOException {
         BufferedImage originalImage;
         try (InputStream in = file.getInputStream()) {
             originalImage = ImageIO.read(in);
@@ -496,22 +497,31 @@ public class WorkService {
         }
 
         // JPEGWriter가 안전하게 처리할 수 있도록 복잡한 color model(PNG 등) → BGR RGB로 완전히 변환
-        BufferedImage bufferedImage = forceRGB(originalImage);
+        BufferedImage rbgImage = forceRGB(originalImage);
 
         // 원본 메모리 해제 (대형 PNG 7000px 이상일 때 필수)
         originalImage.flush();
 
+        // 리사이즈
+        Image scaled = rbgImage.getScaledInstance(targetSize, targetSize, Image.SCALE_SMOOTH);
+        BufferedImage resizedBuffered = new BufferedImage(targetSize, targetSize, BufferedImage.TYPE_3BYTE_BGR);
+
+        Graphics2D g2d = resizedBuffered.createGraphics();
+        g2d.drawImage(scaled, 0, 0, null);
+        g2d.dispose();
+
+        // JPEG 품질 압축
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        // JPEG writer
         ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
         ImageWriteParam writeParam = writer.getDefaultWriteParam();
+
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(quality); // 0.0 ~ 1.0 (낮을수록 압축률↑, 용량↓, 화질↓)
 
         try (ImageOutputStream imgOutputStream = ImageIO.createImageOutputStream(outputStream)) {
             writer.setOutput(imgOutputStream);
-            writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
+            writer.write(null, new IIOImage(rbgImage, null, null), writeParam);
         } finally {
             writer.dispose();
         }
