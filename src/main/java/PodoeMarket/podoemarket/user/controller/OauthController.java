@@ -38,8 +38,10 @@ public class OauthController {
         try {
             final UserEntity oauthUser = oauthService.requestUser(socialLoginType, code);
             UserEntity dbUser = oauthService.getUserInfo(oauthUser.getUserId());
+            boolean isNewUser = false;
 
             if (dbUser == null) {
+                isNewUser = true;
                 // 새 사용자는 저장
                 oauthService.create(oauthUser);
 
@@ -52,10 +54,11 @@ public class OauthController {
 
             // 프론트로 리디렉트(JWT와 닉네임 등 전달)
             String redirectUrl = String.format(
-                    "http://localhost:3000/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
+                    "http://localhost:3000/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s&isNewUser=%s",
                     resDTO.getAccessToken(),
                     resDTO.getRefreshToken(),
-                    URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8)
+                    URLEncoder.encode(resDTO.getNickname(), StandardCharsets.UTF_8),
+                    isNewUser
             );
 //                String redirectUrl = String.format(
 //                        "https://www.podo-store.com/auth/callback?accessToken=%s&refreshToken=%s&nickname=%s",
