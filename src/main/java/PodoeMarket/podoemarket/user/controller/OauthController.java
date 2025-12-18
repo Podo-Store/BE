@@ -3,7 +3,6 @@ package PodoeMarket.podoemarket.user.controller;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
-import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.OAuthUserDTO;
 import PodoeMarket.podoemarket.user.dto.request.SocialSignUpRequestDTO;
 import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
@@ -13,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
