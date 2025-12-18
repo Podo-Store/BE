@@ -96,7 +96,7 @@ public class OrderService {
     @Transactional
     public void approvePurchase(long orderId, String tid) {
         try {
-            OrdersEntity orders = orderRepo.findByOrderId(orderId);
+            OrdersEntity orders = orderRepo.findById(orderId);
 
             if(orders == null)
                 throw new RuntimeException("해당 주문이 존재하지 않습니다.");
