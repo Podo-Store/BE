@@ -752,12 +752,14 @@ public class MypageService {
                     .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
 
             return groupedByOrderDate.entrySet().stream()
+                    .sorted(Map.Entry.<LocalDate, List<OrderItemEntity>>comparingByKey().reversed())
                     .map(entry -> {
                         LocalDate date = entry.getKey();
                         List<OrderItemEntity> orderItemList = entry.getValue();
 
                         // 각 주문에 대한 신청자 정보
                         List<RequestedPerformanceResponseDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
+                                .sorted(Comparator.comparing(OrderItemEntity::getCreatedAt).reversed())
                                 .map(orderItem -> RequestedPerformanceResponseDTO.ApplicantInfo.builder()
                                         .amount(orderItem.getPerformanceAmount())
                                         .name(orderItem.getApplicant().getName())
