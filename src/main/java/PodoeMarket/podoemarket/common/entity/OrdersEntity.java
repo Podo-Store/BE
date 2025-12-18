@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.common.entity;
 
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,9 @@ public class OrdersEntity {
 
     @Column
     private String tid; // nicepay에서 날라오는 결제 승인 키
+
+    @Column(nullable = false)
+    private OrderStatus orderStatus;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

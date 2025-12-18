@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.order.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.order.dto.request.OrderInfoRequestDTO;
 import PodoeMarket.podoemarket.order.dto.request.OrderRequestDTO;
@@ -63,14 +64,14 @@ public class OrderService {
     }
 
     @Transactional
-    public long purchaseProduct(OrderRequestDTO dto, String tid) {
+    public long createPendingOrder(OrderRequestDTO dto, UserEntity user) {
         try {
-            final UserEntity userInfo = getUserInfo(dto.getUserId());
+            final UserEntity userInfo = getUserInfo(user.getId());
 
             final OrdersEntity order = OrdersEntity.builder()
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
-                    .tid(tid)
+                    .orderStatus(OrderStatus.PENDING)
                     .build();
 
             final OrdersEntity orders = orderCreate(order, dto, userInfo);
@@ -87,6 +88,24 @@ public class OrderService {
             }
 
             return orders.getId();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Transactional
+    public void approvePurchase(long orderId, String tid) {
+        try {
+            OrdersEntity orders = orderRepo.findByOrderId(orderId);
+
+            if(orders == null)
+                throw new RuntimeException("해당 주문이 존재하지 않습니다.");
+
+            if(orders.getOrderStatus() == OrderStatus.FAILED)
+                throw new RuntimeException("실패한 주문 건입니다.");
+
+            orders.setTid(tid);
+            orders.setOrderStatus(OrderStatus.PAID);
         } catch (Exception e) {
             throw e;
         }
