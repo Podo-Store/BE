@@ -4,6 +4,9 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.service.MailSendService;
+import PodoeMarket.podoemarket.user.dto.OAuthUserDTO;
+import PodoeMarket.podoemarket.user.dto.request.SocialSignUpRequestDTO;
 import PodoeMarket.podoemarket.user.dto.response.TokenCreateResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +32,8 @@ public class OAuthService {
     private final List<SocialOauth> socialOauthList; // 모든 SocialOauth 구현체가 자동으로 주입됨 (@RequiredArgsConstructor)
     private final TokenProvider tokenProvider;
     private final UserRepository userRepo;
+    private final TempAuthService tempAuthService;
+    private final MailSendService mailService;
 
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
@@ -41,19 +46,8 @@ public class OAuthService {
         }
     }
 
-    // 인증 코드로 액세스 토큰을 요청하는 메서드
-    public String requestAccessToken(SocialLoginType socialLoginType, String code) {
-        try {
-            SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
-
-            return socialOauth.requestAccessToken(code);
-        } catch (Exception e) {
-            throw new RuntimeException("엑세스 토큰 요청 실패", e);
-        }
-    }
-
     // 액세스 토큰을 사용하여 사용자 정보를 가져오는 메서드
-    public UserEntity requestUser(SocialLoginType socialLoginType, String code) {
+    public OAuthUserDTO requestUser(SocialLoginType socialLoginType, String code) {
         try {
             // 1. 액세스 토큰을 포함한 JSON 응답 요청
             String infoJson = requestAccessToken(socialLoginType, code);
@@ -77,8 +71,8 @@ public class OAuthService {
         }
     }
 
-    // 소셜 로그인 메서드
-    public TokenCreateResponseDTO socialSignIn(final UserEntity signInUser) {
+    // 소셜 토큰 생성 메서드
+    public TokenCreateResponseDTO createToken(final UserEntity signInUser) {
         try {
             if(signInUser == null)
                 throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -89,18 +83,29 @@ public class OAuthService {
                     .accessToken(tokenProvider.createAccessToken(signInUser))
                     .refreshToken(tokenProvider.createRefreshToken(signInUser))
                     .build();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             throw e;
         }
     }
 
-    // 소셜 회원가입 DB create 메서드
     @Transactional
-    public void create(final UserEntity userEntity) {
+    public TokenCreateResponseDTO socialSignIn(SocialSignUpRequestDTO dto) {
         try {
-            final String userId = userEntity.getUserId();
-            final String email = userEntity.getEmail();
-            final String nickname = userEntity.getNickname();
+            if (!dto.isTermsAgreed())
+                throw new RuntimeException("약관 동의 필요");
+
+            OAuthUserDTO oauthUser = tempAuthService.get(dto.getTempCode());
+
+            UserEntity user = UserEntity.builder()
+                    .userId(oauthUser.getUserId())
+                    .email(oauthUser.getEmail())
+                    .nickname(oauthUser.getNickname())
+                    .socialLoginType(oauthUser.getSocialLoginType())
+                    .build();
+
+            final String userId = user.getUserId();
+            final String email = user.getEmail();
+            final String nickname = user.getNickname();
 
             // 아이디
             if(userId == null || userId.isBlank())
@@ -130,9 +135,14 @@ public class OAuthService {
             if(userRepo.existsByNickname(createNickname))
                 throw new RuntimeException("이미 존재하는 nickname");
 
-            userEntity.setNickname(createNickname);
+            user.setNickname(createNickname);
 
-            userRepo.save(userEntity);
+            userRepo.save(user);
+
+            mailService.joinSignupEmail(email);
+            tempAuthService.remove(dto.getTempCode());
+
+            return createToken(user);
         } catch (Exception e) {
             throw e;
         }
@@ -147,6 +157,16 @@ public class OAuthService {
     }
 
     // ================= private method =================
+    // 인증 코드로 액세스 토큰을 요청하는 메서드
+    private String requestAccessToken(SocialLoginType socialLoginType, String code) {
+        try {
+            SocialOauth socialOauth = findSocialOauthByType(socialLoginType);
+
+            return socialOauth.requestAccessToken(code);
+        } catch (Exception e) {
+            throw new RuntimeException("엑세스 토큰 요청 실패", e);
+        }
+    }
 
     private SocialOauth findSocialOauthByType(SocialLoginType socialLoginType) {
         return socialOauthList.stream()
@@ -257,7 +277,7 @@ public class OAuthService {
     }
 
     // 사용자 정보를 파싱하여 User 객체 생성
-    private UserEntity parseUserInfo(String userInfo, SocialLoginType socialLoginType) {
+    private OAuthUserDTO parseUserInfo(String userInfo, SocialLoginType socialLoginType) {
         JsonObject jsonObject = JsonParser.parseString(userInfo).getAsJsonObject();
 
         String userId = "";
@@ -283,7 +303,7 @@ public class OAuthService {
             type = SocialLoginType.NAVER;
         }
 
-        return UserEntity.builder()
+        return OAuthUserDTO.builder()
                 .userId(userId)
                 .nickname(nickname)
                 .email(email)
@@ -301,4 +321,48 @@ public class OAuthService {
 
         return randomNumber.toString();
     }
+
+//    // 소셜 회원가입 DB create 메서드
+//    @Transactional
+//    protected void create(final UserEntity userEntity) {
+//        try {
+//            final String userId = userEntity.getUserId();
+//            final String email = userEntity.getEmail();
+//            final String nickname = userEntity.getNickname();
+//
+//            // 아이디
+//            if(userId == null || userId.isBlank())
+//                throw new RuntimeException("userId가 올바르지 않음");
+//
+//            if(userRepo.existsByUserId(userId))
+//                throw new RuntimeException("이미 존재하는 userId");
+//
+//            // 이메일
+//            if(email == null || email.isBlank())
+//                throw new RuntimeException("email이 올바르지 않음");
+//
+//            if(userRepo.existsByEmail(email))
+//                throw new RuntimeException("이미 존재하는 email");
+//
+//            // 닉네임
+//            if(nickname == null || nickname.isBlank())
+//                throw new RuntimeException("nickname이 올바르지 않음");
+//
+//            // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
+//            String createNickname = "";
+//            do {
+//                createNickname = nickname + createRandomNumber();
+//
+//            } while (userRepo.existsByNickname(createNickname));
+//
+//            if(userRepo.existsByNickname(createNickname))
+//                throw new RuntimeException("이미 존재하는 nickname");
+//
+//            userEntity.setNickname(createNickname);
+//
+//            userRepo.save(userEntity);
+//        } catch (Exception e) {
+//            throw e;
+//        }
+//    }
 }
