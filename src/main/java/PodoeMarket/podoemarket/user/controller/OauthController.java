@@ -56,7 +56,8 @@ public class OauthController {
                         "http://localhost:3000/auth/callback" +
 //                                "https://www.podo-store.com/auth/callback" +
                                 "?result=LOGIN" +
-                                "&accessToken=" + token.getAccessToken()
+                                "&accessToken=" + token.getAccessToken() +
+                                "&refreshToken=" + token.getRefreshToken()
                 );
 
                 return;
