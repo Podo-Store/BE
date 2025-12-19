@@ -523,6 +523,8 @@ public class MypageService {
             if(Duration.between(orderItem.getCreatedAt(), LocalDateTime.now()).toDays() > 14)
                 throw new RuntimeException("구매 후 2주가 경과되어 환불 불가");
 
+            log.info("refundPrice={}, possiblePrice={}, cancelAmount={}", refundPrice, possiblePrice, (refundPrice == possiblePrice ? null : refundPrice));
+
             // Nicepay 환불용 orderId 생성
             String refundOrderId = generatedRefundOrderId(orderItem.getOrder().getId());
 
@@ -812,7 +814,7 @@ public class MypageService {
         return orderId + "-R-" + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private NicepayCancelResponseDTO requestCancelToNicepay(String tid, String refundOrderId, String reason, Long cancelAmount) {
+    private NicepayCancelResponseDTO requestCancelToNicepay(String tid, String refundOrderId, String reason, Long cancelAmt) {
         try {
             String ediDate = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             String signString = tid + ediDate + secretKey;
@@ -827,8 +829,8 @@ public class MypageService {
             body.put("ediDate", ediDate);
             body.put("signData", signData);
 
-            if (cancelAmount != null) // 부분 취소
-                body.put("cancelAmount", cancelAmount);
+            if (cancelAmt != null) // 부분 취소
+                body.put("cancelAmt", cancelAmt);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
