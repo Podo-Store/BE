@@ -57,7 +57,8 @@ public class OauthController {
 //                                "https://www.podo-store.com/auth/callback" +
                                 "?result=LOGIN" +
                                 "&accessToken=" + token.getAccessToken() +
-                                "&refreshToken=" + token.getRefreshToken()
+                                "&refreshToken=" + token.getRefreshToken() +
+                                "&nickname=" +  URLEncoder.encode(token.getNickname(), StandardCharsets.UTF_8)
                 );
 
                 return;
