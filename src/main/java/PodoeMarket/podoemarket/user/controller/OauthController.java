@@ -53,8 +53,8 @@ public class OauthController {
 
             // 프론트로 리디렉트
                 response.sendRedirect(
-                        "http://localhost:3000/auth/callback" +
-//                                "https://www.podo-store.com/auth/callback" +
+//                        "http://localhost:3000/auth/callback" +
+                                "https://www.podo-store.com/auth/callback" +
                                 "?result=LOGIN" +
                                 "&accessToken=" + token.getAccessToken() +
                                 "&refreshToken=" + token.getRefreshToken() +
@@ -68,15 +68,15 @@ public class OauthController {
             String tempCode = tempAuthService.store(oauthUser);
 
             response.sendRedirect(
-                    "http://localhost:3000/auth/callback" +
-//                            "https://www.podo-store.com/auth/callback" +
+//                    "http://localhost:3000/auth/callback" +
+                            "https://www.podo-store.com/auth/callback" +
                             "?result=REQUIRE_TERMS" +
                             "&tempCode=" + tempCode
             );
         } catch(Exception e) {
             e.printStackTrace();
-            response.sendRedirect("http://localhost:3000/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
-//            response.sendRedirect("https://www.podo-store.com/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
+//            response.sendRedirect("http://localhost:3000/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
+            response.sendRedirect("https://www.podo-store.com/auth/callback?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
         }
     }
 
