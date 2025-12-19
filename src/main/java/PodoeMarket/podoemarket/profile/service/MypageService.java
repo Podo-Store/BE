@@ -288,6 +288,7 @@ public class MypageService {
             for (OrderItemEntity orderItem : allOrderItems) {
                 if (orderItem.getPerformanceAmount() > 0) {
                     final int dateCount = performanceDateRepo.countByOrderItemId(orderItem.getId());
+                    final int refundCount = refundRepo.countByOrderId(orderItem.getOrder().getId());
 
                     // 각 주문 항목에 대한 제품 정보 가져옴
                     final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
@@ -300,7 +301,7 @@ public class MypageService {
                     if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusWeeks(2)))
                         orderItemDTO.setPossibleCount(0);
                     else
-                        orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount);
+                        orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
 
                     if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
                         orderItemDTO.setDelete(true);
@@ -752,12 +753,14 @@ public class MypageService {
                     .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
 
             return groupedByOrderDate.entrySet().stream()
+                    .sorted(Map.Entry.<LocalDate, List<OrderItemEntity>>comparingByKey().reversed())
                     .map(entry -> {
                         LocalDate date = entry.getKey();
                         List<OrderItemEntity> orderItemList = entry.getValue();
 
                         // 각 주문에 대한 신청자 정보
                         List<RequestedPerformanceResponseDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
+                                .sorted(Comparator.comparing(OrderItemEntity::getCreatedAt).reversed())
                                 .map(orderItem -> RequestedPerformanceResponseDTO.ApplicantInfo.builder()
                                         .amount(orderItem.getPerformanceAmount())
                                         .name(orderItem.getApplicant().getName())
