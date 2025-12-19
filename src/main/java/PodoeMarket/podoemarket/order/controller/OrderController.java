@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @RestController
 @Slf4j
@@ -58,7 +60,7 @@ public class OrderController {
     }
 
     @PostMapping(value = "/nicepay/return", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void nicePayReturn(HttpServletRequest req, HttpServletResponse res) {
+    public void nicePayReturn(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try {
             String resultCode = req.getParameter("resultCode");
             String tid = req.getParameter("tid");
@@ -77,8 +79,8 @@ public class OrderController {
 
             res.sendRedirect("https://www.podo-store.com/purchase/success?orderId=" + orderId);
         } catch(Exception e) {
-                log.error("결제 처리 실패: {}", e.getMessage(), e);
-//            res.sendRedirect("https://www.podo-store.com/purchase/abort");
+            log.error("결제 처리 실패: {}", e.getMessage(), e);
+            res.sendRedirect("https://www.podo-store.com/purchase/abort");
         }
     }
 
