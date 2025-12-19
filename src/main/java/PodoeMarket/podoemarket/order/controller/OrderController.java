@@ -64,6 +64,8 @@ public class OrderController {
             String tid = req.getParameter("tid");
             String orderIdStr = req.getParameter("orderId");
 
+            log.info("resultCode = {}, tid = {}, orderIdStr = {}", resultCode, tid, orderIdStr);
+
             if (!"0000".equals(resultCode)) {
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
                 return;
