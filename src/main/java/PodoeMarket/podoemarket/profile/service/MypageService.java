@@ -485,7 +485,7 @@ public class MypageService {
         try {
             final OrderItemEntity orderItem = getOrderItem(orderItemId);
 
-            final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId);
+            final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId) - refundRepo.countByOrderId(orderItem.getOrder().getId());
             final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
 
             return RefundResponseDTO.builder()
