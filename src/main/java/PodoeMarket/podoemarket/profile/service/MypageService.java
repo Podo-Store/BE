@@ -381,7 +381,7 @@ public class MypageService {
             applyResponseDTO.setImagePath(orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8): "");
             applyResponseDTO.setTitle(orderItem.getProduct().getTitle());
             applyResponseDTO.setWriter(orderItem.getProduct().getWriter());
-            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
+            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount() - refundRepo.countByOrderId(orderItem.getOrder().getId()));
 
             ApplyResponseDTO.ApplicantDTO applicantDTO = ApplyResponseDTO.ApplicantDTO.builder()
                     .name(applicant.getName())
@@ -410,7 +410,7 @@ public class MypageService {
             final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
             expire(orderItem.getCreatedAt());
 
-            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
+            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId()) - refundRepo.countByOrderId(orderItem.getOrder().getId());
             if(dto.getPerformanceDate().size() > availableAmount)
                 throw new RuntimeException("공연권 구매량 초과");
 
