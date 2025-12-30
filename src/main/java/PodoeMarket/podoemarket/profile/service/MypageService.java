@@ -738,7 +738,7 @@ public class MypageService {
                     .scriptQuantity(orderItemRepo.sumScriptByProductId(productId))
                     .performance(product.getPerformance())
                     .performancePrice(product.getPerformancePrice())
-                    .performanceQuantity(orderItemRepo.sumPerformanceAmountByProductId(productId))
+                    .performanceQuantity(Math.max(0, orderItemRepo.sumPaidPerformanceAmountByProductId(productId, OrderStatus.PAID) - refundRepo.sumRefundQuantityByProductId(productId)))
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("상품 정보 조회 실패", e);

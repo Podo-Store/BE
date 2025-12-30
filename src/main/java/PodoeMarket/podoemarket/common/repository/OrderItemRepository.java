@@ -53,6 +53,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     @Query("SELECT COALESCE(SUM(o.performanceAmount), 0) FROM OrderItemEntity o WHERE o.product.id = :productId")
     int sumPerformanceAmountByProductId(@Param("productId") UUID productId);
 
+    @Query("""
+    SELECT COALESCE(SUM(oi.performanceAmount), 0)
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.product.id = :productId
+    AND o.orderStatus = :status
+""")
+    long sumPaidPerformanceAmountByProductId(@Param("productId") UUID productId, @Param("status") OrderStatus status);
+
     List<OrderItemEntity> findAllByProductId(UUID productId);
 
     @Query("""
@@ -63,8 +72,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
     """)
-    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
-                                                  Pageable pageable);
+    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Boolean existsByProductIdAndUserId(UUID productId, UUID userId);
 }

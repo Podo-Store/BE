@@ -31,7 +31,7 @@ public class RequestedPerformanceResponseDTO {
         private Integer scriptQuantity;
         private Boolean performance;
         private Long performancePrice;
-        private Integer performanceQuantity;
+        private Long performanceQuantity;
     }
 
     @Data
