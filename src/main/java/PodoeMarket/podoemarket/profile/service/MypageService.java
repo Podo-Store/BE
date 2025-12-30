@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.profile.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
@@ -227,7 +228,7 @@ public class MypageService {
     public OrderScriptsResponseDTO getUserOrderScripts(UserEntity userInfo) {
         try {
             // 모든 필요한 OrderItemEntity를 한 번에 가져옴
-            final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserIdAndScript(userInfo.getId(), true, sort);
+            final List<OrderItemEntity> allOrderItems = orderItemRepo.findPaidScriptOrderItems(userInfo.getId(), OrderStatus.PAID, sort);
 
             // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
             final Map<LocalDate, List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO>> orderItemsGroupedByDate = new HashMap<>();
@@ -263,7 +264,7 @@ public class MypageService {
                 orderItemsGroupedByDate.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
             }
 
-            // DateOrderDTO로 변환하여 OrderScriptsResponseDTO 생성 및 반환
+            // DateOrderDTO로 변환
             List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO> orderList = orderItemsGroupedByDate.entrySet().stream()
                     .sorted(Map.Entry.<LocalDate, List<OrderScriptsResponseDTO.DateScriptOrderResponseDTO.OrderScriptDTO>>comparingByKey().reversed())
                     .map(entry -> new OrderScriptsResponseDTO.DateScriptOrderResponseDTO(entry.getKey(), entry.getValue()))
@@ -281,53 +282,57 @@ public class MypageService {
     public OrderPerformanceResponseDTO getUserOrderPerformances(UserEntity userInfo) {
         try {
             // 각 주문의 주문 항목을 가져옴
-            final List<OrderItemEntity> allOrderItems = orderItemRepo.findAllByUserId(userInfo.getId(), sort);
+            final List<OrderItemEntity> allOrderItems = orderItemRepo.findPaidPerformanceOrderItems(userInfo.getId(), OrderStatus.PAID, sort);
+
+            final Map<UUID, Integer> performanceDateCountMap = getPerformanceDateCountMap(allOrderItems);
+
+            final Map<Long, Integer> refundCountMap = getRefundCountMap(allOrderItems);
+
             // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
             final Map<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>> OrderItems = new HashMap<>();
 
             for (OrderItemEntity orderItem : allOrderItems) {
-                if (orderItem.getPerformanceAmount() > 0) {
-                    final int dateCount = performanceDateRepo.countByOrderItemId(orderItem.getId());
-                    final int refundCount = refundRepo.countByOrderId(orderItem.getOrder().getId());
+                int dateCount = performanceDateCountMap.getOrDefault(orderItem.getId(), 0);
 
-                    // 각 주문 항목에 대한 제품 정보 가져옴
-                    final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
+                int refundCount = refundCountMap.getOrDefault(orderItem.getOrder().getId(), 0);
 
-                    orderItemDTO.setId(orderItem.getId());
-                    orderItemDTO.setTitle(orderItem.getTitle());
-                    orderItemDTO.setWriter(orderItem.getWriter());
-                    orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
+                // 각 주문 항목에 대한 제품 정보 가져옴
+                final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
 
-                    if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusWeeks(2)))
-                        orderItemDTO.setPossibleCount(0);
-                    else
-                        orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
+                orderItemDTO.setId(orderItem.getId());
+                orderItemDTO.setTitle(orderItem.getTitle());
+                orderItemDTO.setWriter(orderItem.getWriter());
+                orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
-                    if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
-                        orderItemDTO.setDelete(true);
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
-                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                    } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
-                        orderItemDTO.setDelete(true);
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
-                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                    } else { // 정상 작품
-                        String encodedScriptImage = orderItem.getProduct().getImagePath() != null
-                                ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
-                                : "";
+                if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusWeeks(2)))
+                    orderItemDTO.setPossibleCount(0);
+                else
+                    orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
 
-                        orderItemDTO.setDelete(false);
-                        orderItemDTO.setImagePath(encodedScriptImage);
-                        orderItemDTO.setChecked(orderItem.getProduct().getChecked());
-                        orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
-                        orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                        orderItemDTO.setProductId(orderItem.getProduct().getId());
-                    }
+                if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
+                    orderItemDTO.setDelete(true);
+                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
+                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
+                    orderItemDTO.setDelete(true);
+                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
+                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                } else { // 정상 작품
+                    String encodedScriptImage = orderItem.getProduct().getImagePath() != null
+                            ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
+                            : "";
 
-                    final LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-                    // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-                    OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+                    orderItemDTO.setDelete(false);
+                    orderItemDTO.setImagePath(encodedScriptImage);
+                    orderItemDTO.setChecked(orderItem.getProduct().getChecked());
+                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                    orderItemDTO.setProductId(orderItem.getProduct().getId());
                 }
+
+                LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
+                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
+                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
             }
 
             // DateOrderDTO로 변환
@@ -337,9 +342,9 @@ public class MypageService {
                     .collect(Collectors.toList());
 
             return OrderPerformanceResponseDTO.builder()
-                .nickname(userInfo.getNickname())
-                .orderList(orderList)
-                .build();
+                    .nickname(userInfo.getNickname())
+                    .orderList(orderList)
+                    .build();
         } catch (Exception e) {
             throw e;
         }
@@ -381,7 +386,7 @@ public class MypageService {
             applyResponseDTO.setImagePath(orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8): "");
             applyResponseDTO.setTitle(orderItem.getProduct().getTitle());
             applyResponseDTO.setWriter(orderItem.getProduct().getWriter());
-            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
+            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount() - refundRepo.countByOrderId(orderItem.getOrder().getId()));
 
             ApplyResponseDTO.ApplicantDTO applicantDTO = ApplyResponseDTO.ApplicantDTO.builder()
                     .name(applicant.getName())
@@ -410,7 +415,7 @@ public class MypageService {
             final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
             expire(orderItem.getCreatedAt());
 
-            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
+            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId()) - refundRepo.countByOrderId(orderItem.getOrder().getId());
             if(dto.getPerformanceDate().size() > availableAmount)
                 throw new RuntimeException("공연권 구매량 초과");
 
@@ -733,7 +738,7 @@ public class MypageService {
                     .scriptQuantity(orderItemRepo.sumScriptByProductId(productId))
                     .performance(product.getPerformance())
                     .performancePrice(product.getPerformancePrice())
-                    .performanceQuantity(orderItemRepo.sumPerformanceAmountByProductId(productId))
+                    .performanceQuantity(Math.max(0, orderItemRepo.sumPaidPerformanceAmountByProductId(productId, OrderStatus.PAID) - refundRepo.sumRefundQuantityByProductId(productId)))
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("상품 정보 조회 실패", e);
@@ -851,4 +856,38 @@ public class MypageService {
             throw new RuntimeException("나이스페이 환불 실패", e);
         }
     }
+
+    private Map<UUID, Integer> getPerformanceDateCountMap(List<OrderItemEntity> orderItems) {
+        List<UUID> orderItemIds = orderItems.stream()
+                .map(OrderItemEntity::getId)
+                .toList();
+
+        if (orderItemIds.isEmpty())
+            return Map.of();
+
+        return performanceDateRepo.countByOrderItemIds(orderItemIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (UUID) row[0],
+                        row -> ((Long) row[1]).intValue()
+                ));
+    }
+
+    private Map<Long, Integer> getRefundCountMap(List<OrderItemEntity> orderItems) {
+        List<Long> orderIds = orderItems.stream()
+                .map(oi -> oi.getOrder().getId())
+                .distinct()
+                .toList();
+
+        if (orderIds.isEmpty())
+            return Map.of();
+
+        return refundRepo.countByOrderIds(orderIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Long) row[1]).intValue()
+                ));
+    }
+
 }

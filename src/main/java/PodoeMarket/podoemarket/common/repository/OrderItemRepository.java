@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.repository;
 
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,9 +17,33 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findByOrderId(Long id);
 
-    List<OrderItemEntity> findAllByUserIdAndScript(UUID id, boolean script, Sort sort);
+    @Query("""
+    SELECT oi
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.user.id = :userId
+    AND oi.script = true
+    AND o.orderStatus = :status
+""")
+    List<OrderItemEntity> findPaidScriptOrderItems(
+            @Param("userId") UUID userId,
+            @Param("status") OrderStatus status,
+            Sort sort
+    );
 
-    List<OrderItemEntity> findAllByUserId(UUID id, Sort sort);
+    @Query("""
+    SELECT oi
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.user.id = :userId
+    AND oi.performanceAmount > 0
+    AND o.orderStatus = :status
+""")
+    List<OrderItemEntity> findPaidPerformanceOrderItems(
+            @Param("userId") UUID userId,
+            @Param("status") OrderStatus status,
+            Sort sort
+    );
 
     OrderItemEntity findById(UUID id);
 
@@ -27,6 +52,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     @Query("SELECT COALESCE(SUM(o.performanceAmount), 0) FROM OrderItemEntity o WHERE o.product.id = :productId")
     int sumPerformanceAmountByProductId(@Param("productId") UUID productId);
+
+    @Query("""
+    SELECT COALESCE(SUM(oi.performanceAmount), 0)
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.product.id = :productId
+    AND o.orderStatus = :status
+""")
+    long sumPaidPerformanceAmountByProductId(@Param("productId") UUID productId, @Param("status") OrderStatus status);
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
 
@@ -38,8 +72,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
     """)
-    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword,
-                                                  Pageable pageable);
+    Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Boolean existsByProductIdAndUserId(UUID productId, UUID userId);
 }
