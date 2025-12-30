@@ -1,6 +1,7 @@
 package PodoeMarket.podoemarket.common.repository;
 
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
+import PodoeMarket.podoemarket.common.entity.type.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,9 +17,33 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
 
     List<OrderItemEntity> findByOrderId(Long id);
 
-    List<OrderItemEntity> findAllByUserIdAndScript(UUID id, boolean script, Sort sort);
+    @Query("""
+    SELECT oi
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.user.id = :userId
+    AND oi.script = true
+    AND o.orderStatus = :status
+""")
+    List<OrderItemEntity> findPaidScriptOrderItems(
+            @Param("userId") UUID userId,
+            @Param("status") OrderStatus status,
+            Sort sort
+    );
 
-    List<OrderItemEntity> findAllByUserId(UUID id, Sort sort);
+    @Query("""
+    SELECT oi
+    FROM OrderItemEntity oi
+    JOIN oi.order o
+    WHERE oi.user.id = :userId
+    AND oi.performanceAmount > 0
+    AND o.orderStatus = :status
+""")
+    List<OrderItemEntity> findPaidPerformanceOrderItems(
+            @Param("userId") UUID userId,
+            @Param("status") OrderStatus status,
+            Sort sort
+    );
 
     OrderItemEntity findById(UUID id);
 
