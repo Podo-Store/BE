@@ -95,12 +95,12 @@ public class OrderItemEntity {
     private UserEntity user;
 
     // orderItem : performanceDate = 1 : N
-    @OneToMany(mappedBy = "orderItem", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PerformanceDateEntity> performanceDate = new ArrayList<>();
 
     // orderItem : applicant = 1 : 1
-    @OneToOne(mappedBy = "orderItem")
+    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore
     private ApplicantEntity applicant;
 }

@@ -32,6 +32,7 @@ public class OrdersEntity {
     @Column
     private String tid; // nicepay에서 날라오는 결제 승인 키
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
@@ -57,10 +58,10 @@ public class OrdersEntity {
     private UserEntity user;
 
     // order : orderItem = 1 : N
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItem = new ArrayList<>();
 
     // order : refund = 1 : N
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefundEntity> refund = new ArrayList<>();
 }
