@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class OrderInfoResponseDTO {
     private LocalDateTime orderDate;
-    private Long orderId;
+    private String pgOrderId;
     private String title;
     private Boolean script;
     private Long scriptPrice;
