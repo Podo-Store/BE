@@ -64,11 +64,15 @@ public class OrderService {
     }
 
     @Transactional
-    public long createPendingOrder(OrderRequestDTO dto, UserEntity user) {
+    public String createPendingOrder(OrderRequestDTO dto, UserEntity user) {
         try {
             final UserEntity userInfo = getUserInfo(user.getId());
 
-            final OrdersEntity order = OrdersEntity.builder()
+            // pgOrderId 생성
+            String pgOrderId = "ORD-" + UUID.randomUUID();
+
+            OrdersEntity order = OrdersEntity.builder()
+                    .pgOrderId(pgOrderId)
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
                     .orderStatus(OrderStatus.PENDING)
@@ -87,16 +91,16 @@ public class OrderService {
                 createApplicant(applicant);
             }
 
-            return orders.getId();
+            return orders.getPgOrderId();
         } catch (Exception e) {
             throw e;
         }
     }
 
     @Transactional
-    public void approvePurchase(long orderId, String tid) {
+    public void approvePurchase(String orderId, String tid) {
         try {
-            OrdersEntity orders = orderRepo.findById(orderId);
+            OrdersEntity orders = orderRepo.findByPgOrderId(orderId);
 
             if(orders == null)
                 throw new RuntimeException("해당 주문이 존재하지 않습니다.");
@@ -112,13 +116,13 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderInfoResponseDTO orderSuccess(Long orderId) {
+    public OrderInfoResponseDTO orderSuccess(String pgOrderId) {
         try {
-            final OrdersEntity order = getOrderInfo(orderId);
-            final List<OrderItemEntity> orderItem = getOrderItem(orderId);
+            final OrdersEntity order = getOrderInfo(pgOrderId);
+            final List<OrderItemEntity> orderItem = getOrderItem(order.getId());
 
             OrderInfoResponseDTO orderInfo = OrderInfoResponseDTO.builder()
-                    .orderId(orderId)
+                    .pgOrderId(pgOrderId)
                     .orderDate(order.getCreatedAt())
                     .title(orderItem.getFirst().getProduct().getTitle())
                     .script(orderItem.getFirst().getScript())
@@ -252,9 +256,9 @@ public class OrderService {
         }
     }
 
-    private OrdersEntity getOrderInfo(final Long orderId) {
+    private OrdersEntity getOrderInfo(final String pgOrderId) {
         try {
-            return orderRepo.findById(orderId).orElse(null);
+            return orderRepo.findByPgOrderId(pgOrderId);
         } catch (Exception e) {
             throw new RuntimeException("주문 정보 조회 실패", e);
         }

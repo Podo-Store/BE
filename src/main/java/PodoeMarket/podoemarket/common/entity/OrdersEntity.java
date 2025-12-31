@@ -23,6 +23,9 @@ public class OrdersEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String pgOrderId; // nicepay에서 쓰는 결제 id
+
     @Column(nullable = false)
     private Long totalPrice;
 

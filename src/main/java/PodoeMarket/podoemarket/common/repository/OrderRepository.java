@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 public interface OrderRepository extends JpaRepository<OrdersEntity, Long> {
     OrdersEntity findById(long id);
 
+    OrdersEntity findByPgOrderId(String orderId);
+
     @Modifying
     @Query("""
     DELETE FROM OrdersEntity o
