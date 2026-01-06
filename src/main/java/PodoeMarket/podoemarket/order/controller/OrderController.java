@@ -46,10 +46,10 @@ public class OrderController {
     @PostMapping("/item")
     public ResponseEntity<?> createOrder(@AuthenticationPrincipal UserEntity userInfo, @RequestBody OrderRequestDTO dto) {
         try {
-            long orderId = orderService.createPendingOrder(dto, userInfo);
+            String pgOrderId = orderService.createPendingOrder(dto, userInfo);
 
             CreateOrderResponseDTO resDTO = CreateOrderResponseDTO.builder()
-                    .orderId(orderId)
+                    .pgOrderId(pgOrderId)
                     .build();
 
             return ResponseEntity.ok().body(resDTO);
@@ -64,20 +64,18 @@ public class OrderController {
         try {
             String resultCode = req.getParameter("resultCode");
             String tid = req.getParameter("tid");
-            String orderIdStr = req.getParameter("orderId");
+            String pgOrderId = req.getParameter("orderId");
 
-            log.info("resultCode = {}, tid = {}, orderIdStr = {}", resultCode, tid, orderIdStr);
+            log.info("resultCode = {}, tid = {}, orderIdStr = {}", resultCode, tid, pgOrderId);
 
             if (!"0000".equals(resultCode)) {
                 res.sendRedirect("https://www.podo-store.com/purchase/abort");
                 return;
             }
 
-            long orderId = Long.parseLong(orderIdStr);
+            orderService.approvePurchase(pgOrderId, tid);
 
-            orderService.approvePurchase(orderId, tid);
-
-            res.sendRedirect("https://www.podo-store.com/purchase/success?orderId=" + orderId);
+            res.sendRedirect("https://www.podo-store.com/purchase/success?pgOrderId=" + pgOrderId);
         } catch(Exception e) {
             log.error("결제 처리 실패: {}", e.getMessage(), e);
             res.sendRedirect("https://www.podo-store.com/purchase/abort");
@@ -85,9 +83,9 @@ public class OrderController {
     }
 
     @GetMapping("/success")
-    public ResponseEntity<?> purchaseSuccess(@RequestParam Long orderId) {
+    public ResponseEntity<?> purchaseSuccess(@RequestParam String pgOrderId) {
         try {
-            OrderInfoResponseDTO resDTO = orderService.orderSuccess(orderId);
+            OrderInfoResponseDTO resDTO = orderService.orderSuccess(pgOrderId);
 
             return ResponseEntity.ok().body(resDTO);
         } catch(Exception e) {
