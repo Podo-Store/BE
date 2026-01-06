@@ -112,14 +112,14 @@ public class OAuthService {
                 throw new RuntimeException("userId가 올바르지 않음");
 
             if(userRepo.existsByUserId(userId))
-                throw new RuntimeException("이미 존재하는 userId");
+                throw new RuntimeException("이미 존재하는 userId 입니다.");
 
             // 이메일
             if(email == null || email.isBlank())
                 throw new RuntimeException("email이 올바르지 않음");
 
             if(userRepo.existsByEmail(email))
-                throw new RuntimeException("이미 존재하는 email");
+                throw new RuntimeException("이미 존재하는 email 입니다.");
 
             // 닉네임
             if(nickname == null || nickname.isBlank())
@@ -321,48 +321,4 @@ public class OAuthService {
 
         return randomNumber.toString();
     }
-
-//    // 소셜 회원가입 DB create 메서드
-//    @Transactional
-//    protected void create(final UserEntity userEntity) {
-//        try {
-//            final String userId = userEntity.getUserId();
-//            final String email = userEntity.getEmail();
-//            final String nickname = userEntity.getNickname();
-//
-//            // 아이디
-//            if(userId == null || userId.isBlank())
-//                throw new RuntimeException("userId가 올바르지 않음");
-//
-//            if(userRepo.existsByUserId(userId))
-//                throw new RuntimeException("이미 존재하는 userId");
-//
-//            // 이메일
-//            if(email == null || email.isBlank())
-//                throw new RuntimeException("email이 올바르지 않음");
-//
-//            if(userRepo.existsByEmail(email))
-//                throw new RuntimeException("이미 존재하는 email");
-//
-//            // 닉네임
-//            if(nickname == null || nickname.isBlank())
-//                throw new RuntimeException("nickname이 올바르지 않음");
-//
-//            // 닉네임 뒤에 무작위 숫자 6자리를 붙이고 해당 닉네임도 존재하면 다시 설정
-//            String createNickname = "";
-//            do {
-//                createNickname = nickname + createRandomNumber();
-//
-//            } while (userRepo.existsByNickname(createNickname));
-//
-//            if(userRepo.existsByNickname(createNickname))
-//                throw new RuntimeException("이미 존재하는 nickname");
-//
-//            userEntity.setNickname(createNickname);
-//
-//            userRepo.save(userEntity);
-//        } catch (Exception e) {
-//            throw e;
-//        }
-//    }
 }
