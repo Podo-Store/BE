@@ -64,7 +64,7 @@ public class OrderController {
         try {
             String resultCode = req.getParameter("resultCode");
             String tid = req.getParameter("tid");
-            String pgOrderId = req.getParameter("pgOrderId");
+            String pgOrderId = req.getParameter("orderId");
 
             log.info("resultCode = {}, tid = {}, orderIdStr = {}", resultCode, tid, pgOrderId);
 
