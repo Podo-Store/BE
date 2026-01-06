@@ -227,6 +227,7 @@ public class AdminService {
                             .script(order.getOrderItem().getFirst().getScript())
                             .performanceAmount(order.getOrderItem().getFirst().getPerformanceAmount())
                             .totalPrice(order.getTotalPrice())
+                            .orderStatus(order.getOrderStatus())
                             .build())
                     .toList();
 
