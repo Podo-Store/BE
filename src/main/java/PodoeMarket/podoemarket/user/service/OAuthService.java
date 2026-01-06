@@ -133,7 +133,7 @@ public class OAuthService {
             } while (userRepo.existsByNickname(createNickname));
 
             if(userRepo.existsByNickname(createNickname))
-                throw new RuntimeException("이미 존재하는 nickname");
+                throw new RuntimeException("이미 존재하는 nickname 입니다.");
 
             user.setNickname(createNickname);
 
