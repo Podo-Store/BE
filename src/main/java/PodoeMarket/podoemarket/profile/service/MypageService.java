@@ -492,9 +492,12 @@ public class MypageService {
 
             final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId) - refundRepo.countByOrderId(orderItem.getOrder().getId());
             final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
+            String encodedScriptImage = orderItem.getProduct().getImagePath() != null
+                    ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
+                    : "";
 
             return RefundResponseDTO.builder()
-                    .scriptImage(orderItem.getProduct().getImagePath())
+                    .scriptImage(encodedScriptImage)
                     .title(orderItem.getProduct().getTitle())
                     .writer(orderItem.getProduct().getWriter())
                     .performancePrice(orderItem.getProduct().getPerformancePrice())
