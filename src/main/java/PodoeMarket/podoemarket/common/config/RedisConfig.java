@@ -17,9 +17,10 @@ public class RedisConfig {
     private int redisPort;
 
     @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisHost, redisPort);
-        return lettuceConnectionFactory;
+    public LettuceConnectionFactory redisConnectionFactory() {
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisHost, redisPort);
+        factory.setValidateConnection(true);
+        return factory;
     }
 
     @Bean

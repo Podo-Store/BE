@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.service;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +39,15 @@ public class ViewCountService {
         if(product != null && product.getViewCount() != null)
             base = product.getViewCount();
 
-        final String deltaKey = DELTA_PREFIX + productId.toString();
-        final String deltaStr = redisTemplate.opsForValue().get(deltaKey);
-        final long delta = (deltaStr != null) ? Long.parseLong(deltaStr) : 0L;
+        long delta = 0L;
+        try {
+            String deltaStr =
+                    redisTemplate.opsForValue().get(DELTA_PREFIX + productId);
+            if (deltaStr != null)
+                delta = Long.parseLong(deltaStr);
+        } catch (Exception e) {
+            log.warn("Redis unavailable, fallback to DB only", e);
+        }
 
         return base + delta;
     }
@@ -51,35 +58,41 @@ public class ViewCountService {
     public void flushDeltaToDB() {
         log.info("작품 조회수 델타 동기화 시작");
 
-        RedisConnection conn = redisTemplate.getConnectionFactory().getConnection();
-        try (Cursor<byte[]> cursor = conn.scan(
-                ScanOptions.scanOptions().match(DELTA_PREFIX + "*").count(500).build())){
+        try {
+            RedisConnectionFactory factory = redisTemplate.getConnectionFactory();
+            if (factory == null) return;
 
-            while(cursor.hasNext()) {
-                String key = new String(cursor.next(), StandardCharsets.UTF_8);
-                UUID productId = UUID.fromString(key.substring(DELTA_PREFIX.length()));
-                String deltaStr = redisTemplate.opsForValue().getAndDelete(key);
+            try (RedisConnection conn = factory.getConnection();
+                 Cursor<byte[]> cursor = conn.scan(
+                         ScanOptions.scanOptions()
+                                 .match(DELTA_PREFIX + "*")
+                                 .count(500)
+                                 .build())) {
 
-                if(deltaStr == null)
-                    continue;
+                while(cursor.hasNext()) {
+                    String key = new String(cursor.next(), StandardCharsets.UTF_8);
+                    UUID productId = UUID.fromString(key.substring(DELTA_PREFIX.length()));
+                    String deltaStr = redisTemplate.opsForValue().getAndDelete(key);
 
-                long delta;
-                try {
-                    delta = Long.parseLong(deltaStr);
-                } catch (NumberFormatException e) {
-                    continue;
+                    if(deltaStr == null)
+                        continue;
+
+                    long delta;
+                    try {
+                        delta = Long.parseLong(deltaStr);
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+
+                    if(delta <=0)
+                        continue;
+
+                    // DB += delta
+                    productRepo.incrementViewCount(productId, delta);
                 }
-
-                if(delta <=0)
-                    continue;
-
-                // DB += delta
-                productRepo.incrementViewCount(productId, delta);
             }
         } catch (Exception e) {
-            log.error("조회수 동기화 중 오류 발생: ", e);
-        } finally {
-            conn.close();
+            log.error("조회수 동기화 실패 (Redis down)", e);
         }
     }
 }
