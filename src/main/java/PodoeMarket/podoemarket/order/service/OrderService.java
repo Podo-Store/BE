@@ -75,7 +75,6 @@ public class OrderService {
                     .pgOrderId(pgOrderId)
                     .user(userInfo)
                     .paymentMethod(dto.getPaymentMethod())
-                    .orderStatus(OrderStatus.PENDING)
                     .build();
 
             final OrdersEntity orders = orderCreate(order, dto, userInfo);
@@ -218,9 +217,11 @@ public class OrderService {
                 return orderItem;
             }).toList();
 
+            long totalPrice = orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum();
+
             ordersEntity.setOrderItem(orderItems);
-            ordersEntity.setTotalPrice(orderItems.stream().mapToLong(OrderItemEntity::getTotalPrice).sum());
-            ordersEntity.setTid(ordersEntity.getTid());
+            ordersEntity.setTotalPrice(totalPrice);
+            ordersEntity.setOrderStatus(totalPrice == 0 ? OrderStatus.PAID : OrderStatus.PENDING);
 
             return orderRepo.save(ordersEntity);
         } catch (Exception e) {
