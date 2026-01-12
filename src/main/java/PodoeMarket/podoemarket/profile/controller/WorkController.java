@@ -88,14 +88,9 @@ public class WorkController {
     }
 
     @PostMapping(path = "/changeScript", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") String id, @RequestParam("script") MultipartFile file) {
+    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID id, @RequestParam("script") MultipartFile file) {
         try {
-            log.info("changeScript userInfo = {}", userInfo);
-            log.info("changeScript id = {}", id);
-            log.info("changeScript file = {}", file.getOriginalFilename());
-
-            UUID productId = UUID.fromString(id);
-            workService.changeScript(productId, userInfo, file);
+            workService.changeScript(id, userInfo, file);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
