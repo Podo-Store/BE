@@ -286,7 +286,7 @@ public class WorkService {
     }
 
     @Transactional
-    public void changeScript(final UUID productId, final UserEntity user, MultipartFile[] files) throws IOException {
+    public void changeScript(final UUID productId, final UserEntity user, MultipartFile file) throws IOException {
         final ProductEntity product = productRepo.findById(productId);
 
         if(product == null)
@@ -299,7 +299,7 @@ public class WorkService {
             throw new RuntimeException("재심사 결과 대기 중에는 재신청이 불가합니다.");
 
         // 파일 처리 필요
-        String tempFilePath = uploadScript(files, user.getNickname());
+        String tempFilePath = uploadScript(file, user.getNickname());
 
         product.setTempFilePath(tempFilePath);
         product.setChecked(ProductStatus.RE_WAIT);
@@ -430,26 +430,24 @@ public class WorkService {
         }
     }
 
-    protected String uploadScript(MultipartFile[] files, String writer) throws IOException {
-        if(files[0].isEmpty())
+    protected String uploadScript(MultipartFile file, String writer) throws IOException {
+        if(file.isEmpty())
             throw new RuntimeException("선택된 파일이 없음");
-        else if(files.length > 1)
-            throw new RuntimeException("파일 수가 1개를 초과함");
 
-        if (!Objects.equals(files[0].getContentType(), "application/pdf"))
-            throw new RuntimeException("contentType is not PDF");
+        if (file.getContentType() == null || !file.getContentType().contains("pdf"))
+            throw new RuntimeException("PDF 파일만 업로드 가능합니다.");
 
         // 파일 이름 가공
         final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
         final Date time = new Date();
-        final String name = files[0].getOriginalFilename();
+        final String name = file.getOriginalFilename();
         final String[] fileName = new String[]{Objects.requireNonNull(name).substring(0, name.length() - 4)};
 
         // S3 Key 구성
         final String S3Key = scriptBucketFolder + fileName[0] +"/"+ writer + "/" + dateFormat.format(time) + ".zip";
 
         // PDF 파일을 zip으로 압축
-        byte[] zippedBytes = compressToZip(files[0]);
+        byte[] zippedBytes = compressToZip(file);
 
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(zippedBytes.length);
