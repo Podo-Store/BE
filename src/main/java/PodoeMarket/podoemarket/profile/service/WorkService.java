@@ -434,7 +434,8 @@ public class WorkService {
         if(file.isEmpty())
             throw new RuntimeException("선택된 파일이 없음");
 
-        if (file.getContentType() == null || !file.getContentType().contains("pdf"))
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().endsWith(".pdf"))
             throw new RuntimeException("PDF 파일만 업로드 가능합니다.");
 
         // 파일 이름 가공
