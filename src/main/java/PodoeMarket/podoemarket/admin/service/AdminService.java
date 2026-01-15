@@ -69,7 +69,7 @@ public class AdminService {
 
     public Page<ProductEntity> getAllProducts(final String search, final List<ProductStatus> status, final int page) {
         try {
-            final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+            final PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("resubmittedAt").descending());
 
             if (search == null || search.trim().isEmpty()) {
                 if (status == null) // 검색어 X, 전체

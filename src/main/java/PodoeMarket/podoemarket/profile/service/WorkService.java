@@ -35,6 +35,8 @@ import java.io.*;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -303,6 +305,7 @@ public class WorkService {
 
         product.setTempFilePath(tempFilePath);
         product.setChecked(ProductStatus.RE_WAIT);
+        product.setResubmittedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
         productRepo.save(product);
 
         // 메일 전송 로직 필요

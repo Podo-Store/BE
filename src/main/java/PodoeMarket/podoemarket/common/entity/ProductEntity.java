@@ -130,11 +130,15 @@ public class ProductEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private LocalDateTime resubmittedAt;
+
     @PrePersist // entity가 영속화되기 직전에 실행
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         createdAt = now;
         updatedAt = now;
+        resubmittedAt = now;
     }
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
