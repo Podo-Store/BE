@@ -124,17 +124,24 @@ public class ProductEntity {
     @Column
     private String tempFilePath; // 재심사를 위한 임시 파일 저장소
 
+    @Column
+    private String tempFileTitle; // 재심사를 위한 임시 파일의 제목
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private LocalDateTime resubmittedAt;
+
     @PrePersist // entity가 영속화되기 직전에 실행
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         createdAt = now;
         updatedAt = now;
+        resubmittedAt = now;
     }
     @PreUpdate // db에 entity가 업데이트되기 직전에 실행
     protected void onUpdate() { updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")); }
