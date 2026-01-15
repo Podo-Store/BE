@@ -23,6 +23,9 @@ public class PerformanceEntity {
     private UUID id;
 
     @Column(nullable = false)
+    private String posterPath;
+
+    @Column(nullable = false)
     private String title;
 
     @Column(nullable = false)
