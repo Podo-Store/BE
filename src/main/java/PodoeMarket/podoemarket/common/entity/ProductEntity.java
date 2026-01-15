@@ -124,6 +124,9 @@ public class ProductEntity {
     @Column
     private String tempFilePath; // 재심사를 위한 임시 파일 저장소
 
+    @Column
+    private String tempFileTitle; // 재심사를 위한 임시 파일의 제목
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

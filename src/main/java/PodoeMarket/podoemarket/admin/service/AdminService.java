@@ -93,7 +93,7 @@ public class AdminService {
                     .map(product -> ProductManagementResponseDTO.ProductDTO.builder()
                             .id(product.getId())
                             .createdAt(product.getCreatedAt())
-                            .title(product.getTitle())
+                            .title(product.getChecked() == ProductStatus.RE_WAIT ? product.getTempFileTitle() : product.getTitle())
                             .writer(product.getWriter())
                             .checked(product.getChecked())
                             .playType(product.getPlayType())
@@ -142,6 +142,8 @@ public class AdminService {
 
                     product.setFilePath(product.getTempFilePath());
                     product.setTempFilePath(null);
+                    product.setTitle(product.getTempFileTitle());
+                    product.setTempFileTitle(null);
 
                     productRepo.save(product);
 
