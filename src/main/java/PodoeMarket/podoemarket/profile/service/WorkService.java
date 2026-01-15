@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,8 @@ import java.io.*;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -300,13 +303,16 @@ public class WorkService {
 
         // 파일 처리 필요
         String tempFilePath = uploadScript(file, user.getNickname());
+        String normalizedTitle = Normalizer.normalize(FilenameUtils.getBaseName(file.getOriginalFilename()), Normalizer.Form.NFKC);
 
         product.setTempFilePath(tempFilePath);
         product.setChecked(ProductStatus.RE_WAIT);
+        product.setResubmittedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+        product.setTempFileTitle(normalizedTitle);
         productRepo.save(product);
 
         // 메일 전송 로직 필요
-        mailSendService.joinReviewEmail(user.getEmail(), product.getTitle());
+        mailSendService.joinReviewEmail(user.getEmail(), normalizedTitle);
     }
 
     // ============= private method ===============
