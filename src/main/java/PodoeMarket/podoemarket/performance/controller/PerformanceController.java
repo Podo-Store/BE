@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceMainResponseDTO;
 import PodoeMarket.podoemarket.performance.service.PerformanceService;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,20 @@ public class PerformanceController {
             performanceService.updatePerformanceInfo(userInfo, id, dto, file);
 
             return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getPerformance(@RequestParam(required = false) Boolean ongoingUsed,
+                                            @RequestParam(required = false) Boolean upcomingUsed,
+                                            @RequestParam(required = false) Boolean pastUsed) {
+        try {
+            final PerformanceMainResponseDTO resDTO = performanceService.getPerformanceList(ongoingUsed, upcomingUsed, pastUsed);
+
+            return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);

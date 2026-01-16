@@ -6,12 +6,14 @@ import PodoeMarket.podoemarket.common.repository.PerformanceRepository;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceMainResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,9 +33,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
+import java.time.ZoneId;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -184,6 +187,30 @@ public class PerformanceService {
         }
     }
 
+    public PerformanceMainResponseDTO getPerformanceList(Boolean ongoingUsed, Boolean upcomingUsed, Boolean pastUsed) {
+        try {
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+            Pageable limit4 = PageRequest.of(0, 4);
+
+            List<PerformanceMainResponseDTO.PerformanceListDTO> ongoing =
+                    performanceRepo.findOngoing(today, ongoingUsed, limit4)
+                    .stream().map(this::getListDTO).toList();
+            List<PerformanceMainResponseDTO.PerformanceListDTO> upcoming =
+                    performanceRepo.findUpcoming(today, upcomingUsed, limit4)
+                            .stream().map(this::getListDTO).toList();
+            List<PerformanceMainResponseDTO.PerformanceListDTO> past =
+                    performanceRepo.findPast(today, pastUsed, limit4)
+                            .stream().map(this::getListDTO).toList();
+
+            return PerformanceMainResponseDTO.builder()
+                    .ongoing(ongoing)
+                    .upcoming(upcoming)
+                    .past(past)
+                    .build();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
     // ============= private method ===============
 
     private void deleteFile(final String bucket, final String sourceKey) {
@@ -281,5 +308,21 @@ public class PerformanceService {
         }
 
         return outputStream.toByteArray();
+    }
+
+    private PerformanceMainResponseDTO.PerformanceListDTO getListDTO(PerformanceEntity p) {
+        String posterPath = p.getPosterPath() != null
+                ? bucketURL + URLEncoder.encode(p.getPosterPath(), StandardCharsets.UTF_8)
+                : "";
+
+        return PerformanceMainResponseDTO.PerformanceListDTO.builder()
+                .id(p.getId())
+                .posterPath(posterPath)
+                .title(p.getTitle())
+                .place(p.getPlace())
+                .startDate(p.getStartDate())
+                .endDate(p.getEndDate())
+                .isUsed(p.getIsUsed())
+                .build();
     }
 }
