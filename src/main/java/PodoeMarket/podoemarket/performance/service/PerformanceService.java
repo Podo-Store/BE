@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.PerformanceEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.PerformanceRepository;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
+import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -52,7 +53,7 @@ public class PerformanceService {
     private String bucketURL;
 
     @Transactional
-    public void updatePerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
+    public void getPerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
         try {
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
@@ -134,6 +135,50 @@ public class PerformanceService {
             deleteFile(bucket, performance.getPosterPath());
 
             performanceRepo.delete(performance);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Transactional
+    public void updatePerformanceInfo(UserEntity userInfo, UUID id, PerformanceUpdateRequestDTO dto, MultipartFile file) throws IOException {
+        try {
+            final PerformanceEntity performance = performanceRepo.findById(id);
+
+            if(performance == null)
+                throw new RuntimeException("해당하는 공연 소식이 없습니다.");
+
+            if(!performance.getUser().getId().equals(userInfo.getId()))
+                throw new RuntimeException("수정 권한이 없습니다.");
+
+            if(file != null && !file.isEmpty()) {
+                deleteFile(bucket, performance.getPosterPath());
+                performance.setPosterPath(uploadPoster(file, dto.getTitle()));
+            }
+
+            if(dto.getTitle() != null && !dto.getTitle().isBlank())
+                performance.setTitle(dto.getTitle());
+
+            if(dto.getPlace() != null && !dto.getPlace().isBlank())
+                performance.setPlace(dto.getPlace());
+
+            if(dto.getStartDate() != null && dto.getEndDate() != null)
+                if (dto.getEndDate().isBefore(dto.getStartDate()))
+                    throw new RuntimeException("공연 종료일은 공연 시작일과 같거나 이후여야 합니다.");
+
+            if(dto.getStartDate() != null)
+                performance.setStartDate(dto.getStartDate());
+
+            if(dto.getEndDate() != null)
+                performance.setEndDate(dto.getEndDate());
+
+            if(dto.getLink() != null && !dto.getLink().isBlank())
+                performance.setLink(dto.getLink());
+
+            if(dto.getIsUsed() != null)
+                performance.setIsUsed(dto.getIsUsed());
+
+            performanceRepo.save(performance);
         } catch (Exception e) {
             throw e;
         }
