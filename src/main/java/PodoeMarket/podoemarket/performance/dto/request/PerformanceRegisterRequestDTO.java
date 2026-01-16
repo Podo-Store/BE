@@ -1,4 +1,4 @@
-package PodoeMarket.podoemarket.profile.dto.request;
+package PodoeMarket.podoemarket.performance.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,14 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PerformanceRequestDTO {
-    private UUID id;
+public class PerformanceRegisterRequestDTO {
     private String title;
     private String posterPath;
     private String place;

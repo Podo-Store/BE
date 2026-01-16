@@ -1,10 +1,10 @@
 package PodoeMarket.podoemarket.performance.service;
 
 import PodoeMarket.podoemarket.common.entity.PerformanceEntity;
-import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.repository.PerformanceRepository;
-import PodoeMarket.podoemarket.profile.dto.request.PerformanceRequestDTO;
+import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -26,6 +26,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,8 +48,11 @@ public class PerformanceService {
     @Value("${cloud.aws.s3.folder.folderName5}")
     private String posterBucketFolder;
 
+    @Value("${cloud.aws.s3.url}")
+    private String bucketURL;
+
     @Transactional
-    public void updatePerformanceInfo(UserEntity userInfo, PerformanceRequestDTO dto, MultipartFile file) throws IOException {
+    public void updatePerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
         try {
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
@@ -84,6 +89,34 @@ public class PerformanceService {
                     .build();
 
             performanceRepo.save(performance);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public PerformanceEditResponseDTO getPerformanceInfo(UserEntity userInfo, UUID id) {
+        try {
+            final PerformanceEntity performance = performanceRepo.findById(id);
+
+            if(performance == null)
+                throw new RuntimeException("해당하는 공연 소식이 없습니다.");
+
+            if(!performance.getUser().getId().equals(userInfo.getId()))
+                throw new RuntimeException("접근 권한이 없습니다.");
+
+            String posterPath = performance.getPosterPath() != null
+                    ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
+                    : "";
+
+            return PerformanceEditResponseDTO.builder()
+                    .posterPath(posterPath)
+                    .title(performance.getTitle())
+                    .place(performance.getPlace())
+                    .startDate(performance.getStartDate())
+                    .endDate(performance.getEndDate())
+                    .link(performance.getLink())
+                    .isUsed(performance.getIsUsed())
+                    .build();
         } catch (Exception e) {
             throw e;
         }

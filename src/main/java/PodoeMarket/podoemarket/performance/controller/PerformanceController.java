@@ -2,18 +2,18 @@ package PodoeMarket.podoemarket.performance.controller;
 
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
 import PodoeMarket.podoemarket.performance.service.PerformanceService;
-import PodoeMarket.podoemarket.profile.dto.request.PerformanceRequestDTO;
+import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,12 +24,24 @@ public class PerformanceController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registerPerformance(@AuthenticationPrincipal UserEntity userInfo,
-                                                 PerformanceRequestDTO dto,
+                                                 PerformanceRegisterRequestDTO dto,
                                                  @RequestPart("poster") MultipartFile file) {
         try {
             performanceService.updatePerformanceInfo(userInfo, dto, file);
 
             return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> showPerformanceInfo(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try {
+            final PerformanceEditResponseDTO resDTO = performanceService.getPerformanceInfo(userInfo, id);
+
+            return  ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
