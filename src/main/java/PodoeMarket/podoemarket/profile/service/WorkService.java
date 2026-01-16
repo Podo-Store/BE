@@ -536,7 +536,7 @@ public class WorkService {
 
     private static boolean isValidTitle(String title) {
         if (title == null || title.isBlank()) {
-            log.warn("title is null or empty");
+            log.warn("제목이 비어 있습니다.");
             return false;
         }
 
