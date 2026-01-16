@@ -122,6 +122,25 @@ public class PerformanceService {
         }
     }
 
+    @Transactional
+    public void deletePerformanceInfo(UserEntity userInfo, UUID id) {
+        try {
+            final PerformanceEntity performance = performanceRepo.findById(id);
+
+            if(performance == null)
+                throw new RuntimeException("해당하는 공연 소식이 없습니다.");
+
+            if(!performance.getUser().getId().equals(userInfo.getId()))
+                throw new RuntimeException("삭제 권한이 없습니다.");
+
+            deleteFile(bucket, performance.getPosterPath());
+
+            performanceRepo.delete(performance);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     // ============= private method ===============
 
     private void deleteFile(final String bucket, final String sourceKey) {
@@ -130,17 +149,6 @@ public class PerformanceService {
                 amazonS3.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
             throw new RuntimeException("파일 삭제 실패", e);
-        }
-    }
-
-    private void moveFile(final String bucket, final String sourceKey, final String destinationKey) {
-        try {
-            final CopyObjectRequest copyFile = new CopyObjectRequest(bucket,sourceKey, bucket, destinationKey);
-
-            if(amazonS3.doesObjectExist(bucket, sourceKey))
-                amazonS3.copyObject(copyFile);
-        } catch (Exception e) {
-            throw new RuntimeException("파일 이동 실패", e);
         }
     }
 
