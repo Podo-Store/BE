@@ -3,6 +3,7 @@ package PodoeMarket.podoemarket.performance.controller;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.performance.service.PerformanceService;
+import PodoeMarket.podoemarket.profile.dto.request.PerformanceRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -22,8 +23,11 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> registerPerformance(@AuthenticationPrincipal UserEntity userInfo, @RequestPart("poster") MultipartFile file) {
+    public ResponseEntity<?> registerPerformance(@AuthenticationPrincipal UserEntity userInfo,
+                                                 PerformanceRequestDTO dto,
+                                                 @RequestPart("poster") MultipartFile file) {
         try {
+            performanceService.updatePerformanceInfo(userInfo, dto, file);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
