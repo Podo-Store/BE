@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PerformanceEditResponseDTO {
+    private Boolean isOwner;
     private String posterPath;
     private String title;
     private String place;
