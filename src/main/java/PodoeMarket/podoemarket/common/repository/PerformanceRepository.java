@@ -2,13 +2,13 @@ package PodoeMarket.podoemarket.common.repository;
 
 import PodoeMarket.podoemarket.common.entity.PerformanceEntity;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -22,7 +22,7 @@ WHERE p.startDate <= :today
   AND (:isUsed IS NULL OR p.isUsed = :isUsed)
 ORDER BY p.startDate DESC
 """)
-    List<PerformanceEntity> findOngoing(
+    Page<PerformanceEntity> findOngoing(
             @Param("today") LocalDate today,
             @Param("isUsed") Boolean isUsed,
             Pageable pageable
@@ -34,7 +34,7 @@ WHERE p.startDate > :today
   AND (:isUsed IS NULL OR p.isUsed = :isUsed)
 ORDER BY p.startDate DESC
 """)
-    List<PerformanceEntity> findUpcoming(
+    Page<PerformanceEntity> findUpcoming(
             @Param("today") LocalDate today,
             @Param("isUsed") Boolean isUsed,
             Pageable pageable
@@ -46,10 +46,9 @@ WHERE p.endDate < :today
   AND (:isUsed IS NULL OR p.isUsed = :isUsed)
 ORDER BY p.startDate DESC
 """)
-    List<PerformanceEntity> findPast(
+    Page<PerformanceEntity> findPast(
             @Param("today") LocalDate today,
             @Param("isUsed") Boolean isUsed,
             Pageable pageable
     );
-
 }

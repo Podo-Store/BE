@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.performance.service;
 
 import PodoeMarket.podoemarket.common.entity.PerformanceEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
+import PodoeMarket.podoemarket.common.entity.type.PerformanceStatus;
 import PodoeMarket.podoemarket.common.repository.PerformanceRepository;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
@@ -12,8 +13,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -187,20 +190,31 @@ public class PerformanceService {
         }
     }
 
-    public PerformanceMainResponseDTO getPerformanceList(Boolean ongoingUsed, Boolean upcomingUsed, Boolean pastUsed) {
+    public PerformanceMainResponseDTO getPerformanceMainList(Boolean ongoingUsed, Boolean upcomingUsed, Boolean pastUsed) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-            Pageable limit4 = PageRequest.of(0, 4);
+            Pageable limit4 = PageRequest.of(0, 4, Sort.by("startDate").descending());
 
             List<PerformanceMainResponseDTO.PerformanceListDTO> ongoing =
                     performanceRepo.findOngoing(today, ongoingUsed, limit4)
-                    .stream().map(this::getListDTO).toList();
+                            .getContent()
+                            .stream()
+                            .map(this::getListDTO)
+                            .toList();
+
             List<PerformanceMainResponseDTO.PerformanceListDTO> upcoming =
                     performanceRepo.findUpcoming(today, upcomingUsed, limit4)
-                            .stream().map(this::getListDTO).toList();
+                            .getContent()
+                            .stream()
+                            .map(this::getListDTO)
+                            .toList();
+
             List<PerformanceMainResponseDTO.PerformanceListDTO> past =
                     performanceRepo.findPast(today, pastUsed, limit4)
-                            .stream().map(this::getListDTO).toList();
+                            .getContent()
+                            .stream()
+                            .map(this::getListDTO)
+                            .toList();
 
             return PerformanceMainResponseDTO.builder()
                     .ongoing(ongoing)
@@ -211,6 +225,32 @@ public class PerformanceService {
             throw e;
         }
     }
+
+    public Page<PerformanceMainResponseDTO.PerformanceListDTO> getPerformanceList(PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
+        try {
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+            Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
+
+            Page<PerformanceEntity> result;
+
+            switch(status) {
+                case ONGOING -> result = performanceRepo.findOngoing(today, isUsed, pageable);
+
+                case UPCOMING -> result =
+                        performanceRepo.findUpcoming(today, isUsed, pageable);
+
+                case PAST -> result =
+                        performanceRepo.findPast(today, isUsed, pageable);
+
+                default -> throw new IllegalArgumentException("잘못된 공연 상태입니다.");
+            }
+
+            return result.map(this::getListDTO);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     // ============= private method ===============
 
     private void deleteFile(final String bucket, final String sourceKey) {
