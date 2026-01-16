@@ -305,6 +305,7 @@ public class ProductService {
     public void updateReview(final UserEntity userInfo, final UUID id, final ReviewUpdateRequestDTO dto) {
         try {
             ReviewEntity review = reviewRepo.findById(id);
+
             if (review == null)
                 throw new RuntimeException("후기가 존재하지 않습니다.");
 
