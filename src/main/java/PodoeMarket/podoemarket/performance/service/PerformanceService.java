@@ -61,6 +61,9 @@ public class PerformanceService {
     @Transactional
     public void getPerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
         try {
+            if(userInfo == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
             // 입력 받은 제목을 NFKC 정규화 적용 (전각/반각, 분해형/조합형 등 모든 호환성 문자를 통일)
             String normalizedTitle = Normalizer.normalize(dto.getTitle(), Normalizer.Form.NFKC);
 
