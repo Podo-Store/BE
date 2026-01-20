@@ -1,20 +1,23 @@
 #!/bin/bash
-set -eo pipefail   # ❗ -u 제거
+set -eo pipefail
 
 LOG=/home/ubuntu/deploy.log
+mkdir -p /home/ubuntu
 exec >>"$LOG" 2>&1
+
 echo "=== ApplicationStart $(date '+%F %T') ==="
 
-cd /home/ubuntu/app
+# ❗ 실제 경로로 수정
+cd /data/home/ubuntu/app
 
 # docker compose 판별
 if command -v docker-compose >/dev/null 2>&1; then
-  DC="sudo docker-compose"
+  DC="docker-compose"
 else
-  DC="sudo docker compose"
+  DC="docker compose"
 fi
 
-DOCKER="sudo docker"
+DOCKER="docker"
 APP_NAME=spring
 NETWORK_NAME=app-network
 REDIS_CONTAINER_NAME=redis
@@ -38,7 +41,6 @@ if ! $DOCKER ps --filter "name=^/${REDIS_CONTAINER_NAME}$" --filter "status=runn
   sleep 10
 fi
 
-# blue 컨테이너 존재 여부로 판단
 BLUE_RUNNING=$($DOCKER ps --filter "name=${APP_NAME}-blue" --filter "status=running" -q)
 
 if [ -z "$BLUE_RUNNING" ]; then
