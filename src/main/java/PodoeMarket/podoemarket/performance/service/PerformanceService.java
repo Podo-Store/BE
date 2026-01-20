@@ -59,7 +59,7 @@ public class PerformanceService {
     private String bucketURL;
 
     @Transactional
-    public void getPerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
+    public void uploadPerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
         try {
             if(userInfo == null)
                 throw new RuntimeException("로그인이 필요한 서비스입니다.");
@@ -274,6 +274,11 @@ public class PerformanceService {
                     !"image/png".equals(contentType)) {
                 throw new RuntimeException("이미지 파일은 jpg 또는 png만 허용됩니다.");
             }
+
+            // 용량 확인
+            long maxSize = 15L * 1024 * 1024; // 15MB
+            if(file.getSize() > maxSize)
+                throw new RuntimeException("이미지 파일은 최대 15MB까지만 업로드할 수 있습니다.");
 
             // S3 Key 구성
             final String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
