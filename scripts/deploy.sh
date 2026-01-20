@@ -7,17 +7,13 @@ exec >>"$LOG" 2>&1
 
 echo "=== ApplicationStart $(date '+%F %T') ==="
 
-# ❗ 실제 경로로 수정
+# ✅ 실제 앱 경로
 cd /data/home/ubuntu/app
 
-# docker compose 판별
-if command -v docker-compose >/dev/null 2>&1; then
-  DC="docker-compose"
-else
-  DC="docker compose"
-fi
-
+# ✅ docker 명령 고정
 DOCKER="docker"
+DC="docker-compose"
+
 APP_NAME=spring
 NETWORK_NAME=app-network
 REDIS_CONTAINER_NAME=redis
@@ -34,13 +30,14 @@ if ! $DOCKER network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
   $DOCKER network create $NETWORK_NAME
 fi
 
-# Redis 확인
+# Redis 실행
 if ! $DOCKER ps --filter "name=^/${REDIS_CONTAINER_NAME}$" --filter "status=running" -q | grep -q .; then
   echo "[INFO] start redis"
-  $DC --env-file .env -f docker-compose.redis.yml up -d || true
+  $DC --env-file .env -f docker-compose.redis.yml up -d
   sleep 10
 fi
 
+# BLUE / GREEN 판단
 BLUE_RUNNING=$($DOCKER ps --filter "name=${APP_NAME}-blue" --filter "status=running" -q)
 
 if [ -z "$BLUE_RUNNING" ]; then
