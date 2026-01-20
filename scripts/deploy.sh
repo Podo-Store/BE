@@ -7,8 +7,8 @@ exec >>"$LOG" 2>&1
 
 echo "=== ApplicationStart $(date '+%F %T') ==="
 
-# ✅ 실제 앱 경로
-cd /data/home/ubuntu/app
+## ✅ 실제 앱 경로
+#cd /data/home/ubuntu/app
 
 # ✅ docker 명령 고정
 DOCKER="docker"
