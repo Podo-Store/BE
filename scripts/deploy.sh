@@ -2,12 +2,13 @@
 set -eo pipefail
 
 LOG=/home/ubuntu/deploy.log
-mkdir -p /home/ubuntu
 exec >>"$LOG" 2>&1
 
 echo "=== ApplicationStart $(date '+%F %T') ==="
 
-cd /opt/codedeploy-agent/deployment-root/*/*/deployment-archive
+APP_DIR=/data/home/ubuntu/app
+mkdir -p $APP_DIR
+cd $APP_DIR
 
 DOCKER="docker"
 DC="docker-compose"
@@ -16,13 +17,13 @@ APP_NAME=spring
 NETWORK_NAME=app-network
 REDIS_CONTAINER_NAME=redis
 
-# 네트워크 생성
+# 네트워크 먼저 생성
 if ! $DOCKER network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
   echo "[INFO] create network $NETWORK_NAME"
   $DOCKER network create $NETWORK_NAME
 fi
 
-# Redis
+# Redis 실행
 if ! $DOCKER ps --filter "name=^/${REDIS_CONTAINER_NAME}$" --filter "status=running" -q | grep -q .; then
   echo "[INFO] start redis"
   $DC -f docker-compose.redis.yml up -d
@@ -35,11 +36,13 @@ if [ -z "$BLUE_RUNNING" ]; then
   echo "[INFO] deploy BLUE"
   $DC -p ${APP_NAME}-blue -f docker-compose.blue.yml up -d --build
   sleep 20
+  echo "[INFO] stop GREEN"
   $DC -p ${APP_NAME}-green -f docker-compose.green.yml down || true
 else
   echo "[INFO] deploy GREEN"
   $DC -p ${APP_NAME}-green -f docker-compose.green.yml up -d --build
   sleep 20
+  echo "[INFO] stop BLUE"
   $DC -p ${APP_NAME}-blue -f docker-compose.blue.yml down || true
 fi
 
