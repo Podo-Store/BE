@@ -1,2 +1,3 @@
 #!/bin/bash
-rm -rf /home/ubuntu/app/*
+echo "[INFO] clean.sh skipped (no-op)"
+exit 0
