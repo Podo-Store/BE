@@ -2,13 +2,14 @@
 set -eo pipefail
 
 LOG=/home/ubuntu/deploy.log
+mkdir -p /home/ubuntu
 exec >>"$LOG" 2>&1
 
 echo "=== ApplicationStart $(date '+%F %T') ==="
 
 APP_DIR=/data/home/ubuntu/app
-mkdir -p $APP_DIR
-cd $APP_DIR
+mkdir -p "$APP_DIR"
+cd "$APP_DIR"
 
 DOCKER="docker"
 DC="docker-compose"
@@ -17,13 +18,13 @@ APP_NAME=spring
 NETWORK_NAME=app-network
 REDIS_CONTAINER_NAME=redis
 
-# 네트워크 먼저 생성
+# 네트워크 먼저
 if ! $DOCKER network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
   echo "[INFO] create network $NETWORK_NAME"
   $DOCKER network create $NETWORK_NAME
 fi
 
-# Redis 실행
+# Redis
 if ! $DOCKER ps --filter "name=^/${REDIS_CONTAINER_NAME}$" --filter "status=running" -q | grep -q .; then
   echo "[INFO] start redis"
   $DC -f docker-compose.redis.yml up -d

@@ -1,5 +1,4 @@
 version: 0.0
-
 os: linux
 
 files:
@@ -14,12 +13,12 @@ permissions:
     group: ubuntu
 
 hooks:
-  AfterInstall:
-    - location: cleanup-after-install.sh
-      timeout: 60
-      runas: root
-
   ApplicationStart:
     - location: deploy.sh
       timeout: 300
+      runas: ubuntu
+
+  AfterInstall:
+    - location: cleanup-after-install.sh
+      timeout: 60
       runas: root
