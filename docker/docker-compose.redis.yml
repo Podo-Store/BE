@@ -22,9 +22,8 @@ services:
       - app-network
 
 networks:
-  default:
+  app-network:
     external: true
-    name: app-network
 
 volumes:
   redis-data:
