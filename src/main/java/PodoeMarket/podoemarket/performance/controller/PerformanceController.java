@@ -31,7 +31,7 @@ public class PerformanceController {
                                                  PerformanceRegisterRequestDTO dto,
                                                  @RequestPart("poster") MultipartFile file) {
         try {
-            performanceService.getPerformanceInfo(userInfo, dto, file);
+            performanceService.uploadPerformanceInfo(userInfo, dto, file);
 
             return ResponseEntity.ok().body(true);
         } catch (Exception e) {
