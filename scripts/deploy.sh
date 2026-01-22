@@ -1,8 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
-LOG=/data/home/ubuntu/deploy.log
-mkdir -p /home/ubuntu
+LOG_DIR=/data/home/ubuntu
+LOG=$LOG_DIR/deploy.log
+mkdir -p "$LOG_DIR"
 exec >>"$LOG" 2>&1
 
 echo "=== ApplicationStart $(date '+%F %T') ==="
@@ -11,8 +12,8 @@ APP_DIR=/data/home/ubuntu/app
 mkdir -p "$APP_DIR"
 cd "$APP_DIR"
 
-DOCKER="docker"
-DC="docker-compose"
+DOCKER="/usr/bin/docker"
+DC="/usr/bin/docker-compose"
 
 APP_NAME=spring
 NETWORK_NAME=app-network
