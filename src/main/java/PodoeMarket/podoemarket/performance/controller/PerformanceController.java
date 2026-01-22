@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.entity.type.PerformanceStatus;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceMainResponseDTO;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceStatusResponseDTO;
 import PodoeMarket.podoemarket.performance.service.PerformanceService;
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterRequestDTO;
 import lombok.RequiredArgsConstructor;
@@ -40,18 +41,6 @@ public class PerformanceController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> showPerformanceInfo(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
-        try {
-            final PerformanceEditResponseDTO resDTO = performanceService.getPerformanceInfo(userInfo, id);
-
-            return  ResponseEntity.ok().body(resDTO);
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePerformance(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try {
@@ -79,12 +68,35 @@ public class PerformanceController {
         }
     }
 
-    @GetMapping("/main")
-    public ResponseEntity<?> getPerformanceMain(@RequestParam(required = false) Boolean ongoingUsed,
-                                                @RequestParam(required = false) Boolean upcomingUsed,
-                                                @RequestParam(required = false) Boolean pastUsed) {
+    @GetMapping("/main/ongoing")
+    public ResponseEntity<?> getOngoingPerformanceMain(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(required = false) Boolean isUsed) {
         try {
-            final PerformanceMainResponseDTO resDTO = performanceService.getPerformanceMainList(ongoingUsed, upcomingUsed, pastUsed);
+            final List<PerformanceMainResponseDTO> resDTO = performanceService.getStatusPerformanceMain(PerformanceStatus.ONGOING, isUsed, userInfo);
+
+            return ResponseEntity.ok().body(resDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+    @GetMapping("/main/upcoming")
+    public ResponseEntity<?> getUpcomingPerformanceMain(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(required = false) Boolean isUsed) {
+        try {
+            final List<PerformanceMainResponseDTO> resDTO = performanceService.getStatusPerformanceMain(PerformanceStatus.UPCOMING, isUsed, userInfo);
+
+            return ResponseEntity.ok().body(resDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
+
+    @GetMapping("/main/past")
+    public ResponseEntity<?> getPastPerformanceMain(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(required = false) Boolean isUsed) {
+        try {
+            final List<PerformanceMainResponseDTO> resDTO = performanceService.getStatusPerformanceMain(PerformanceStatus.PAST, isUsed, userInfo);
 
             return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
@@ -98,7 +110,7 @@ public class PerformanceController {
                                                 @RequestParam(required = false) Boolean isUsed,
                                                 @RequestParam(value = "page", defaultValue = "0") int page) {
         try {
-            final List<PerformanceMainResponseDTO.PerformanceListDTO> resDTO = performanceService.getPerformanceList(status, isUsed, page, 20).getContent();
+            final List<PerformanceStatusResponseDTO.PerformanceListDTO> resDTO = performanceService.getPerformanceList(status, isUsed, page, 20).getContent();
 
             return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
