@@ -48,5 +48,5 @@ else
   $DC -p ${APP_NAME}-blue -f docker-compose.blue.yml down || true
 fi
 
-$DOCKER image prune -f
+$DOCKER image prune -f --filter "until=168h"
 echo "=== ApplicationStart done $(date '+%F %T') ==="
