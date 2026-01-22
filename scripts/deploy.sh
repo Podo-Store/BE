@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-LOG=/home/ubuntu/deploy.log
+LOG=/data/home/ubuntu/deploy.log
 mkdir -p /home/ubuntu
 exec >>"$LOG" 2>&1
 
@@ -18,7 +18,7 @@ APP_NAME=spring
 NETWORK_NAME=app-network
 REDIS_CONTAINER_NAME=redis
 
-# 네트워크 먼저
+# 네트워크
 if ! $DOCKER network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
   echo "[INFO] create network $NETWORK_NAME"
   $DOCKER network create $NETWORK_NAME
@@ -47,5 +47,5 @@ else
   $DC -p ${APP_NAME}-blue -f docker-compose.blue.yml down || true
 fi
 
-$DOCKER image prune -af || true
+$DOCKER image prune -f
 echo "=== ApplicationStart done $(date '+%F %T') ==="
