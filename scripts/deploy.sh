@@ -1,4 +1,6 @@
 #!/bin/bash
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
 set -eo pipefail
 
 LOG_DIR=/data/home/ubuntu
@@ -48,5 +50,5 @@ else
   $DC -p ${APP_NAME}-blue -f docker-compose.blue.yml down || true
 fi
 
-$DOCKER image prune -f --filter "until=168h"
+$DOCKER image prune -f --filter "until=168h" || true
 echo "=== ApplicationStart done $(date '+%F %T') ==="
