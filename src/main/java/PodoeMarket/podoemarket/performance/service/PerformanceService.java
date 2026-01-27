@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.performance.dto.request.PerformanceRegisterReques
 import PodoeMarket.podoemarket.performance.dto.request.PerformanceUpdateRequestDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceEditResponseDTO;
 import PodoeMarket.podoemarket.performance.dto.response.PerformanceMainResponseDTO;
+import PodoeMarket.podoemarket.performance.dto.response.PerformanceStatusResponseDTO;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
@@ -104,32 +105,6 @@ public class PerformanceService {
         }
     }
 
-    public PerformanceEditResponseDTO getPerformanceInfo(UserEntity userInfo, UUID id) {
-        try {
-            final PerformanceEntity performance = performanceRepo.findById(id);
-
-            if(performance == null)
-                throw new RuntimeException("해당하는 공연 소식이 없습니다.");
-
-            String posterPath = performance.getPosterPath() != null
-                    ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
-                    : "";
-
-            return PerformanceEditResponseDTO.builder()
-                    .isOwner(userInfo != null && performance.getUser().getId().equals(userInfo.getId()))
-                    .posterPath(posterPath)
-                    .title(performance.getTitle())
-                    .place(performance.getPlace())
-                    .startDate(performance.getStartDate())
-                    .endDate(performance.getEndDate())
-                    .link(performance.getLink())
-                    .isUsed(performance.getIsUsed())
-                    .build();
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
     @Transactional
     public void deletePerformanceInfo(UserEntity userInfo, UUID id) {
         try {
@@ -193,43 +168,27 @@ public class PerformanceService {
         }
     }
 
-    public PerformanceMainResponseDTO getPerformanceMainList(Boolean ongoingUsed, Boolean upcomingUsed, Boolean pastUsed) {
+    public List<PerformanceMainResponseDTO> getStatusPerformanceMain(PerformanceStatus status, Boolean isUsed, UserEntity userInfo) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
             Pageable limit4 = PageRequest.of(0, 4, Sort.by("startDate").descending());
 
-            List<PerformanceMainResponseDTO.PerformanceListDTO> ongoing =
-                    performanceRepo.findOngoing(today, ongoingUsed, limit4)
-                            .getContent()
-                            .stream()
-                            .map(this::getListDTO)
-                            .toList();
+            Page<PerformanceEntity> page = switch(status) {
+                case ONGOING -> performanceRepo.findOngoing(today, isUsed, limit4);
+                case UPCOMING ->  performanceRepo.findUpcoming(today, isUsed, limit4);
+                case PAST ->  performanceRepo.findPast(today, isUsed, limit4);
+            };
 
-            List<PerformanceMainResponseDTO.PerformanceListDTO> upcoming =
-                    performanceRepo.findUpcoming(today, upcomingUsed, limit4)
-                            .getContent()
-                            .stream()
-                            .map(this::getListDTO)
-                            .toList();
-
-            List<PerformanceMainResponseDTO.PerformanceListDTO> past =
-                    performanceRepo.findPast(today, pastUsed, limit4)
-                            .getContent()
-                            .stream()
-                            .map(this::getListDTO)
-                            .toList();
-
-            return PerformanceMainResponseDTO.builder()
-                    .ongoing(ongoing)
-                    .upcoming(upcoming)
-                    .past(past)
-                    .build();
+            return page.getContent()
+                    .stream()
+                    .map(performance -> getMainStatusListDTO(performance, userInfo))
+                    .toList();
         } catch (Exception e) {
             throw e;
         }
     }
 
-    public Page<PerformanceMainResponseDTO.PerformanceListDTO> getPerformanceList(PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
+    public Page<PerformanceStatusResponseDTO.PerformanceListDTO> getPerformanceList(PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
             Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
@@ -248,7 +207,7 @@ public class PerformanceService {
                 default -> throw new IllegalArgumentException("잘못된 공연 상태입니다.");
             }
 
-            return result.map(this::getListDTO);
+            return result.map(this::getStatusListDTO);
         } catch (Exception e) {
             throw e;
         }
@@ -358,12 +317,32 @@ public class PerformanceService {
         return outputStream.toByteArray();
     }
 
-    private PerformanceMainResponseDTO.PerformanceListDTO getListDTO(PerformanceEntity p) {
+    private PerformanceMainResponseDTO getMainStatusListDTO(PerformanceEntity performance, UserEntity userInfo) {
+        String posterPath = performance.getPosterPath() != null
+                ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
+                : "";
+
+        boolean isOwner = userInfo != null && performance.getUser() != null && performance.getUser().getId().equals(userInfo.getId());
+
+        return PerformanceMainResponseDTO.builder()
+                .id(performance.getId())
+                .posterPath(posterPath)
+                .title(performance.getTitle())
+                .place(performance.getPlace())
+                .startDate(performance.getStartDate())
+                .endDate(performance.getEndDate())
+                .isUsed(performance.getIsUsed())
+                .isOwner(isOwner)
+                .link(performance.getLink())
+                .build();
+    }
+
+    private PerformanceStatusResponseDTO.PerformanceListDTO getStatusListDTO(PerformanceEntity p) {
         String posterPath = p.getPosterPath() != null
                 ? bucketURL + URLEncoder.encode(p.getPosterPath(), StandardCharsets.UTF_8)
                 : "";
 
-        return PerformanceMainResponseDTO.PerformanceListDTO.builder()
+        return PerformanceStatusResponseDTO.PerformanceListDTO.builder()
                 .id(p.getId())
                 .posterPath(posterPath)
                 .title(p.getTitle())
