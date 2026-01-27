@@ -514,16 +514,29 @@ public class MypageService {
     }
 
     @Transactional
-    public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) {
+    public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) throws IllegalAccessException {
         try {
             final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
 
-            final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
-            final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
-            final long refundPrice = orderItem.getProduct().getPerformancePrice() * dto.getRefundAmount();
+            // 수량, 금액 계산
+            final int usedAmount = performanceDateRepo.countByOrderItemId(dto.getOrderItemId());
+            final int possibleAmount = orderItem.getPerformanceAmount() - usedAmount;
+            final long unitPrice = orderItem.getProduct().getPerformancePrice();
+            final long refundPrice = unitPrice * dto.getRefundAmount();
 
-            if(dto.getRefundAmount() > possibleAmount || refundPrice > possiblePrice || dto.getRefundAmount() == 0 || refundPrice < 0)
-                throw new RuntimeException("환불 가능 수량과 가격이 아님");
+            // 최초 결제 금액 (전체 취소 판단 기준)
+            final long totalPrice = orderItem.getTotalPrice();
+
+            // 기존 환불 금액
+            final long refundedTotalPrice = refundRepo.sumRefundPriceByOrder(orderItem.getOrder().getId());
+            boolean hasPreviousRefund = refundedTotalPrice > 0;
+
+            // 검증
+            if(refundPrice + refundedTotalPrice > totalPrice)
+                throw new RuntimeException("누적 환불 금액 초과");
+
+            if(dto.getRefundAmount() <= 0 || dto.getRefundAmount() > possibleAmount || refundPrice < 0 || refundPrice > totalPrice)
+                throw new RuntimeException("환불 가능 가격과 수량이 아님");
 
             if(dto.getReason().isEmpty() || dto.getReason().length() > 50)
                 throw new RuntimeException("환불 사유는 1 ~ 50자까지 가능");
@@ -531,14 +544,23 @@ public class MypageService {
             if(Duration.between(orderItem.getCreatedAt(), LocalDateTime.now()).toDays() > 14)
                 throw new RuntimeException("구매 후 2주가 경과되어 환불 불가");
 
-            log.info("refundPrice={}, possiblePrice={}, cancelAmount={}", refundPrice, possiblePrice, (refundPrice == possiblePrice ? null : refundPrice));
+            // 전체취소 여부 판단
+            final boolean isFullCancel = refundPrice + refundedTotalPrice == totalPrice && !hasPreviousRefund;
+
+            if(hasPreviousRefund && refundPrice == totalPrice)
+                throw new RuntimeException("이미 부분환불된 주문의 전체 취소 시도");
+
+            if (!isFullCancel && refundPrice == totalPrice)
+                throw new RuntimeException("부분환불인데 전체 취소 금액과 동일함");
+
+            log.info("refundPrice = {}, originalTotalPrice = {}, isFullCancel = {}", refundPrice, totalPrice, isFullCancel);
 
             // Nicepay 환불용 orderId 생성
             String refundOrderId = generatedRefundOrderId(orderItem.getOrder().getId());
 
             NicepayCancelResponseDTO res;
 
-            if(refundPrice == possiblePrice)
+            if(isFullCancel)
                 res = requestCancelToNicepay(orderItem.getOrder().getTid(), refundOrderId, dto.getReason(), null);
             else
                 res = requestCancelToNicepay(orderItem.getOrder().getTid(), refundOrderId, dto.getReason(), refundPrice);
@@ -547,11 +569,11 @@ public class MypageService {
             if(res == null || !"0000".equals(res.getResultCode())) {
                 String error = (res != null) ? res.getResultMsg() : "환불 실패";
 
-                log.error("환불 실패: tid={}, resultCode={}, msg={}", orderItem.getOrder().getTid(), res.getResultCode(), error);
+                log.error("환불 실패: tid={}, resultCode={}, msg={}", orderItem.getOrder().getTid(), Objects.requireNonNull(res).getResultCode(), error);
                 throw new RuntimeException("환불 처리 실패: " + error);
             }
 
-            final RefundEntity refund = RefundEntity.builder()
+            RefundEntity refund = RefundEntity.builder()
                     .quantity(dto.getRefundAmount())
                     .price(refundPrice)
                     .content(dto.getReason())
