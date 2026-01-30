@@ -15,7 +15,7 @@ mkdir -p "$APP_DIR"
 cd "$APP_DIR"
 
 DOCKER="/usr/bin/docker"
-DC="/usr/bin/docker-compose"
+DC="/usr/bin/docker compose"
 
 APP_NAME=spring
 NETWORK_NAME=app-network
