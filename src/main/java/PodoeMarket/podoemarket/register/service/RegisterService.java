@@ -82,6 +82,9 @@ public class RegisterService {
         if (!Objects.equals(files[0].getContentType(), "application/pdf"))
             throw new RuntimeException("contentType is not PDF");
 
+        if (files[0].getSize() > 50 * 1024 * 1024)
+            throw new RuntimeException("파일은 50MB 이하만 업로드 가능합니다.");
+
         // 파일 이름 가공
         final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
         final Date time = new Date();

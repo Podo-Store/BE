@@ -32,4 +32,10 @@ public interface RefundRepository extends JpaRepository<RefundEntity, Long> {
             @Param("productId") UUID productId
     );
 
+    @Query("""
+    SELECT COALESCE(SUM(r.price), 0)
+    FROM RefundEntity r
+    WHERE r.order.id = :orderId
+""")
+    long sumRefundPriceByOrder(@Param("orderId") Long orderId);
 }
