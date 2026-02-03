@@ -119,7 +119,7 @@ public class ProductController {
             final String s3Key = product.getDescriptionPath();
 
             if (s3Key == null)
-                throw new RuntimeException("false");
+                return ResponseEntity.noContent().build();
 
             final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
 
