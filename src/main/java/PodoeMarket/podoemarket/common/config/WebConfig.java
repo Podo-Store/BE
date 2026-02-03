@@ -42,6 +42,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(permitPath).permitAll() // 인증 없이 접근 가능한 경로 설정
                         .requestMatchers(swaggerPath).permitAll() // 스웨거 경로 설정
+                        .requestMatchers("/actuator/health").permitAll() // 메트릭 경로 설정
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated()) // 나머지 모든 요청은 인증 필요
                 .requiresChannel(channelConfigurer -> channelConfigurer
                         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
