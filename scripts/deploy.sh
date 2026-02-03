@@ -40,14 +40,35 @@ fi
 BLUE_RUNNING=$($DOCKER ps --filter "name=${APP_NAME}-blue" --filter "status=running" -q)
 
 if [ -z "$BLUE_RUNNING" ]; then
+  echo "[INFO] deploy BLUE"
+  TARGET_CONTAINER="${APP_NAME}-blue"
+
   $DC --project-name ${APP_NAME}-blue -f docker-compose.blue.yml up -d --build
-  sleep 20
+  sleep 5
   $DC --project-name ${APP_NAME}-green -f docker-compose.green.yml down || true
 else
+  echo "[INFO] deploy GREEN"
+  TARGET_CONTAINER="${APP_NAME}-green"
+
   $DC --project-name ${APP_NAME}-green -f docker-compose.green.yml up -d --build
-  sleep 20
+  sleep 5
   $DC --project-name ${APP_NAME}-blue -f docker-compose.blue.yml down || true
 fi
+
+echo "[INFO] waiting for ${TARGET_CONTAINER} to be healthy..."
+
+# 🔑 핵심: healthcheck 대기
+until $DOCKER inspect \
+  --format='{{.State.Health.Status}}' "$TARGET_CONTAINER" 2>/dev/null \
+  | grep -q healthy; do
+  sleep 2
+done
+
+echo "[INFO] ${TARGET_CONTAINER} is healthy"
+
+# 🔑 핵심: nginx에 새 backend 알림 (무중단)
+echo "[INFO] reloading nginx"
+$DOCKER exec nginx nginx -s reload
 
 $DOCKER image prune -f --filter "until=168h" || true
 echo "=== ApplicationStart done $(date '+%F %T') ==="

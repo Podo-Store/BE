@@ -63,15 +63,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.info("insert new user");
 
                     UserEntity user = new UserEntity();
+
+                    Boolean isAdmin = claims.get("auth", Boolean.class);
+
                     user.setId(UUID.fromString(claims.getSubject())); // 아이디 할당
                     user.setNickname(claims.get("nickname", String.class)); // 닉네임 할당
                     user.setEmail(claims.get("email", String.class)); // 이메일 할당
-                    user.setAuth((Boolean) claims.get("auth"));
+                    user.setAuth(isAdmin);
                     user.setStageType(StageType.valueOf(claims.get("stageType", String.class))); // 스테이지 정보 할당
+
+                    String role = Boolean.TRUE.equals(isAdmin)
+                            ? "ROLE_ADMIN"
+                            : "ROLE_USER";
 
                     // 인증 완료 -> SecurityContextHolder 에 등록 되어야 인증된 사용자!
                     AbstractAuthenticationToken authentication
-                            = new UsernamePasswordAuthenticationToken(user, null, AuthorityUtils.NO_AUTHORITIES); // 사용자 정보
+                            = new UsernamePasswordAuthenticationToken(user, null, AuthorityUtils.createAuthorityList(role)); // 사용자 정보
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // 사용자 인증 세부 정보 설정
 
                     SecurityContext securityContext = SecurityContextHolder.createEmptyContext(); /// 빈 SecurityContext 생성
