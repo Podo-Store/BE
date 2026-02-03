@@ -58,6 +58,10 @@ dependencies {
 
 	// 소셜 로그인
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// 메트릭
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-core'
 }
 
 tasks.named('test') {
