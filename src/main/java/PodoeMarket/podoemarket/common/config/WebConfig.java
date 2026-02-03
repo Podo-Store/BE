@@ -40,7 +40,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/internal/health").permitAll()
+                        .requestMatchers("/internal/metrics/**").hasRole("ADMIN")
                         .requestMatchers(permitPath).permitAll() // 인증 없이 접근 가능한 경로 설정
                         .requestMatchers(swaggerPath).permitAll() // 스웨거 경로 설정
                         .anyRequest().authenticated()); // 나머지 모든 요청은 인증 필요
