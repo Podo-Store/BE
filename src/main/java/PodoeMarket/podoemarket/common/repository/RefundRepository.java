@@ -9,16 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RefundRepository extends JpaRepository<RefundEntity, Long> {
-    int countByOrderId(Long orderId);
-
-    @Query("""
-    SELECT r.order.id, COUNT(r)
-    FROM RefundEntity r
-    WHERE r.order.id IN :orderIds
-    GROUP BY r.order.id
-""")
-    List<Object[]> countByOrderIds(@Param("orderIds") List<Long> orderIds);
-
     @Query("""
     SELECT COALESCE(SUM(r.quantity), 0)
     FROM RefundEntity r
@@ -38,4 +28,20 @@ public interface RefundRepository extends JpaRepository<RefundEntity, Long> {
     WHERE r.order.id = :orderId
 """)
     long sumRefundPriceByOrder(@Param("orderId") Long orderId);
+
+    @Query("""
+    SELECT COALESCE(SUM(r.quantity), 0)
+    FROM RefundEntity r
+    WHERE r.order.id = :orderId
+""")
+    int sumRefundQuantityByOrderId(@Param("orderId") Long orderId);
+
+    @Query("""
+    SELECT r.order.id, COALESCE(SUM(r.quantity), 0)
+    FROM RefundEntity r
+    WHERE r.order.id IN :orderIds
+    GROUP BY r.order.id
+""")
+    List<Object[]> sumRefundQuantityByOrderIds(@Param("orderIds") List<Long> orderIds);
+
 }

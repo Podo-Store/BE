@@ -286,7 +286,7 @@ public class MypageService {
 
             final Map<UUID, Integer> performanceDateCountMap = getPerformanceDateCountMap(allOrderItems);
 
-            final Map<Long, Integer> refundCountMap = getRefundCountMap(allOrderItems);
+            final Map<Long, Integer> refundQuantityMap = getRefundQuantityMap(allOrderItems);
 
             // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
             final Map<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>> OrderItems = new HashMap<>();
@@ -294,7 +294,7 @@ public class MypageService {
             for (OrderItemEntity orderItem : allOrderItems) {
                 int dateCount = performanceDateCountMap.getOrDefault(orderItem.getId(), 0);
 
-                int refundCount = refundCountMap.getOrDefault(orderItem.getOrder().getId(), 0);
+                int refundCount = refundQuantityMap.getOrDefault(orderItem.getOrder().getId(), 0);
 
                 // 각 주문 항목에 대한 제품 정보 가져옴
                 final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
@@ -386,7 +386,7 @@ public class MypageService {
             applyResponseDTO.setImagePath(orderItem.getProduct().getImagePath() != null ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8): "");
             applyResponseDTO.setTitle(orderItem.getProduct().getTitle());
             applyResponseDTO.setWriter(orderItem.getProduct().getWriter());
-            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount() - refundRepo.countByOrderId(orderItem.getOrder().getId()));
+            applyResponseDTO.setPerformanceAmount(orderItem.getPerformanceAmount() - refundRepo.sumRefundQuantityByOrderId(orderItem.getOrder().getId()));
 
             ApplyResponseDTO.ApplicantDTO applicantDTO = ApplyResponseDTO.ApplicantDTO.builder()
                     .name(applicant.getName())
@@ -415,7 +415,7 @@ public class MypageService {
             final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
             expire(orderItem.getCreatedAt());
 
-            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId()) - refundRepo.countByOrderId(orderItem.getOrder().getId());
+            int availableAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(dto.getOrderItemId()) - refundRepo.sumRefundQuantityByOrderId(orderItem.getOrder().getId());
             if(dto.getPerformanceDate().size() > availableAmount)
                 throw new RuntimeException("공연권 구매량 초과");
 
@@ -490,7 +490,8 @@ public class MypageService {
         try {
             final OrderItemEntity orderItem = getOrderItem(orderItemId);
 
-            final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId) - refundRepo.countByOrderId(orderItem.getOrder().getId());
+            final int refundAmount = refundRepo.sumRefundQuantityByOrderId(orderItem.getOrder().getId());
+            final int possibleAmount = orderItem.getPerformanceAmount() - performanceDateRepo.countByOrderItemId(orderItemId) - refundAmount;
             final long possiblePrice = orderItem.getProduct().getPerformancePrice() * possibleAmount;
             String encodedScriptImage = orderItem.getProduct().getImagePath() != null
                     ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
@@ -898,7 +899,7 @@ public class MypageService {
                 ));
     }
 
-    private Map<Long, Integer> getRefundCountMap(List<OrderItemEntity> orderItems) {
+    private Map<Long, Integer> getRefundQuantityMap(List<OrderItemEntity> orderItems) {
         List<Long> orderIds = orderItems.stream()
                 .map(oi -> oi.getOrder().getId())
                 .distinct()
@@ -907,12 +908,11 @@ public class MypageService {
         if (orderIds.isEmpty())
             return Map.of();
 
-        return refundRepo.countByOrderIds(orderIds)
+        return refundRepo.sumRefundQuantityByOrderIds(orderIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> ((Long) row[1]).intValue()
+                        row -> (Long) row[0], // orderId
+                        row -> ((Long) row[1]).intValue() // sum(quantity)
                 ));
     }
-
 }
