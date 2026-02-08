@@ -113,11 +113,8 @@ public class PerformanceService {
             if(performance == null)
                 throw new RuntimeException("해당하는 공연 소식이 없습니다.");
 
-//            String posterPath = performance.getPosterPath() != null
-//                    ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
-//                    : "";
-
             return PerformanceEditResponseDTO.builder()
+                    .isOwner(userInfo != null && performance.getUser().getId().equals(userInfo.getId()))
                     .link(performance.getLink())
                     .build();
         } catch (Exception e) {
