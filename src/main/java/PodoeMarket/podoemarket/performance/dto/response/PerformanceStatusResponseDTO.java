@@ -30,5 +30,7 @@ public class PerformanceStatusResponseDTO {
         private LocalDate startDate;
         private LocalDate endDate;
         private Boolean isUsed;
+        private Boolean isOwner;
+        private String link;
     }
 }
