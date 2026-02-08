@@ -215,7 +215,7 @@ public class PerformanceService {
         }
     }
 
-    public Page<PerformanceStatusResponseDTO.PerformanceListDTO> getPerformanceList(PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
+    public Page<PerformanceStatusResponseDTO.PerformanceListDTO> getPerformanceList(UserEntity userInfo, PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
             Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
@@ -234,7 +234,7 @@ public class PerformanceService {
                 default -> throw new IllegalArgumentException("잘못된 공연 상태입니다.");
             }
 
-            return result.map(this::getStatusListDTO);
+            return result.map(p -> getStatusListDTO(p, userInfo));
         } catch (Exception e) {
             throw e;
         }
@@ -364,10 +364,12 @@ public class PerformanceService {
                 .build();
     }
 
-    private PerformanceStatusResponseDTO.PerformanceListDTO getStatusListDTO(PerformanceEntity p) {
+    private PerformanceStatusResponseDTO.PerformanceListDTO getStatusListDTO(PerformanceEntity p, UserEntity userInfo) {
         String posterPath = p.getPosterPath() != null
                 ? bucketURL + URLEncoder.encode(p.getPosterPath(), StandardCharsets.UTF_8)
                 : "";
+
+        boolean isOwner = userInfo != null && p.getUser() != null && p.getUser().getId().equals(userInfo.getId());
 
         return PerformanceStatusResponseDTO.PerformanceListDTO.builder()
                 .id(p.getId())
@@ -377,6 +379,8 @@ public class PerformanceService {
                 .startDate(p.getStartDate())
                 .endDate(p.getEndDate())
                 .isUsed(p.getIsUsed())
+                .isOwner(isOwner)
+                .link(p.getLink())
                 .build();
     }
 }
