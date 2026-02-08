@@ -19,7 +19,11 @@ public interface PerformanceRepository extends JpaRepository<PerformanceEntity,L
 SELECT p FROM PerformanceEntity p
 WHERE p.startDate <= :today
   AND p.endDate >= :today
-  AND (:isUsed IS NULL OR p.isUsed = :isUsed)
+  AND (
+        (:isUsed = true AND p.isUsed = true)
+        OR (:isUsed = false)
+        OR (:isUsed IS NULL)
+    )
 ORDER BY p.startDate DESC
 """)
     Page<PerformanceEntity> findOngoing(
@@ -31,7 +35,11 @@ ORDER BY p.startDate DESC
     @Query("""
 SELECT p FROM PerformanceEntity p
 WHERE p.startDate > :today
-  AND (:isUsed IS NULL OR p.isUsed = :isUsed)
+  AND (
+        (:isUsed = true AND p.isUsed = true)
+        OR (:isUsed = false)
+        OR (:isUsed IS NULL)
+    )
 ORDER BY p.startDate DESC
 """)
     Page<PerformanceEntity> findUpcoming(
@@ -43,7 +51,11 @@ ORDER BY p.startDate DESC
     @Query("""
 SELECT p FROM PerformanceEntity p
 WHERE p.endDate < :today
-  AND (:isUsed IS NULL OR p.isUsed = :isUsed)
+  AND (
+        (:isUsed = true AND p.isUsed = true)
+        OR (:isUsed = false)
+        OR (:isUsed IS NULL)
+    )
 ORDER BY p.startDate DESC
 """)
     Page<PerformanceEntity> findPast(
