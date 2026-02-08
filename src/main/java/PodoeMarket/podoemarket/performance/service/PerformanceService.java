@@ -113,9 +113,19 @@ public class PerformanceService {
             if(performance == null)
                 throw new RuntimeException("해당하는 공연 소식이 없습니다.");
 
+            String posterPath = performance.getPosterPath() != null
+                    ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
+                    : "";
+
             return PerformanceEditResponseDTO.builder()
                     .isOwner(userInfo != null && performance.getUser().getId().equals(userInfo.getId()))
+                    .posterPath(posterPath)
+                    .title(performance.getTitle())
+                    .place(performance.getPlace())
+                    .startDate(performance.getStartDate())
+                    .endDate(performance.getEndDate())
                     .link(performance.getLink())
+                    .isUsed(performance.getIsUsed())
                     .build();
         } catch (Exception e) {
             throw e;
