@@ -41,6 +41,18 @@ public class PerformanceController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> showPerformanceInfo(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
+        try {
+            final PerformanceEditResponseDTO resDTO = performanceService.getPerformanceInfo(userInfo, id);
+
+            return  ResponseEntity.ok().body(resDTO);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePerformance(@AuthenticationPrincipal UserEntity userInfo, @PathVariable UUID id) {
         try {

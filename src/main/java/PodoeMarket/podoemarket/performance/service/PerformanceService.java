@@ -105,6 +105,26 @@ public class PerformanceService {
         }
     }
 
+
+    public PerformanceEditResponseDTO getPerformanceInfo(UserEntity userInfo, UUID id) {
+        try {
+            final PerformanceEntity performance = performanceRepo.findById(id);
+
+            if(performance == null)
+                throw new RuntimeException("해당하는 공연 소식이 없습니다.");
+
+//            String posterPath = performance.getPosterPath() != null
+//                    ? bucketURL + URLEncoder.encode(performance.getPosterPath(), StandardCharsets.UTF_8)
+//                    : "";
+
+            return PerformanceEditResponseDTO.builder()
+                    .link(performance.getLink())
+                    .build();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     @Transactional
     public void deletePerformanceInfo(UserEntity userInfo, UUID id) {
         try {
