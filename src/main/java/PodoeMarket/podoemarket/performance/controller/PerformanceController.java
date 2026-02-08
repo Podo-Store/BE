@@ -118,11 +118,12 @@ public class PerformanceController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> getPerformanceList(@RequestParam PerformanceStatus status,
+    public ResponseEntity<?> getPerformanceList(@AuthenticationPrincipal UserEntity userInfo,
+                                                @RequestParam PerformanceStatus status,
                                                 @RequestParam(required = false) Boolean isUsed,
                                                 @RequestParam(value = "page", defaultValue = "0") int page) {
         try {
-            final List<PerformanceStatusResponseDTO.PerformanceListDTO> resDTO = performanceService.getPerformanceList(status, isUsed, page, 20).getContent();
+            final List<PerformanceStatusResponseDTO.PerformanceListDTO> resDTO = performanceService.getPerformanceList(userInfo, status, isUsed, page, 20).getContent();
 
             return ResponseEntity.ok().body(resDTO);
         } catch (Exception e) {
