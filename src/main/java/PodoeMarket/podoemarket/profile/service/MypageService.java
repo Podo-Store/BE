@@ -326,7 +326,6 @@ public class MypageService {
                     orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
                     orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                     orderItemDTO.setProductId(orderItem.getProduct().getId());
-                    orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                 }
 
                 LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate

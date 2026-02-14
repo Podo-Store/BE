@@ -43,7 +43,6 @@ public class OrderPerformanceResponseDTO {
             private Long performancePrice;
             private Long performanceTotalPrice;
             private Integer possibleCount;
-            private OrderStatus orderStatus;
 
             private UUID productId;
         }
