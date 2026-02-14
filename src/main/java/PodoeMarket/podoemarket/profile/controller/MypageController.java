@@ -195,18 +195,14 @@ public class MypageController {
     }
 
     @GetMapping(value = "/download", produces = "application/json; charset=UTF-8")
-    public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderId) {
+    public ResponseEntity<?> scriptDownload(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID orderItemId) {
         try {
-            ScriptInfoResponseDTO scriptInfo = mypageService.checkValidation(orderId);
-
-            byte[] fileData = mypageService.downloadFile(scriptInfo.getFilePath(), userInfo.getEmail());
-
-            String encodedFilename = URLEncoder.encode(scriptInfo.getTitle(), StandardCharsets.UTF_8);
+            ScriptDownloadResponseDTO resDTO = mypageService.downloadFile(orderItemId, userInfo);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF) // PDF 파일 형식으로 설정
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
-                    .body(fileData);
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + resDTO.getFileName())
+                    .body(resDTO.getFileData());
         } catch (Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
