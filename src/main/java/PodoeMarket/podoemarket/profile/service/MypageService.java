@@ -293,7 +293,6 @@ public class MypageService {
 
             for (OrderItemEntity orderItem : allOrderItems) {
                 int dateCount = performanceDateCountMap.getOrDefault(orderItem.getId(), 0);
-
                 int refundCount = refundQuantityMap.getOrDefault(orderItem.getOrder().getId(), 0);
 
                 // 각 주문 항목에 대한 제품 정보 가져옴
@@ -302,9 +301,8 @@ public class MypageService {
                 orderItemDTO.setId(orderItem.getId());
                 orderItemDTO.setTitle(orderItem.getTitle());
                 orderItemDTO.setWriter(orderItem.getWriter());
-                orderItemDTO.setPerformanceAmount(orderItem.getPerformanceAmount());
 
-                if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusWeeks(2)))
+                if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusMonths(3)))
                     orderItemDTO.setPossibleCount(0);
                 else
                     orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
@@ -328,6 +326,7 @@ public class MypageService {
                     orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
                     orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                     orderItemDTO.setProductId(orderItem.getProduct().getId());
+                    orderItemDTO.setOrderStatus(orderItem.getOrder().getOrderStatus());
                 }
 
                 LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
