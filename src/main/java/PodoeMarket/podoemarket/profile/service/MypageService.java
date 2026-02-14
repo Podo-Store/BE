@@ -516,7 +516,7 @@ public class MypageService {
     }
 
     @Transactional
-    public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) throws IllegalAccessException {
+    public void refundProcess(final UserEntity userInfo, final RefundRequestDTO dto) {
         try {
             final OrderItemEntity orderItem = getOrderItem(dto.getOrderItemId());
 
@@ -543,8 +543,11 @@ public class MypageService {
             if(dto.getReason().isEmpty() || dto.getReason().length() > 50)
                 throw new RuntimeException("환불 사유는 1 ~ 50자까지 가능");
 
+            if(pdfDownloadLogRepo.existsByOrderItemIdAndUserId(orderItem.getId(), userInfo.getId()))
+                throw new RuntimeException("대본을 다운로드 받은 경우는 환불이 불가합니다.");
+
             if(Duration.between(orderItem.getCreatedAt(), LocalDateTime.now()).toDays() > 14)
-                throw new RuntimeException("구매 후 2주가 경과되어 환불 불가");
+                throw new RuntimeException("구매 후 2주가 경과되어 환불이 불가합니다.");
 
             // 전체취소 여부 판단
             final boolean isFullCancel = refundPrice + refundedTotalPrice == totalPrice && !hasPreviousRefund;

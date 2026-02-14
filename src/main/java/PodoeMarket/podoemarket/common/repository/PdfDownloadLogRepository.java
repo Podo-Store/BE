@@ -16,4 +16,6 @@ public interface PdfDownloadLogRepository extends JpaRepository<PdfDownloadLogEn
     AND p.userId = :userId
 """)
     List<UUID> findDownloadedOrderItemIds(@Param("orderItemIds") List<UUID> orderItemIds,  @Param("userId") UUID userId);
+
+    Boolean existsByOrderItemIdAndUserId(UUID orderItemId, UUID userId);
 }
