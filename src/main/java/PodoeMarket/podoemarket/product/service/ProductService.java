@@ -12,8 +12,11 @@ import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,10 @@ public class ProductService {
 
     private final ViewCountService viewCountService;
     private final S3Service s3Service;
+    private final AmazonS3 amazonS3;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
@@ -190,19 +197,28 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<StreamingResponseBody> generateFullPDF(String preSignedURL) {
-        StreamingResponseBody stream = outputStream -> {
-            try {
-                streamPdfFromZip(preSignedURL, outputStream);
-            } catch (Exception e) {
-                throw new RuntimeException("ZIP에서 PDF 추출 또는 스트리밍 중 오류 발생", e);
+    public StreamingResponseBody viewScript(final UUID productId) {
+        return outputStream -> {
+            ProductEntity product = getProduct(productId);
+
+            try(S3Object s3Object = amazonS3.getObject(bucket, product.getFilePath());
+                 InputStream s3Stream = s3Object.getObjectContent()) {
+
+                streamPdfFromZip(s3Stream, outputStream);
             }
         };
+    }
 
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "inline; filename=\"script.pdf\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(stream);
+    public StreamingResponseBody viewDescription(final UUID productId) {
+        return outputStream -> {
+            ProductEntity product = getProduct(productId);
+
+            try(S3Object s3Object = amazonS3.getObject(bucket, product.getDescriptionPath());
+                InputStream s3Stream = s3Object.getObjectContent()) {
+
+                streamPdfFromZip(s3Stream, outputStream);
+            }
+        };
     }
 
     public boolean getProductLikeStatus(final UserEntity userInfo, final UUID productId) {
@@ -402,17 +418,18 @@ public class ProductService {
         }
     }
 
-    // PDF 추출 메서드 (스트리밍 방식)
-    private static void streamPdfFromZip(String preSignedURL, OutputStream outputStream) throws IOException {
-        try (InputStream inputStream = new URL(preSignedURL).openStream();
-             ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+    // ZIP → PDF 추출 (스트리밍)
+    private static void streamPdfFromZip(InputStream zipStream, OutputStream outputStream) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(zipStream)) {
             ZipEntry entry;
             boolean found = false;
 
+            byte[] buffer = new byte[8192];
+
             while ((entry = zipInputStream.getNextEntry()) != null) {
+
                 if (entry.getName().toLowerCase().endsWith(".pdf")) {
                     found = true;
-                    byte[] buffer = new byte[8192]; // 8KB 씩 스트리밍
                     int len;
 
                     while ((len = zipInputStream.read(buffer)) > 0) {
@@ -474,7 +491,7 @@ public class ProductService {
     private List<BuyOption> buyOption(final UserEntity userInfo, final UUID productId) {
         try {
             // <대본>
-            // 권리기간(열람기간) : 1년
+            // 권리기간(열람기간) : 3개월
             // 환불 : 불가
             // 한 번에 1개만 소유 가능
 
@@ -483,11 +500,12 @@ public class ProductService {
             if (userInfo == null) {
                 options.add(BuyOption.SCRIPT);
                 options.add(BuyOption.PERFORMANCE);
+
                 return options;
             }
 
             boolean hasValidScript = orderItemRepo.existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(
-                    productId, userInfo.getId(), OrderStatus.PAID, LocalDateTime.now().minusYears(1)
+                    productId, userInfo.getId(), OrderStatus.PAID, LocalDateTime.now().minusMonths(3)
             );
 
             // 유효한 대본이 없으면 대본 구매 가능
@@ -499,7 +517,7 @@ public class ProductService {
 
             return options;
         } catch (Exception e) {
-            throw new RuntimeException("구매 옵션 조회 실패", e);
+            throw e;
         }
     }
 

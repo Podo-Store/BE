@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
@@ -33,4 +34,9 @@ public class PdfDownloadLogEntity {
 
     @Column(nullable = false)
     private LocalDateTime downloadedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        downloadedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+    }
 }

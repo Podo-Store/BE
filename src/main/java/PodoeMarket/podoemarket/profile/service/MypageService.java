@@ -16,9 +16,12 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import org.springframework.http.HttpEntity;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -49,6 +53,8 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
@@ -439,33 +445,46 @@ public class MypageService {
         }
     }
 
-    public ScriptInfoResponseDTO checkValidation(final UUID orderId) {
+    @Transactional
+    public ScriptDownloadResponseDTO downloadFile(final UUID orderItemId, final UserEntity userInfo) throws IOException {
         try {
-            final OrderItemEntity orderItem = getOrderItem(orderId);
-
-            if(!orderItem.getScript())
-                throw new RuntimeException("대본을 구매하세요");
+            final OrderItemEntity orderItem = getOrderItem(orderItemId);
 
             expire(orderItem.getCreatedAt());
 
-            return ScriptInfoResponseDTO.builder()
-                    .filePath(orderItem.getProduct().getFilePath())
-                    .title(orderItem.getProduct().getTitle())
+            if(pdfDownloadLogRepo.existsByOrderItemIdAndUserId(orderItemId, userInfo.getId()))
+                throw new RuntimeException("다운로드는 1회만 가능합니다.");
+
+            if(!orderItem.getProduct().getPerformance())
+                throw new RuntimeException("공연권을 구매했을 경우에만 다운로드가 가능합니다.");
+
+            ScriptDownloadResponseDTO dto = ScriptDownloadResponseDTO.builder()
+                    .fileName(URLEncoder.encode(orderItem.getProduct().getTitle(), StandardCharsets.UTF_8))
                     .build();
-        } catch (Exception e) {
-            throw e;
-        }
-    }
 
-    public byte[] downloadFile(final String fileKey, final String email) throws IOException {
-        // S3에서 파일 객체 가져오기
-        try (S3Object s3Object = amazonS3.getObject(bucket, fileKey);
-             InputStream inputStream = s3Object.getObjectContent();
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] pdfBytes;
 
-            addWatermark(inputStream, outputStream, email);
+            // S3에서 파일 객체 가져오기
+            try (S3Object s3Object = amazonS3.getObject(bucket, orderItem.getProduct().getFilePath());
+                 InputStream s3Stream = s3Object.getObjectContent()) {
 
-            return outputStream.toByteArray();
+                pdfBytes = extractPdfFromZip(s3Stream);
+            }
+
+            ByteArrayOutputStream watermarkOutput = new ByteArrayOutputStream();
+
+            addWatermark(new ByteArrayInputStream(pdfBytes), watermarkOutput, userInfo.getId());
+
+            dto.setFileData(watermarkOutput.toByteArray());
+
+            PdfDownloadLogEntity log = PdfDownloadLogEntity.builder()
+                    .orderItemId(orderItemId)
+                    .userId(userInfo.getId())
+                    .build();
+
+            pdfDownloadLogRepo.save(log);
+
+            return dto;
         } catch (Exception e) {
             throw e;
         }
@@ -700,49 +719,87 @@ public class MypageService {
         }
     }
 
-    private void addWatermark(final InputStream src, final ByteArrayOutputStream dest, final String email) {
+    private void addWatermark(final InputStream src, final ByteArrayOutputStream dest, final UUID userId) throws IOException {
         try (PdfReader reader = new PdfReader(src);
              PdfWriter writer = new PdfWriter(dest);
-             PdfDocument pdfDoc = new PdfDocument(reader, writer); // PDF 문서를 생성하거나 수정
-             Document document = new Document(pdfDoc)) { // PdfDocument를 래핑하여 더 높은 수준의 문서 조작을 가능하게 함
+             PdfDocument pdfDoc = new PdfDocument(reader, writer);
+             InputStream logoInputStream = getClass().getClassLoader().getResourceAsStream("logo.png")) {
 
-            final InputStream logoInputStream = getClass().getClassLoader().getResourceAsStream("logo.png");
             if (logoInputStream == null)
-                throw new FileNotFoundException("Resource not found: logo.png");
+                throw new FileNotFoundException("logo.png not found in resources");
 
             // ImageDataFactory를 사용하여 이미지 데이터를 생성
-            final ImageData imageData = ImageDataFactory.create(logoInputStream.readAllBytes());
-            final Image image = new Image(imageData);
-
-            image.setOpacity(0.3f);
+            ImageData imageData = ImageDataFactory.create(logoInputStream.readAllBytes());
+            PdfFont font = PdfFontFactory.createFont();
 
             for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
-                final PdfPage page = pdfDoc.getPage(i);
-                final PdfCanvas canvas = new PdfCanvas(page);
+                PdfPage page = pdfDoc.getPage(i);
+                Rectangle pageSize = page.getPageSize();
 
-                image.setFixedPosition(i, (page.getPageSize().getWidth() - image.getImageWidth()) / 2,
-                        (page.getPageSize().getHeight() - image.getImageHeight()) / 2);
+                PdfCanvas canvas = new PdfCanvas(page.newContentStreamAfter(), page.getResources(), pdfDoc);
 
-                // 텍스트 설정
                 canvas.saveState();
-                canvas.setFillColor(new DeviceRgb(200, 200, 200));
+
+                // 투명도 설정
+                PdfExtGState gs =  new PdfExtGState();
+                gs.setFillOpacity(0.25f);
+                canvas.setExtGState(gs);
+
+                // 로고 중앙 배치
+                float logoWidth = 200;
+                float logoHeight = 200;
+
+                float logoX = (pageSize.getWidth() - logoWidth) / 2;
+                float logoY = (pageSize.getHeight() - logoHeight) / 2;
+
+                canvas.addImageWithTransformationMatrix(imageData, logoWidth, 0, 0, logoHeight, logoX, logoY, false);
+
+                // UUID 텍스트 중앙 정렬
+                String watermarkText = userId.toString();
+
                 canvas.beginText();
-                canvas.setFontAndSize(PdfFontFactory.createFont(), 20); // 폰트 및 크기 설정
+                canvas.setFontAndSize(font, 18);
+                canvas.setFillColor(new DeviceRgb(150, 150, 150));
 
-                // 텍스트 추가
-                float x = page.getPageSize().getWidth() / 2 - 100; // X 좌표: 페이지 중앙
-                float y = (page.getPageSize().getHeight() - image.getImageHeight()) / 2; // Y 좌표: 이미지 중앙 위로 이동
+                float textWidth = font.getWidth(watermarkText, 18);
+                float textX = (pageSize.getWidth() - textWidth) / 2;
 
-                canvas.setTextMatrix(x, y); // 텍스트 위치 설정
-                canvas.showText(email); // showText 메소드를 사용하여 텍스트 추가
+                // 로고 아래 30px
+                float textY = logoY - 30;
+
+                canvas.moveText(textX, textY);
+                canvas.showText(watermarkText);
                 canvas.endText();
-                canvas.restoreState();
 
-                // 페이지에 이미지 추가
-                document.add(image);
+                canvas.restoreState();
             }
         } catch (Exception e) {
-            throw new RuntimeException("워터마크 추가 실패", e);
+            throw e;
+        }
+    }
+
+    private byte[] extractPdfFromZip(InputStream zipStream) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(zipStream);
+             ByteArrayOutputStream pdfOutput = new ByteArrayOutputStream()) {
+
+            ZipEntry entry;
+
+            while ((entry = zis.getNextEntry()) != null) {
+
+                if (entry.getName().toLowerCase().endsWith(".pdf")) {
+
+                    byte[] buffer = new byte[8192]; // 8KB 씩 스트리밍
+                    int len;
+
+                    while ((len = zis.read(buffer)) > 0) {
+                        pdfOutput.write(buffer, 0, len);
+                    }
+
+                    return pdfOutput.toByteArray();
+                }
+            }
+
+            throw new RuntimeException("ZIP 내부에 PDF 없음");
         }
     }
 
