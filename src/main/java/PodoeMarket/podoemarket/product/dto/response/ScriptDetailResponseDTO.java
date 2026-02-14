@@ -1,9 +1,6 @@
 package PodoeMarket.podoemarket.product.dto.response;
 
-import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
-import PodoeMarket.podoemarket.common.entity.type.StageType;
-import PodoeMarket.podoemarket.common.entity.type.StandardType;
+import PodoeMarket.podoemarket.common.entity.type.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +32,7 @@ public class ScriptDetailResponseDTO {
     // 0 : 아무것도 구매 X
     // 1 : 대본 or 대본 + 공연권 (대본 권리 기간 유효 시)
     // 2 : 공연권만 보유
-    private Integer buyStatus;
+    private List<BuyOption> buyOptions;
     private Boolean like;
     private Long likeCount;
     private Long viewCount;

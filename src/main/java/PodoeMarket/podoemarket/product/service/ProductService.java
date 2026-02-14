@@ -1,11 +1,8 @@
 package PodoeMarket.podoemarket.product.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
-import PodoeMarket.podoemarket.common.entity.type.StageType;
-import PodoeMarket.podoemarket.common.entity.type.StandardType;
+import PodoeMarket.podoemarket.common.entity.type.*;
 import PodoeMarket.podoemarket.common.repository.*;
-import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
@@ -37,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -48,7 +46,6 @@ import java.util.zip.ZipInputStream;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
-    private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ReviewRepository reviewRepo;
     private final ReviewLikeRepository reviewLikeRepo;
@@ -128,7 +125,7 @@ public class ProductService {
                     .scene(script.getScene())
                     .act(script.getAct())
                     .intention(script.getIntention())
-                    .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
+                    .buyOptions(buyOption(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .isReviewWritten(isReviewWritten)
@@ -474,31 +471,35 @@ public class ProductService {
         }
     }
 
-    private int buyStatus(final UserEntity userInfo, final UUID productId) {
+    private List<BuyOption> buyOption(final UserEntity userInfo, final UUID productId) {
         try {
-            if(userInfo == null)
-                return 0;
+            // <대본>
+            // 권리기간(열람기간) : 1년
+            // 환불 : 불가
+            // 한 번에 1개만 소유 가능
 
-            final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userInfo.getId());
+            List<BuyOption> options = new ArrayList<>();
 
-            for(OrderItemEntity item : orderItems) {
-                final boolean isBuyScript = item.getScript(); // 대본 구매 여부
-                final boolean isExpiryDate = LocalDateTime.now().isAfter(item.getCreatedAt().plusYears(1)); // 권리 기간 만료 여부
-                final boolean isBuyPerformance = applicantRepo.existsByOrderItemId(item.getId()); // 공연권 구매 여부
-
-                if(isBuyScript && !isExpiryDate) { // 대본 구매 (대본 권리 기간 유효)
-                    return 1;
-                } else if(isBuyScript && !isExpiryDate && isBuyPerformance) { // 대본 + 공연권 구매 (대본 권리 기간 유효)
-                    return 1;
-                }
-                else if(isBuyScript && isExpiryDate && isBuyPerformance) { // 공연권만 보유
-                    return 2;
-                }
+            if (userInfo == null) {
+                options.add(BuyOption.SCRIPT);
+                options.add(BuyOption.PERFORMANCE);
+                return options;
             }
 
-            return 0;
+            boolean hasValidScript = orderItemRepo.existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(
+                    productId, userInfo.getId(), OrderStatus.PAID, LocalDateTime.now().minusYears(1)
+            );
+
+            // 유효한 대본이 없으면 대본 구매 가능
+            if(!hasValidScript)
+                options.add(BuyOption.SCRIPT);
+
+            // 공연권은 항상 가능
+            options.add(BuyOption.PERFORMANCE);
+
+            return options;
         } catch (Exception e) {
-            return 0; // 오류 발생 시 구매하지 않은 것으로 처리
+            throw new RuntimeException("구매 옵션 조회 실패", e);
         }
     }
 
