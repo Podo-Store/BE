@@ -64,6 +64,7 @@ public class MypageService {
     private final PerformanceDateRepository performanceDateRepo;
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
+    private final PdfDownloadLogRepository pdfDownloadLogRepo;
     private final ViewCountService viewCountService;
     private final TokenProvider tokenProvider;
 
@@ -281,63 +282,65 @@ public class MypageService {
 
     public OrderPerformanceResponseDTO getUserOrderPerformances(UserEntity userInfo) {
         try {
-            // 각 주문의 주문 항목을 가져옴
+            // 주문 항목 조회
             final List<OrderItemEntity> allOrderItems = orderItemRepo.findPaidPerformanceOrderItems(userInfo.getId(), OrderStatus.PAID, sort);
+
+            // 다운로드 여부 한 번에 조회
+            List<UUID> orderItemIds = allOrderItems.stream().map(OrderItemEntity::getId).toList();
+            Set<UUID> downloadedSet = new HashSet<>(pdfDownloadLogRepo.findDownloadedOrderItemIds(orderItemIds, userInfo.getId()));
 
             final Map<UUID, Integer> performanceDateCountMap = getPerformanceDateCountMap(allOrderItems);
 
             final Map<Long, Integer> refundQuantityMap = getRefundQuantityMap(allOrderItems);
 
             // 날짜별로 주문 항목을 그룹화하기 위한 맵 선언
-            final Map<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>> OrderItems = new HashMap<>();
+            final Map<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>> orderItems = new HashMap<>();
 
             for (OrderItemEntity orderItem : allOrderItems) {
                 int dateCount = performanceDateCountMap.getOrDefault(orderItem.getId(), 0);
                 int refundCount = refundQuantityMap.getOrDefault(orderItem.getOrder().getId(), 0);
 
                 // 각 주문 항목에 대한 제품 정보 가져옴
-                final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO orderItemDTO = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
+                final OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO dto = new OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO();
 
-                orderItemDTO.setId(orderItem.getId());
-                orderItemDTO.setTitle(orderItem.getTitle());
-                orderItemDTO.setWriter(orderItem.getWriter());
+                dto.setId(orderItem.getId());
+                dto.setTitle(orderItem.getTitle());
+                dto.setWriter(orderItem.getWriter());
+                dto.setIsDownloaded(downloadedSet.contains(orderItem.getId()));
 
+                // 공연권 사용 가능 수량 계산
                 if(LocalDateTime.now().isAfter(orderItem.getCreatedAt().plusMonths(3)))
-                    orderItemDTO.setPossibleCount(0);
+                    dto.setPossibleCount(0);
                 else
-                    orderItemDTO.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
+                    dto.setPossibleCount(orderItem.getPerformanceAmount() - dateCount -  refundCount);
 
-                if(orderItem.getProduct() == null) { // 완전히 삭제된 작품
-                    orderItemDTO.setDelete(true);
-                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
-                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                } else if(orderItem.getProduct().getIsDelete()) { // 삭제 표시가 된 작품
-                    orderItemDTO.setDelete(true);
-                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
-                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                if(orderItem.getProduct() == null || orderItem.getProduct().getIsDelete()) { // 완전히 삭제되었거나, 삭제 표시가 된 작품
+                    dto.setDelete(true);
+                    dto.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getPerformancePrice() : 0);
+                    dto.setPerformanceTotalPrice(orderItem.getPerformancePrice());
                 } else { // 정상 작품
                     String encodedScriptImage = orderItem.getProduct().getImagePath() != null
                             ? bucketURL + URLEncoder.encode(orderItem.getProduct().getImagePath(), StandardCharsets.UTF_8)
                             : "";
 
-                    orderItemDTO.setDelete(false);
-                    orderItemDTO.setImagePath(encodedScriptImage);
-                    orderItemDTO.setChecked(orderItem.getProduct().getChecked());
-                    orderItemDTO.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
-                    orderItemDTO.setPerformanceTotalPrice(orderItem.getPerformancePrice());
-                    orderItemDTO.setProductId(orderItem.getProduct().getId());
+                    dto.setDelete(false);
+                    dto.setImagePath(encodedScriptImage);
+                    dto.setChecked(orderItem.getProduct().getChecked());
+                    dto.setPerformancePrice(orderItem.getPerformanceAmount() > 0 ? orderItem.getProduct().getPerformancePrice() : 0);
+                    dto.setPerformanceTotalPrice(orderItem.getPerformancePrice());
+                    dto.setProductId(orderItem.getProduct().getId());
                 }
 
-                LocalDate orderDate = orderItem.getCreatedAt().toLocalDate(); // localdatetime -> localdate
-                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, orderItemDTO를 value로 추가
-                OrderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(orderItemDTO);
+                LocalDate orderDate = orderItem.getCreatedAt().toLocalDate();
+                // 날짜에 따른 리스트를 초기화하고 추가 - orderDate라는 key가 없으면 만들고, dto를 value로 추가
+                orderItems.computeIfAbsent(orderDate, k -> new ArrayList<>()).add(dto);
             }
 
             // DateOrderDTO로 변환
-            List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO> orderList = OrderItems.entrySet().stream()
+            List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO> orderList = orderItems.entrySet().stream()
                     .sorted(Map.Entry.<LocalDate, List<OrderPerformanceResponseDTO.DatePerformanceOrderDTO.OrderPerformanceDTO>>comparingByKey().reversed())
                     .map(entry -> new OrderPerformanceResponseDTO.DatePerformanceOrderDTO(entry.getKey(), entry.getValue()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             return OrderPerformanceResponseDTO.builder()
                     .nickname(userInfo.getNickname())

@@ -43,6 +43,7 @@ public class OrderPerformanceResponseDTO {
             private Long performancePrice;
             private Long performanceTotalPrice;
             private Integer possibleCount;
+            private Boolean isDownloaded;
 
             private UUID productId;
         }
