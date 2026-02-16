@@ -37,7 +37,7 @@ public class PerformanceEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String link;
 
     @Builder.Default
