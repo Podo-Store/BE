@@ -114,16 +114,12 @@ public class ProductController {
     @GetMapping("/description")
     public ResponseEntity<StreamingResponseBody> descriptionView(@RequestParam("script") UUID productId) {
         try{
-            // 데이터베이스 작업 (트랜잭션 내에서 수행)
-            final ProductEntity product = productService.getProduct(productId);
-            final String s3Key = product.getDescriptionPath();
+            StreamingResponseBody description = productService.viewDescription(productId);
 
-            if (s3Key == null)
-                return ResponseEntity.noContent().build();
-
-            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
-
-            return productService.generateFullPDF(preSignedURL);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline; filename=\"description.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(description);
         } catch(Exception e) {
                 StreamingResponseBody errorBody = outputStream -> {
                     String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";
@@ -160,12 +156,12 @@ public class ProductController {
     @GetMapping("/view")
     public ResponseEntity<StreamingResponseBody> scriptView(@RequestParam("script") UUID productId) {
         try{
-            // 데이터베이스 작업 (트랜잭션 내에서 수행)
-            final ProductEntity product = productService.getProduct(productId);
-            final String s3Key = product.getFilePath();
-            final String preSignedURL = s3Service.generatePreSignedURL(s3Key);
+            StreamingResponseBody script = productService.viewScript(productId);
 
-            return productService.generateFullPDF(preSignedURL);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline; filename=\"script.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(script);
         } catch(Exception e) {
             StreamingResponseBody errorBody = outputStream -> {
                 String errorMsg = "{\"error\": \"" + e.getMessage() + "\"}";

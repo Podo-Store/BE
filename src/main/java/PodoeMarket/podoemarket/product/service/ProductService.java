@@ -1,11 +1,8 @@
 package PodoeMarket.podoemarket.product.service;
 
 import PodoeMarket.podoemarket.common.entity.*;
-import PodoeMarket.podoemarket.common.entity.type.StageType;
-import PodoeMarket.podoemarket.common.entity.type.StandardType;
+import PodoeMarket.podoemarket.common.entity.type.*;
 import PodoeMarket.podoemarket.common.repository.*;
-import PodoeMarket.podoemarket.common.entity.type.PlayType;
-import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
@@ -15,8 +12,11 @@ import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -48,13 +49,16 @@ import java.util.zip.ZipInputStream;
 public class ProductService {
     private final ProductRepository productRepo;
     private final OrderItemRepository orderItemRepo;
-    private final ApplicantRepository applicantRepo;
     private final ProductLikeRepository productLikeRepo;
     private final ReviewRepository reviewRepo;
     private final ReviewLikeRepository reviewLikeRepo;
 
     private final ViewCountService viewCountService;
     private final S3Service s3Service;
+    private final AmazonS3 amazonS3;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
@@ -128,7 +132,7 @@ public class ProductService {
                     .scene(script.getScene())
                     .act(script.getAct())
                     .intention(script.getIntention())
-                    .buyStatus(buyStatus(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
+                    .buyOptions(buyOption(userInfo, productId)) // 로그인한 유저의 해당 작품 구매 이력 확인
                     .like(getProductLikeStatus(userInfo, productId)) // 로그인한 유저의 좋아요 여부 확인
                     .likeCount(script.getLikeCount()) // 총 좋아요 수
                     .isReviewWritten(isReviewWritten)
@@ -193,19 +197,28 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<StreamingResponseBody> generateFullPDF(String preSignedURL) {
-        StreamingResponseBody stream = outputStream -> {
-            try {
-                streamPdfFromZip(preSignedURL, outputStream);
-            } catch (Exception e) {
-                throw new RuntimeException("ZIP에서 PDF 추출 또는 스트리밍 중 오류 발생", e);
+    public StreamingResponseBody viewScript(final UUID productId) {
+        return outputStream -> {
+            ProductEntity product = getProduct(productId);
+
+            try(S3Object s3Object = amazonS3.getObject(bucket, product.getFilePath());
+                 InputStream s3Stream = s3Object.getObjectContent()) {
+
+                streamPdfFromZip(s3Stream, outputStream);
             }
         };
+    }
 
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "inline; filename=\"script.pdf\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(stream);
+    public StreamingResponseBody viewDescription(final UUID productId) {
+        return outputStream -> {
+            ProductEntity product = getProduct(productId);
+
+            try(S3Object s3Object = amazonS3.getObject(bucket, product.getDescriptionPath());
+                InputStream s3Stream = s3Object.getObjectContent()) {
+
+                streamPdfFromZip(s3Stream, outputStream);
+            }
+        };
     }
 
     public boolean getProductLikeStatus(final UserEntity userInfo, final UUID productId) {
@@ -405,17 +418,18 @@ public class ProductService {
         }
     }
 
-    // PDF 추출 메서드 (스트리밍 방식)
-    private static void streamPdfFromZip(String preSignedURL, OutputStream outputStream) throws IOException {
-        try (InputStream inputStream = new URL(preSignedURL).openStream();
-             ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+    // ZIP → PDF 추출 (스트리밍)
+    private static void streamPdfFromZip(InputStream zipStream, OutputStream outputStream) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(zipStream)) {
             ZipEntry entry;
             boolean found = false;
 
+            byte[] buffer = new byte[8192];
+
             while ((entry = zipInputStream.getNextEntry()) != null) {
+
                 if (entry.getName().toLowerCase().endsWith(".pdf")) {
                     found = true;
-                    byte[] buffer = new byte[8192]; // 8KB 씩 스트리밍
                     int len;
 
                     while ((len = zipInputStream.read(buffer)) > 0) {
@@ -474,31 +488,36 @@ public class ProductService {
         }
     }
 
-    private int buyStatus(final UserEntity userInfo, final UUID productId) {
+    private List<BuyOption> buyOption(final UserEntity userInfo, final UUID productId) {
         try {
-            if(userInfo == null)
-                return 0;
+            // <대본>
+            // 권리기간(열람기간) : 3개월
+            // 환불 : 불가
+            // 한 번에 1개만 소유 가능
 
-            final List<OrderItemEntity> orderItems = orderItemRepo.findByProductIdAndUserId(productId, userInfo.getId());
+            List<BuyOption> options = new ArrayList<>();
 
-            for(OrderItemEntity item : orderItems) {
-                final boolean isBuyScript = item.getScript(); // 대본 구매 여부
-                final boolean isExpiryDate = LocalDateTime.now().isAfter(item.getCreatedAt().plusYears(1)); // 권리 기간 만료 여부
-                final boolean isBuyPerformance = applicantRepo.existsByOrderItemId(item.getId()); // 공연권 구매 여부
+            if (userInfo == null) {
+                options.add(BuyOption.SCRIPT);
+                options.add(BuyOption.PERFORMANCE);
 
-                if(isBuyScript && !isExpiryDate) { // 대본 구매 (대본 권리 기간 유효)
-                    return 1;
-                } else if(isBuyScript && !isExpiryDate && isBuyPerformance) { // 대본 + 공연권 구매 (대본 권리 기간 유효)
-                    return 1;
-                }
-                else if(isBuyScript && isExpiryDate && isBuyPerformance) { // 공연권만 보유
-                    return 2;
-                }
+                return options;
             }
 
-            return 0;
+            boolean hasValidScript = orderItemRepo.existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(
+                    productId, userInfo.getId(), OrderStatus.PAID, LocalDateTime.now().minusMonths(3)
+            );
+
+            // 유효한 대본이 없으면 대본 구매 가능
+            if(!hasValidScript)
+                options.add(BuyOption.SCRIPT);
+
+            // 공연권은 항상 가능
+            options.add(BuyOption.PERFORMANCE);
+
+            return options;
         } catch (Exception e) {
-            return 0; // 오류 발생 시 구매하지 않은 것으로 처리
+            throw e;
         }
     }
 
