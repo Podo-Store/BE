@@ -105,7 +105,6 @@ public class PerformanceService {
         }
     }
 
-
     public PerformanceEditResponseDTO getPerformanceInfo(UserEntity userInfo, UUID id) {
         try {
             final PerformanceEntity performance = performanceRepo.findById(id);
@@ -225,11 +224,9 @@ public class PerformanceService {
             switch(status) {
                 case ONGOING -> result = performanceRepo.findOngoing(today, isUsed, pageable);
 
-                case UPCOMING -> result =
-                        performanceRepo.findUpcoming(today, isUsed, pageable);
+                case UPCOMING -> result = performanceRepo.findUpcoming(today, isUsed, pageable);
 
-                case PAST -> result =
-                        performanceRepo.findPast(today, isUsed, pageable);
+                case PAST -> result = performanceRepo.findPast(today, isUsed, pageable);
 
                 default -> throw new IllegalArgumentException("잘못된 공연 상태입니다.");
             }

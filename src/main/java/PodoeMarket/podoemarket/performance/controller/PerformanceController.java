@@ -104,7 +104,6 @@ public class PerformanceController {
         }
     }
 
-
     @GetMapping("/main/past")
     public ResponseEntity<?> getPastPerformanceMain(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(required = false) Boolean isUsed) {
         try {
