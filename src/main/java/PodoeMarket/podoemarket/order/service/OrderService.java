@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -180,23 +181,22 @@ public class OrderService {
 
                 // 대본권 구매 확인
                 if (!product.getScript() && orderItemDTO.getScript())
-                    throw new RuntimeException("대본권 구매 조건 위반");
+                    throw new RuntimeException("해당 상품은 대본권 제공하지 않음");
 
                 // 공연권 구매 확인
                 if (!product.getPerformance() && (orderItemDTO.getPerformanceAmount() > 0))
-                    throw new RuntimeException("공연권 구매 조건 위반");
+                    throw new RuntimeException("해당 상품은 공연권 제공하지 않음");
 
-                if(orderItemRepo.existsByProductIdAndUserId(orderItemDTO.getProductId(), user.getId())) {
-                    final List<OrderItemEntity> items = orderItemRepo.findByProductIdAndUserId(orderItemDTO.getProductId(), user.getId());
+                // 대본 중복 구매 방지
+                if(orderItemDTO.getScript()) {
+                    LocalDateTime lastPurchase = orderItemRepo.findLastScriptPurchaseDate(product.getId(), user.getId(), OrderStatus.PAID);
 
-                    for(OrderItemEntity item : items) {
-                        // 대본권 제한
-                        if(orderItemDTO.getScript() && item.getScript())
-                            throw new RuntimeException("<" + product.getTitle() + "> 대본은 이미 구매했음");
+                    if(lastPurchase != null) {
+                        LocalDateTime expireDate = lastPurchase.plusMonths(3);
+
+                        if (expireDate.isAfter(LocalDateTime.now()))
+                            throw new RuntimeException("<" + product.getTitle() + "> 대본은 아직 권리기간 내입니다.");
                     }
-                } else {
-                    if(!orderItemDTO.getScript() && orderItemDTO.getPerformanceAmount() > 0)
-                        throw new RuntimeException("대본권을 구매해야 함");
                 }
 
                 final long scriptPrice = orderItemDTO.getScript() ? product.getScriptPrice() : 0;

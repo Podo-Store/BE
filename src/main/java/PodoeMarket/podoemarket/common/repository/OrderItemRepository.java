@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long> {
-    List<OrderItemEntity> findByProductIdAndUserId(UUID productId, UUID userId);
-
     List<OrderItemEntity> findByOrderId(Long id);
 
     @Query("""
@@ -25,7 +23,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     WHERE oi.user.id = :userId
     AND oi.script = true
     AND o.orderStatus = :status
-""")
+    """)
     List<OrderItemEntity> findPaidScriptOrderItems(
             @Param("userId") UUID userId,
             @Param("status") OrderStatus status,
@@ -39,7 +37,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     WHERE oi.user.id = :userId
     AND oi.performanceAmount > 0
     AND o.orderStatus = :status
-""")
+    """)
     List<OrderItemEntity> findPaidPerformanceOrderItems(
             @Param("userId") UUID userId,
             @Param("status") OrderStatus status,
@@ -51,16 +49,13 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     @Query("SELECT COUNT(o) FROM OrderItemEntity o WHERE o.product.id = :productId AND o.script = true")
     int sumScriptByProductId(@Param("productId") UUID productId);
 
-    @Query("SELECT COALESCE(SUM(o.performanceAmount), 0) FROM OrderItemEntity o WHERE o.product.id = :productId")
-    int sumPerformanceAmountByProductId(@Param("productId") UUID productId);
-
     @Query("""
     SELECT COALESCE(SUM(oi.performanceAmount), 0)
     FROM OrderItemEntity oi
     JOIN oi.order o
     WHERE oi.product.id = :productId
     AND o.orderStatus = :status
-""")
+    """)
     long sumPaidPerformanceAmountByProductId(@Param("productId") UUID productId, @Param("status") OrderStatus status);
 
     List<OrderItemEntity> findAllByProductId(UUID productId);
@@ -72,10 +67,18 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     WHERE p.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
-""")
+    """)
     Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    Boolean existsByProductIdAndUserId(UUID productId, UUID userId);
-
     Boolean existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(UUID productId, UUID userId, OrderStatus status, LocalDateTime oneYearAgo);
+
+    @Query("""
+    SELECT MAX(o.createdAt)
+    FROM OrderItemEntity o
+    WHERE o.product.id = :productId
+    AND o.user.id = :userId
+    AND o.script = true
+    AND o.order.orderStatus = :status
+    """)
+    LocalDateTime findLastScriptPurchaseDate(@Param("productId") UUID productId, @Param("userId") UUID userId, @Param("status") OrderStatus status);
 }
