@@ -67,7 +67,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     WHERE p.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
-    """)
+""")
     Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Boolean existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(UUID productId, UUID userId, OrderStatus status, LocalDateTime oneYearAgo);
