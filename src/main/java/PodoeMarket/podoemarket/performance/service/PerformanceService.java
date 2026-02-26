@@ -197,7 +197,7 @@ public class PerformanceService {
     public List<PerformanceMainResponseDTO> getStatusPerformanceMain(PerformanceStatus status, Boolean isUsed, UserEntity userInfo) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-            Pageable limit4 = PageRequest.of(0, 4, Sort.by("startDate").descending());
+            Pageable limit4 = PageRequest.of(0, 4);
 
             Page<PerformanceEntity> page = switch(status) {
                 case ONGOING -> performanceRepo.findOngoing(today, isUsed, limit4);
@@ -217,15 +217,13 @@ public class PerformanceService {
     public Page<PerformanceStatusResponseDTO.PerformanceListDTO> getPerformanceList(UserEntity userInfo, PerformanceStatus status, Boolean isUsed, int page, int pageSize) {
         try {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-            Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
+            Pageable pageable = PageRequest.of(page, pageSize);
 
             Page<PerformanceEntity> result;
 
             switch(status) {
                 case ONGOING -> result = performanceRepo.findOngoing(today, isUsed, pageable);
-
                 case UPCOMING -> result = performanceRepo.findUpcoming(today, isUsed, pageable);
-
                 case PAST -> result = performanceRepo.findPast(today, isUsed, pageable);
 
                 default -> throw new IllegalArgumentException("잘못된 공연 상태입니다.");

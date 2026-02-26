@@ -24,7 +24,7 @@ WHERE p.startDate <= :today
         OR (:isUsed = false)
         OR (:isUsed IS NULL)
     )
-ORDER BY p.startDate DESC
+ORDER BY p.startDate ASC
 """)
     Page<PerformanceEntity> findOngoing(
             @Param("today") LocalDate today,
@@ -40,7 +40,7 @@ WHERE p.startDate > :today
         OR (:isUsed = false)
         OR (:isUsed IS NULL)
     )
-ORDER BY p.startDate DESC
+ORDER BY p.startDate ASC
 """)
     Page<PerformanceEntity> findUpcoming(
             @Param("today") LocalDate today,
