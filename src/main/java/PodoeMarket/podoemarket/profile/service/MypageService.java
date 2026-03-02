@@ -458,6 +458,14 @@ public class MypageService {
             if(!orderItem.getProduct().getPerformance())
                 throw new RuntimeException("공연권을 구매했을 경우에만 다운로드가 가능합니다.");
 
+            // 기존 환불 금액
+            final long refundedTotalPrice = refundRepo.sumRefundPriceByOrder(orderItem.getOrder().getId());
+            // 공연권 구매 금액
+            final long purchaseTotalPrice = orderItem.getPerformancePrice();
+
+            if(refundedTotalPrice >= purchaseTotalPrice)
+                throw new RuntimeException("공연권을 모두 환불했을 경우 다운로드가 불가합니다.");
+
             ScriptDownloadResponseDTO dto = ScriptDownloadResponseDTO.builder()
                     .fileName(URLEncoder.encode(orderItem.getProduct().getTitle(), StandardCharsets.UTF_8))
                     .build();
