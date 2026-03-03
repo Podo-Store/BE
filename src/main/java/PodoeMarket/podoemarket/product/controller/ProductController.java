@@ -13,6 +13,8 @@ import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
 import PodoeMarket.podoemarket.service.S3Service;
+import PodoeMarket.podoemarket.service.ViewCountService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -32,6 +34,7 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
     private final S3Service s3Service;
+    private final ViewCountService viewCountService;
 
     @GetMapping
     public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
@@ -76,9 +79,15 @@ public class ProductController {
     public ResponseEntity<?> scriptInfo(@AuthenticationPrincipal UserEntity userInfo,
                                         @RequestParam("script") UUID productId,
                                         @RequestParam(defaultValue = "LIKE_COUNT") ReviewSortType sortType,
-                                        @RequestParam(value = "page", defaultValue = "0") int page) {
+                                        @RequestParam(value = "page", defaultValue = "0") int page,
+                                        HttpServletRequest request) {
         try{
-            final ScriptDetailResponseDTO productInfo = productService.getScriptDetailInfo(userInfo, productId, page, 5, sortType);
+            UUID userId = (userInfo != null) ? userInfo.getId() : null;
+            String visitorId = (String) request.getAttribute("visitorId");
+
+            viewCountService.incrementViewForProduct(productId, userId, visitorId); // 조회수 증가
+
+            ScriptDetailResponseDTO productInfo = productService.getScriptDetailInfo(userInfo, productId, page, 5, sortType);
 
             return ResponseEntity.ok().body(productInfo);
         } catch(Exception e) {

@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.UUID;
 
 @Slf4j
@@ -24,11 +25,27 @@ public class ViewCountService {
     private final ProductRepository productRepo;
 
     private static final String DELTA_PREFIX = "product:views:delta:";
+    private static final String UNIQUE_PREFIX = "product:views:unique:";
 
     // 조회수 증가 (Delta만)
-    public void incrementViewForProduct(UUID productId) {
-        final String deltaKey = DELTA_PREFIX + productId.toString();
-        redisTemplate.opsForValue().increment(deltaKey);
+    public void incrementViewForProduct(UUID productId, UUID userId, String visitorId) {
+        String uniqueKey;
+
+        if(userId != null)
+            uniqueKey = UNIQUE_PREFIX + productId + ":user:" + userId;
+        else if(visitorId != null)
+            uniqueKey = UNIQUE_PREFIX + productId + ":visitor:" + visitorId;
+        else
+            return;
+
+        try {
+            Boolean isFirstView = redisTemplate.opsForValue().setIfAbsent(uniqueKey, "1", Duration.ofHours(1));
+
+            if(Boolean.TRUE.equals(isFirstView))
+                redisTemplate.opsForValue().increment(DELTA_PREFIX + productId);
+        } catch (Exception e){
+            log.warn("View increment skipped (Redis unavailable)");
+        }
     }
 
     // 조회수 조회 (DB + Delta)
