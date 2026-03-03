@@ -90,9 +90,6 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ScriptDetailResponseDTO getScriptDetailInfo(UserEntity userInfo, UUID productId, int page, int pageSize, ReviewSortType sortType) {
         try {
-            // 조회수 증가
-            viewCountService.incrementViewForProduct(productId);
-
             final ProductEntity script = productRepo.findById(productId);
             final String scriptImage = generateScriptImgURL(script);
             boolean isReviewWritten = false;
