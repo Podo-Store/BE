@@ -15,26 +15,31 @@ import java.util.UUID;
 @Component
 public class VisitorIdFilter extends OncePerRequestFilter {
     private static final String VISITOR_COOKIE_NAME = "visitorId";
+    private static final int ONE_YEAR = 60 * 60 * 24 * 365;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        Cookie cookie = WebUtils.getCookie(request, VISITOR_COOKIE_NAME);
+        Cookie existingCookie = WebUtils.getCookie(request, VISITOR_COOKIE_NAME);
 
         String visitorId;
 
-        if(cookie == null) {
+        if(existingCookie == null || existingCookie.getValue() == null || existingCookie.getValue().isBlank()) {
             visitorId = UUID.randomUUID().toString();
 
-            Cookie newCookie = new Cookie(VISITOR_COOKIE_NAME, visitorId);
-            newCookie.setPath("/");
-            newCookie.setMaxAge(60 * 60 * 24 * 365); // 1년
-            newCookie.setHttpOnly(true);
-            newCookie.setSecure(true); // HTTPS 환경에서는 true
-            response.addCookie(newCookie);
+            // SameSite 설정을 위해 직접 Set-Cookie 헤더 사용
+            String cookieHeader = VISITOR_COOKIE_NAME + "=" + visitorId +
+                            "; Path=/" +
+                            "; Domain=.podo-store.com" +
+                            "; Max-Age=" + ONE_YEAR +
+                            "; HttpOnly" +
+                            "; Secure" +
+                            "; SameSite=None";
+
+            response.setHeader("Set-Cookie", cookieHeader);
         } else {
-            visitorId = cookie.getValue();
+            visitorId = existingCookie.getValue();
         }
 
         // 이후 다른 컨트롤러에서 사용할 수 있도록 request attribute에 저장
