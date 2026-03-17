@@ -61,5 +61,6 @@ public class RequestedPerformanceResponseDTO {
     @AllArgsConstructor
     public static class PerformanceDate {
         private LocalDateTime date;
+        private Boolean isRefunded;
     }
 }

@@ -840,49 +840,178 @@ public class MypageService {
         }
     }
 
-    private List<RequestedPerformanceResponseDTO.DateRequestedList> getDateRequestedList (final UUID productId) {
+//    private List<RequestedPerformanceResponseDTO.DateRequestedList> getDateRequestedList (final UUID productId) {
+//        try {
+//            final List<OrderItemEntity> orderItems = orderItemRepo.findOrderItemsWithApplicant(productId);
+//
+//            if(orderItems.isEmpty())
+//                return Collections.emptyList();
+//
+//            final List<Long> orderIds = orderItems.stream()
+//                    .map(orderItem -> orderItem.getOrder().getId())
+//                    .distinct()
+//                    .toList();
+//
+//            // 환불 수량 조회
+//            final Map<Long, Integer> refundQuantityMap = refundRepo.sumRefundQuantityByOrderIds(orderIds)
+//                    .stream()
+//                    .collect(Collectors.toMap(
+//                            row -> (Long) row[0],
+//                            row -> ((Number) row[1]).intValue()
+//                    ));
+//
+//            // 날짜별 그룹화
+//            final Map<LocalDate, List<OrderItemEntity>> groupedByDate = orderItems.stream()
+//                    .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
+//
+//            return groupedByDate.entrySet().stream()
+//                    .sorted(Map.Entry.<LocalDate, List<OrderItemEntity>>comparingByKey().reversed())
+//                    .map(entry -> {
+//                        final LocalDate date = entry.getKey();
+//
+//                        final List<RequestedPerformanceResponseDTO.ApplicantInfo> applicantInfoList =
+//                                entry.getValue().stream()
+//                                        .sorted(Comparator.comparing(OrderItemEntity::getCreatedAt).reversed())
+//                                        .map(orderItem -> {
+//                                            final Long orderId = orderItem.getOrder().getId();
+//
+//                                            final int totalAmount = orderItem.getPerformanceAmount();
+//                                            final int refundedAmount = refundQuantityMap.getOrDefault(orderId, 0);
+//                                            final int validCount = Math.max(0, totalAmount - refundedAmount);
+//
+//                                            final List<PerformanceDateEntity> dates = orderItem.getPerformanceDate();
+//
+//                                            final List<RequestedPerformanceResponseDTO.PerformanceDate> performanceDateList = new ArrayList<>();
+//
+//                                            if (!dates.isEmpty()) {
+//                                                // 공연일자가 있는 경우
+//                                                for (int i = 0; i < dates.size(); i++) {
+//                                                    final boolean isRefunded = i >= validCount;
+//
+//                                                    performanceDateList.add(
+//                                                            RequestedPerformanceResponseDTO.PerformanceDate.builder()
+//                                                                    .date(dates.get(i).getDate())
+//                                                                    .isRefunded(isRefunded)
+//                                                                    .build()
+//                                                    );
+//                                                }
+//                                            } else {
+//                                                // 공연일자 없을 때
+//                                                for (int i = 0; i < totalAmount; i++) {
+//                                                    final boolean isRefunded = i >= validCount;
+//
+//                                                    performanceDateList.add(
+//                                                            RequestedPerformanceResponseDTO.PerformanceDate.builder()
+//                                                                    .date(null) // 날짜 없음
+//                                                                    .isRefunded(isRefunded)
+//                                                                    .build()
+//                                                    );
+//                                                }
+//                                            }
+//
+//                                            return RequestedPerformanceResponseDTO.ApplicantInfo.builder()
+//                                                    .amount(totalAmount)
+//                                                    .name(orderItem.getApplicant().getName())
+//                                                    .phoneNumber(orderItem.getApplicant().getPhoneNumber())
+//                                                    .address(orderItem.getApplicant().getAddress())
+//                                                    .performanceDateList(performanceDateList)
+//                                                    .build();
+//                                        })
+//                                        .toList();
+//
+//                        return RequestedPerformanceResponseDTO.DateRequestedList.builder()
+//                                .date(date)
+//                                .requestedInfo(applicantInfoList)
+//                                .build();
+//                    })
+//                    .toList();
+//        } catch (Exception e) {
+//            throw new RuntimeException("날짜별 요청 목록 조회 실패", e);
+//        }
+//    }
+
+    private List<RequestedPerformanceResponseDTO.DateRequestedList> getDateRequestedList(final UUID productId) {
         try {
-            // 모든 주문 데이터 가져오기
-            final List<OrderItemEntity> orderItems = orderItemRepo.findAllByProductId(productId);
+            final List<OrderItemEntity> orderItems = orderItemRepo.findOrderItemsWithApplicant(productId);
 
-            List<OrderItemEntity> filteredOrderItems = orderItems.stream()
-                    .filter(orderItem -> orderItem.getPerformanceAmount() >= 1)
-                    .filter(orderItem -> orderItem.getApplicant() != null)
-                    .toList();
+            if (orderItems.isEmpty())
+                return Collections.emptyList();
 
-            // 날짜별 그룹화
-            Map<LocalDate, List<OrderItemEntity>> groupedByOrderDate = filteredOrderItems.stream()
-                    .collect(Collectors.groupingBy(orderItem -> orderItem.getCreatedAt().toLocalDate()));
+            final Map<Long, Integer> refundMap = getRefundQuantityMap(orderItems);
 
-            return groupedByOrderDate.entrySet().stream()
+            final Map<LocalDate, List<OrderItemEntity>> groupedByDate = orderItems.stream()
+                    .collect(Collectors.groupingBy(o -> o.getCreatedAt().toLocalDate()));
+
+            return groupedByDate.entrySet().stream()
                     .sorted(Map.Entry.<LocalDate, List<OrderItemEntity>>comparingByKey().reversed())
-                    .map(entry -> {
-                        LocalDate date = entry.getKey();
-                        List<OrderItemEntity> orderItemList = entry.getValue();
-
-                        // 각 주문에 대한 신청자 정보
-                        List<RequestedPerformanceResponseDTO.ApplicantInfo> applicantInfoList = orderItemList.stream()
-                                .sorted(Comparator.comparing(OrderItemEntity::getCreatedAt).reversed())
-                                .map(orderItem -> RequestedPerformanceResponseDTO.ApplicantInfo.builder()
-                                        .amount(orderItem.getPerformanceAmount())
-                                        .name(orderItem.getApplicant().getName())
-                                        .phoneNumber(orderItem.getApplicant().getPhoneNumber())
-                                        .address(orderItem.getApplicant().getAddress())
-                                        .performanceDateList(orderItem.getPerformanceDate().stream()
-                                                .map(performanceDate -> RequestedPerformanceResponseDTO.PerformanceDate.builder()
-                                                        .date(performanceDate.getDate())
-                                                        .build())
-                                                .collect(Collectors.toList()))
-                                        .build())
-                                .toList();
-
-                        return RequestedPerformanceResponseDTO.DateRequestedList.builder()
-                                .date(date)
-                                .requestedInfo(applicantInfoList)
-                                .build();
-                    }).toList();
+                    .map(entry -> buildDateRequestedList(entry, refundMap))
+                    .toList();
         } catch (Exception e) {
             throw new RuntimeException("날짜별 요청 목록 조회 실패", e);
+        }
+    }
+
+    private RequestedPerformanceResponseDTO.DateRequestedList buildDateRequestedList(Map.Entry<LocalDate, List<OrderItemEntity>> entry, Map<Long, Integer> refundMap) {
+        try {
+            final LocalDate date = entry.getKey();
+
+            final List<RequestedPerformanceResponseDTO.ApplicantInfo> applicants =
+                    entry.getValue().stream()
+                            .sorted(Comparator.comparing(OrderItemEntity::getCreatedAt).reversed())
+                            .map(orderItem -> buildApplicantInfo(orderItem, refundMap))
+                            .toList();
+
+            return RequestedPerformanceResponseDTO.DateRequestedList.builder()
+                    .date(date)
+                    .requestedInfo(applicants)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("날짜별 DTO 생성", e);
+        }
+    }
+
+    private RequestedPerformanceResponseDTO.ApplicantInfo buildApplicantInfo(OrderItemEntity orderItem, Map<Long, Integer> refundMap) {
+        try {
+            final Long orderId = orderItem.getOrder().getId();
+
+            final int totalAmount = orderItem.getPerformanceAmount();
+            final int refundedAmount = refundMap.getOrDefault(orderId, 0);
+
+            final int validCount = Math.max(0, totalAmount - refundedAmount);
+
+            final List<RequestedPerformanceResponseDTO.PerformanceDate> performanceDates = buildPerformanceDates(orderItem.getPerformanceDate(), totalAmount, validCount);
+
+            return RequestedPerformanceResponseDTO.ApplicantInfo.builder()
+                    .amount(totalAmount)
+                    .name(orderItem.getApplicant().getName())
+                    .phoneNumber(orderItem.getApplicant().getPhoneNumber())
+                    .address(orderItem.getApplicant().getAddress())
+                    .performanceDateList(performanceDates)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("신청자 dto 생성 실패", e);
+        }
+    }
+
+    private List<RequestedPerformanceResponseDTO.PerformanceDate> buildPerformanceDates(List<PerformanceDateEntity> dates, int totalAmount, int validCount) {
+        try {
+            final List<RequestedPerformanceResponseDTO.PerformanceDate> result = new ArrayList<>();
+
+            final int size = !dates.isEmpty() ? dates.size() : totalAmount;
+
+            for (int i = 0; i < size; i++) {
+                final boolean isRefunded = i >= validCount;
+
+                result.add(RequestedPerformanceResponseDTO.PerformanceDate.builder()
+                                .date(!dates.isEmpty() ? dates.get(i).getDate() : null)
+                                .isRefunded(isRefunded)
+                                .build()
+                );
+            }
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("공연 신청 목록 전체 로딩 실패", e);
         }
     }
 
