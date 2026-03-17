@@ -58,8 +58,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     """)
     long sumPaidPerformanceAmountByProductId(@Param("productId") UUID productId, @Param("status") OrderStatus status);
 
-    List<OrderItemEntity> findAllByProductId(UUID productId);
-
     @Query("""
     SELECT oi FROM OrderItemEntity oi
     JOIN oi.product p
@@ -67,7 +65,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     WHERE p.title LIKE %:keyword%
     OR p.writer LIKE %:keyword%
     OR u.nickname LIKE %:keyword%
-""")
+    """)
     Page<OrderItemEntity> findOrderItemsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Boolean existsByProduct_IdAndUser_IdAndScriptTrueAndOrder_OrderStatusAndCreatedAtAfter(UUID productId, UUID userId, OrderStatus status, LocalDateTime oneYearAgo);
@@ -81,4 +79,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
     AND o.order.orderStatus = :status
     """)
     LocalDateTime findLastScriptPurchaseDate(@Param("productId") UUID productId, @Param("userId") UUID userId, @Param("status") OrderStatus status);
+
+    @Query("""
+    SELECT DISTINCT o FROM OrderItemEntity o
+    JOIN FETCH o.applicant
+    JOIN FETCH o.order
+    LEFT JOIN FETCH o.performanceDate
+    WHERE o.product.id = :productId
+    AND o.performanceAmount >= 1
+    AND o.applicant IS NOT NULL
+    """)
+    List<OrderItemEntity> findOrderItemsWithApplicant(@Param("productId") UUID productId);
 }

@@ -43,5 +43,4 @@ public interface RefundRepository extends JpaRepository<RefundEntity, Long> {
     GROUP BY r.order.id
 """)
     List<Object[]> sumRefundQuantityByOrderIds(@Param("orderIds") List<Long> orderIds);
-
 }
