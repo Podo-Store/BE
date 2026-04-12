@@ -37,14 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = parseBearerToken(request);
 
             if(token != null && !token.equalsIgnoreCase("null")){
-                // 소셜 로그인 토큰 처리 추가
-                if (isSocialLoginToken(token)) {
-                    log.info("Social login token detected, skipping JWT validation");
-
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-
                 Claims claims = tokenProvider.validateAndGetClaims(token);
 
                 if(Objects.equals(claims.getIssuer(), "Token error")){
@@ -107,11 +99,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7); // Bearer 6글자 + 공백 1글자
 
         return null;
-    }
-
-    private boolean isSocialLoginToken(String token) {
-        // 소셜 로그인 토큰 형식 확인 (예: 카카오 토큰은 점이 없음)
-        return !token.contains(".");
     }
 
     private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
