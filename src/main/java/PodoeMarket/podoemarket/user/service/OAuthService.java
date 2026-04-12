@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.user.service;
 
+import PodoeMarket.podoemarket.common.config.SnsProperties;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
@@ -14,13 +15,14 @@ import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
 import java.util.List;
 import java.util.Random;
 
@@ -34,6 +36,8 @@ public class OAuthService {
     private final UserRepository userRepo;
     private final TempAuthService tempAuthService;
     private final MailSendService mailService;
+    private final RestTemplate restTemplate;
+    private final SnsProperties snsProperties;
 
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
@@ -177,102 +181,26 @@ public class OAuthService {
 
     // 소셜 로그인 API에서 사용자 정보를 받아오는 메서드
     private String getUserInfoWithOauth(SocialLoginType socialLoginType, String accessToken) {
-        switch (socialLoginType) {
-            case GOOGLE:
-                return googleApiCall(accessToken);
-            case KAKAO:
-                return kakaoApiCall(accessToken);
-            case NAVER:
-                return naverApiCall(accessToken);
-                default:
-                    throw new IllegalArgumentException("지원되지 않는 소셜 로그인 타입");
-        }
+        String url = switch (socialLoginType) {
+            case GOOGLE -> snsProperties.getGoogle().getUserUrl();
+            case KAKAO -> snsProperties.getKakao().getUserUrl();
+            case NAVER -> snsProperties.getNaver().getUserUrl();
+        };
+
+        return apiCall(accessToken, url);
     }
 
-    // 구글 API 호출
-    private String googleApiCall(String accessToken) {
+    private String apiCall(String accessToken, String url) {
         try {
-            String url = "https://openidconnect.googleapis.com/v1/userinfo";
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.set("Authorization", "Bearer " + accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
 
-            URL obj = (new URI(url)).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer " + accessToken);
-            con.setRequestProperty("Content-Type", "application/json");
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-            int responseCode = con.getResponseCode();
-            if (responseCode == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                return response.toString();
-            } else {
-                throw new RuntimeException("Google API에서 사용자 정보를 가져오는데 실패. response code: " + responseCode);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Google API 호출 중 오류 발생", e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 카카오 API 호출
-    private String kakaoApiCall(String accessToken) {
-        try {
-            String url = "https://kapi.kakao.com/v2/user/me";
-            URL obj = (new URI(url)).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-            int responseCode = con.getResponseCode();
-            if (responseCode == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                return response.toString();
-            } else {
-                throw new RuntimeException("Kakao API에서 사용자 정보를 가져오는데 실패. response code: " + responseCode);
-            }
-        } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException("Kakao API 호출 중 오류 발생", e);
-        }
-    }
-
-    // 네이버 API 호출
-    private String naverApiCall(String accessToken) {
-        try {
-            String url = "https://openapi.naver.com/v1/nid/me";
-            URL obj = (new URI(url)).toURL();
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-            int responseCode = con.getResponseCode();
-            if (responseCode == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                return response.toString();
-            } else {
-                throw new RuntimeException("Naver API에서 사용자 정보를 가져오는데 실패. response code: " + responseCode);
-            }
-        } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException("Naver API 호출 중 오류 발생", e);
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Social 로그인 API 호출 중 오류 발생", e);
         }
     }
 

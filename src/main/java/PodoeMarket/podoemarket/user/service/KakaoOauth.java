@@ -1,10 +1,10 @@
 package PodoeMarket.podoemarket.user.service;
 
+import PodoeMarket.podoemarket.common.config.SnsProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -17,29 +17,20 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class KakaoOauth implements SocialOauth {
-    @Value("${sns.kakao.url}")
-    private String KAKAO_SNS_BASE_URL;
-    @Value("${sns.kakao.client-id}")
-    private String KAKAO_SNS_CLIENT_ID;
-    @Value("${sns.kakao.callback-url}")
-    private String KAKAO_SNS_CALLBACK_URL;
-    @Value("${sns.kakao.client-secret}")
-    private String KAKAO_SNS_CLIENT_SECRET;
-    @Value("${sns.kakao.token-url}")
-    private String KAKAO_SNS_TOKEN_BASE_URL;
+    private final SnsProperties snsProperties;
 
     @Override
     public String getOauthRedirectURL() {
         Map<String, Object> params = new HashMap<>();
         params.put("response_type", "code");
-        params.put("client_id", KAKAO_SNS_CLIENT_ID);
-        params.put("redirect_uri", KAKAO_SNS_CALLBACK_URL);
+        params.put("client_id", snsProperties.getKakao().getClientId());
+        params.put("redirect_uri", snsProperties.getKakao().getCallbackUrl());
 
         String parameterString = params.entrySet().stream()
                 .map(x -> x.getKey() + "=" + x.getValue())
                 .collect(Collectors.joining("&"));
 
-        return KAKAO_SNS_BASE_URL + "?" + parameterString;
+        return snsProperties.getKakao().getUrl() + "?" + parameterString;
     }
 
     @Override
@@ -53,9 +44,9 @@ public class KakaoOauth implements SocialOauth {
         // 파라미터 설정
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("code", code);
-        params.add("client_id", KAKAO_SNS_CLIENT_ID);
-        params.add("client_secret", KAKAO_SNS_CLIENT_SECRET);
-        params.add("redirect_uri", KAKAO_SNS_CALLBACK_URL);
+        params.add("client_id", snsProperties.getKakao().getClientId());
+        params.add("client_secret", snsProperties.getKakao().getClientSecret());
+        params.add("redirect_uri", snsProperties.getKakao().getCallbackUrl());
         params.add("grant_type", "authorization_code");
 
         // HttpEntity 생성
@@ -63,7 +54,7 @@ public class KakaoOauth implements SocialOauth {
 
         // POST 요청 전송
         ResponseEntity<String> responseEntity =
-                restTemplate.postForEntity(KAKAO_SNS_TOKEN_BASE_URL, requestEntity, String.class);
+                restTemplate.postForEntity(snsProperties.getKakao().getTokenUrl(), requestEntity, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK)
             return responseEntity.getBody();
