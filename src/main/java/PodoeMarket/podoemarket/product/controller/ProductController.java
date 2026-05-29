@@ -9,6 +9,7 @@ import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
+import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
@@ -17,6 +18,7 @@ import PodoeMarket.podoemarket.service.ViewCountService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,6 +51,14 @@ public class ProductController {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
+    }
+
+    @GetMapping("/v2")
+    public ResponseEntity<Page<ScriptMainResponseDTO>> allProducts(@AuthenticationPrincipal UserEntity userInfo,
+                                                                   @RequestParam(defaultValue = "0") int page,
+                                                                   @RequestParam(defaultValue = "40") int size,
+                                                                   @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
+        return ResponseEntity.ok(productService.getAllScripts(page, userInfo, size, sortType));
     }
 
     @GetMapping("/long")
