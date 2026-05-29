@@ -8,6 +8,7 @@ import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
 import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
+import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
 import PodoeMarket.podoemarket.service.S3Service;
@@ -17,6 +18,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,29 @@ public class ProductService {
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+
+    public Page<ScriptMainResponseDTO> getAllScripts(int page, UserEntity userInfo, int size, ProductSortType sortType) {
+        List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
+
+        Sort sort = createProductSort(sortType);
+        Page<ProductEntity> products = productRepo.findAllValidProducts(validStatuses, PageRequest.of(page, size, sort));
+
+        return products.map(product -> ScriptMainResponseDTO.builder()
+                .id(product.getId())
+                .title(product.getTitle())
+                .writer(product.getWriter())
+                .imagePath(generateScriptImgURL(product))
+                .script(product.getScript())
+                .scriptPrice(product.getScriptPrice())
+                .performance(product.getPerformance())
+                .performancePrice(product.getPerformancePrice())
+                .date(product.getCreatedAt())
+                .checked(product.getChecked())
+                .like(getProductLikeStatus(userInfo, product.getId()))
+                .likeCount(product.getLikeCount())
+                .viewCount(viewCountService.getProductViewCount(product.getId()))
+                .build());
+    }
 
     public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {

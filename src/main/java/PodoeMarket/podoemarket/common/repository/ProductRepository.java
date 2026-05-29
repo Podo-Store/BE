@@ -32,6 +32,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT p FROM ProductEntity p " +
+            "WHERE p.checked IN :statuses " +
+            "AND p.isDelete = false " +
+            "AND (p.script = true OR p.performance = true)")
+    Page<ProductEntity> findAllValidProducts(
+            @Param("statuses") List<ProductStatus> statuses,
+            Pageable pageable
+    );
 
     Long countAllByChecked(ProductStatus checked);
 
