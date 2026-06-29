@@ -71,6 +71,7 @@ public class MypageService {
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
     private final PdfDownloadLogRepository pdfDownloadLogRepo;
+    private final SettlementAccountRepository settlementAccountRepo;
     private final ViewCountService viewCountService;
     private final TokenProvider tokenProvider;
 
@@ -674,6 +675,28 @@ public class MypageService {
             );
         } catch (Exception e) {
             throw e;
+        }
+    }
+
+    @Transactional
+    public void registerSettlementAccount(UUID userId, SettlementAccountRequestDTO dto) {
+        try {
+            SettlementAccountEntity account = settlementAccountRepo.findByUserId(userId);
+
+            if (account == null) {
+                settlementAccountRepo.save(SettlementAccountEntity.builder()
+                        .userId(userId)
+                        .bankName(dto.getBankName())
+                        .accountNumber(dto.getAccountNumber())
+                        .accountHolderName(dto.getAccountHolderName())
+                        .build());
+            } else {
+                account.setBankName(dto.getBankName());
+                account.setAccountNumber(dto.getAccountNumber());
+                account.setAccountHolderName(dto.getAccountHolderName());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("계좌 정보 등록 실패", e);
         }
     }
 
