@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.*;
@@ -681,6 +682,14 @@ public class MypageService {
     @Transactional
     public void registerSettlementAccount(UUID userId, SettlementAccountRequestDTO dto) {
         try {
+            if (userId == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            UserEntity user = userRepo.findById(userId);
+
+            if (user.getStageType() == StageType.DEFAULT)
+                throw new RuntimeException("작가가 아닌 경우 계좌를 등록할 수 없습니다.");
+
             SettlementAccountEntity account = settlementAccountRepo.findByUserId(userId);
 
             if (account == null) {
@@ -696,7 +705,7 @@ public class MypageService {
                 account.setAccountHolderName(dto.getAccountHolderName());
             }
         } catch (Exception e) {
-            throw new RuntimeException("계좌 정보 등록 실패", e);
+            throw e;
         }
     }
 
