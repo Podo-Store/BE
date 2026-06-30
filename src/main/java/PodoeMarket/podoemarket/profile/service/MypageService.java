@@ -690,6 +690,11 @@ public class MypageService {
             if (user.getStageType() == StageType.DEFAULT)
                 throw new RuntimeException("작가가 아닌 경우 계좌를 등록할 수 없습니다.");
 
+            if ((dto.getBankName() == null || dto.getBankName().isBlank()) ||
+                (dto.getAccountNumber() == null || dto.getAccountNumber().isBlank()) ||
+                (dto.getAccountHolderName() == null || dto.getAccountHolderName().isBlank()))
+                throw new RuntimeException("계좌 정보를 입력해주세요.");
+
             SettlementAccountEntity account = settlementAccountRepo.findByUserId(userId);
 
             if (account == null) {
