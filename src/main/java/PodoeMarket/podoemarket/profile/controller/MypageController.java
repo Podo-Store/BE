@@ -290,4 +290,16 @@ public class MypageController {
             return ResponseEntity.badRequest().body(resDTO);
         }
     }
+
+    @PutMapping("/settlement")
+    public ResponseEntity<?> registerSettlementAccount(@AuthenticationPrincipal UserEntity userInfo, @RequestBody SettlementAccountRequestDTO dto) {
+        try {
+            mypageService.registerSettlementAccount(userInfo.getId(), dto);
+
+            return ResponseEntity.ok().body(true);
+        } catch (Exception e) {
+            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(resDTO);
+        }
+    }
 }
