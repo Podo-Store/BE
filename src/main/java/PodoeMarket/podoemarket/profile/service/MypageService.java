@@ -214,12 +214,17 @@ public class MypageService {
             if(user == null)
                 throw new RuntimeException("로그인이 필요한 서비스입니다.");
 
+            final SettlementAccountEntity account = settlementAccountRepo.findByUserId(user.getId());
+            final String maskedAccountNumber = account != null ? maskAccountNumber(account.getAccountNumber()) : null;
+
             return ProfileInfoResponseDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
                     .email(user.getEmail())
                     .socialLoginType(user.getSocialLoginType())
                     .nickname(user.getNickname())
+                    .stageType(user.getStageType())
+                    .accountNumber(maskedAccountNumber)
                     .build();
         } catch (Exception e) {
             throw e;
@@ -984,6 +989,16 @@ public class MypageService {
         } catch (Exception e) {
             throw new RuntimeException("작품 파일 삭제 실패", e);
         }
+    }
+
+    private String maskAccountNumber(final String accountNumber) {
+        if (accountNumber.length() < 4)
+            return accountNumber;
+
+        String last4 = accountNumber.substring(accountNumber.length() - 4);
+        String masked = "*".repeat(accountNumber.length() - 4);
+
+        return masked + last4;
     }
 
     private String generatedRefundOrderId(final Long orderId) {
