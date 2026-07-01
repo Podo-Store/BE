@@ -6,6 +6,7 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
+import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.profile.dto.request.*;
 import PodoeMarket.podoemarket.profile.dto.response.RequestedPerformanceResponseDTO;
 import PodoeMarket.podoemarket.profile.dto.response.*;
@@ -71,6 +72,7 @@ public class MypageService {
     private final RefundRepository refundRepo;
     private final ProductLikeRepository productLikeRepo;
     private final PdfDownloadLogRepository pdfDownloadLogRepo;
+    private final SettlementAccountRepository settlementAccountRepo;
     private final ViewCountService viewCountService;
     private final TokenProvider tokenProvider;
 
@@ -212,12 +214,17 @@ public class MypageService {
             if(user == null)
                 throw new RuntimeException("로그인이 필요한 서비스입니다.");
 
+            final SettlementAccountEntity account = settlementAccountRepo.findByUserId(user.getId());
+            final String maskedAccountNumber = account != null ? maskAccountNumber(account.getAccountNumber()) : null;
+
             return ProfileInfoResponseDTO.builder()
                     .id(user.getId())
                     .userId(user.getUserId())
                     .email(user.getEmail())
                     .socialLoginType(user.getSocialLoginType())
                     .nickname(user.getNickname())
+                    .stageType(user.getStageType())
+                    .accountNumber(maskedAccountNumber)
                     .build();
         } catch (Exception e) {
             throw e;
@@ -677,6 +684,41 @@ public class MypageService {
         }
     }
 
+    @Transactional
+    public void registerSettlementAccount(UUID userId, SettlementAccountRequestDTO dto) {
+        try {
+            if (userId == null)
+                throw new RuntimeException("로그인이 필요한 서비스입니다.");
+
+            UserEntity user = userRepo.findById(userId);
+
+            if (user.getStageType() == StageType.DEFAULT)
+                throw new RuntimeException("작가가 아닌 경우 계좌를 등록할 수 없습니다.");
+
+            if ((dto.getBankName() == null || dto.getBankName().isBlank()) ||
+                (dto.getAccountNumber() == null || dto.getAccountNumber().isBlank()) ||
+                (dto.getAccountHolderName() == null || dto.getAccountHolderName().isBlank()))
+                throw new RuntimeException("계좌 정보를 입력해주세요.");
+
+            SettlementAccountEntity account = settlementAccountRepo.findByUserId(userId);
+
+            if (account == null) {
+                settlementAccountRepo.save(SettlementAccountEntity.builder()
+                        .userId(userId)
+                        .bankName(dto.getBankName())
+                        .accountNumber(dto.getAccountNumber())
+                        .accountHolderName(dto.getAccountHolderName())
+                        .build());
+            } else {
+                account.setBankName(dto.getBankName());
+                account.setAccountNumber(dto.getAccountNumber());
+                account.setAccountHolderName(dto.getAccountHolderName());
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     // =========== private (protected) method =============
 
     private void isValidPw(String password) {
@@ -947,6 +989,16 @@ public class MypageService {
         } catch (Exception e) {
             throw new RuntimeException("작품 파일 삭제 실패", e);
         }
+    }
+
+    private String maskAccountNumber(final String accountNumber) {
+        if (accountNumber.length() < 4)
+            return accountNumber;
+
+        String last4 = accountNumber.substring(accountNumber.length() - 4);
+        String masked = "*".repeat(accountNumber.length() - 4);
+
+        return masked + last4;
     }
 
     private String generatedRefundOrderId(final Long orderId) {
