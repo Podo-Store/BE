@@ -127,6 +127,11 @@ public class ProductEntity {
     @Column
     private String tempFileTitle; // 재심사를 위한 임시 파일의 제목
 
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Boolean contest = false; // 공모전 여부
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
