@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,6 +38,16 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
             "AND p.isDelete = false " +
             "AND (p.script = true OR p.performance = true)")
     Page<ProductEntity> findAllValidProducts(
+            @Param("statuses") List<ProductStatus> statuses,
+            Pageable pageable
+    );
+
+    @Query("SELECT p FROM ProductEntity p " +
+            "WHERE p.checked IN :statuses " +
+            "AND p.isDelete = false " +
+            "AND p.contest = true " +
+            "AND (p.script = true OR p.performance = true)")
+    Slice<ProductEntity> findAllValidContestProducts(
             @Param("statuses") List<ProductStatus> statuses,
             Pageable pageable
     );
