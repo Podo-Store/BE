@@ -5,9 +5,9 @@ import PodoeMarket.podoemarket.common.entity.type.*;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
+import PodoeMarket.podoemarket.product.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
-import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
@@ -19,6 +19,7 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import org.apache.pdfbox.Loader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +86,7 @@ public class ProductService {
                 .build());
     }
 
-    public List<ScriptListResponseDTO.ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
+    public List<ProductListDTO> getPlayList(int page, UserEntity userInfo, PlayType playType, int pageSize, ProductSortType sortType) {
         try {
             List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
 
@@ -102,6 +103,18 @@ public class ProductService {
         } catch (Exception e) {
             throw new RuntimeException("작품 목록 조회 실패", e);
         }
+    }
+
+    public Slice<ProductListDTO> getContestScripts(int page, UserEntity userInfo, int pageSize, ProductSortType sortType) {
+        List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
+
+        Sort sort = createProductSort(sortType);
+        Slice<ProductEntity> contestPlays = productRepo.findAllValidContestProducts(
+                validStatuses,
+                PageRequest.of(page, pageSize, sort)
+        );
+
+        return contestPlays.map(product -> getListDTO(userInfo, product));
     }
 
     public ProductEntity getProduct(UUID id) {
@@ -641,8 +654,8 @@ public class ProductService {
         }
     }
 
-    private ScriptListResponseDTO.ProductListDTO getListDTO(final UserEntity userInfo, final ProductEntity play) {
-        ScriptListResponseDTO.ProductListDTO productListDTO = new ScriptListResponseDTO.ProductListDTO();
+    private ProductListDTO getListDTO(final UserEntity userInfo, final ProductEntity play) {
+        ProductListDTO productListDTO = new ProductListDTO();
 
         final String scriptImage = generateScriptImgURL(play);
 

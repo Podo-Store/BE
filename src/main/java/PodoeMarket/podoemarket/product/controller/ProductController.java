@@ -5,9 +5,9 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewRequestDTO;
 import PodoeMarket.podoemarket.product.dto.request.ReviewUpdateRequestDTO;
+import PodoeMarket.podoemarket.product.dto.response.ProductListDTO;
 import PodoeMarket.podoemarket.product.dto.response.ReviewResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
-import PodoeMarket.podoemarket.product.dto.response.ScriptListResponseDTO;
 import PodoeMarket.podoemarket.common.entity.type.PlayType;
 import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,21 +39,6 @@ public class ProductController {
     private final S3Service s3Service;
     private final ViewCountService viewCountService;
 
-    @GetMapping
-    public ResponseEntity<?> allProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
-        try{
-            final ScriptListResponseDTO lists = new ScriptListResponseDTO(
-                    productService.getPlayList(0, userInfo, PlayType.LONG, 20, sortType).stream().limit(10).toList(),
-                    productService.getPlayList(0, userInfo, PlayType.SHORT, 20, sortType).stream().limit(10).toList()
-            );
-
-            return ResponseEntity.ok().body(lists);
-        } catch(Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
-    }
-
     @GetMapping("/v2")
     public ResponseEntity<Page<ScriptMainResponseDTO>> allProducts(@AuthenticationPrincipal UserEntity userInfo,
                                                                    @RequestParam(defaultValue = "0") int page,
@@ -64,7 +50,7 @@ public class ProductController {
     @GetMapping("/long")
     public ResponseEntity<?> longProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.LONG, 20, sortType);
+            final List<ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.LONG, 20, sortType);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
@@ -76,13 +62,18 @@ public class ProductController {
     @GetMapping("/short")
     public ResponseEntity<?> shortProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
         try{
-            final List<ScriptListResponseDTO.ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.SHORT, 20, sortType);
+            final List<ProductListDTO> lists = productService.getPlayList(page, userInfo, PlayType.SHORT, 20, sortType);
 
             return ResponseEntity.ok().body(lists);
         } catch(Exception e) {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
+    }
+
+    @GetMapping("/contest")
+    public ResponseEntity<Slice<ProductListDTO>> contestProducts(@AuthenticationPrincipal UserEntity userInfo, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
+        return ResponseEntity.ok(productService.getContestScripts(page, userInfo, 20, sortType));
     }
 
     @GetMapping("/detail")
