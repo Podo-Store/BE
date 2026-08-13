@@ -33,9 +33,9 @@ class ProductRepositoryTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @DisplayName("작품 목록을 playType으로 필터링한다")
     @ParameterizedTest(name = "playType={0}일 때 {1}개 조회된다")
     @CsvSource({"LONG, 3", "SHORT, 2"})
-    @DisplayName("작품 목록을 playType으로 필터링한다")
     void findAllValidProductsByPlayType(PlayType playType, int expectedCount) {
         // given
         ProductEntity product1 = createProduct("희곡1", "작가1", true, true, SHORT, PASS);
@@ -55,28 +55,46 @@ class ProductRepositoryTest {
                 .hasSize(expectedCount);
     }
 
+    @DisplayName("작품 목록은 playType이 null이면 전체 조회한다")
     @Test
-    @DisplayName("findAllValidProducts는 playType이 null이면 전체 조회한다")
     void findAllValidProductsWhenPlayTypeIsNull() {
         // given
+        ProductEntity product1 = createProduct("희곡1", "작가1", true, true, SHORT, PASS);
+        ProductEntity product2 = createProduct("희곡2", "작가2", true, true, LONG, PASS);
+        ProductEntity product3 = createProduct("희곡3", "작가3", true, true, SHORT, RE_PASS);
+        ProductEntity product4 = createProduct("희곡4", "작가4", true, true, LONG, RE_PASS);
+        productRepository.saveAll(List.of(product1, product2, product3, product4));
 
         // when
+        Page<ProductEntity> products = productRepository.findAllValidProducts(List.of(PASS, RE_PASS), null, "", PageRequest.of(0, 20));
 
         // then
+        assertThat(products.getContent())
+                .hasSize(4);
     }
 
-    @Test
-    @DisplayName("findAllValidProducts는 title 또는 writer에 검색어가 포함된 상품만 조회한다")
-    void findAllValidProductsBySearch() {
+    @DisplayName("작품 목록에서 제목 또는 작가명의 검색어가 포함된 상품만 조회한다")
+    @ParameterizedTest(name = "search={0}일 때 {1}개 조회된다")
+    @CsvSource({"희곡, 4", "작가, 3", "단막극, 0", "공모작, 1", "'',5"})
+    void findAllValidProductsBySearch(String search, int expectedCount) {
         // given
+        ProductEntity product1 = createProduct("희곡1", "작가1", true, true, SHORT, PASS);
+        ProductEntity product2 = createProduct("희곡2", "작가2", true, true, LONG, PASS);
+        ProductEntity product3 = createProduct("희곡3", "작가3", true, true, SHORT, RE_PASS);
+        ProductEntity product4 = createProduct("희곡4", "시인1", true, true, LONG, RE_PASS);
+        ProductEntity product5 = createProduct("공모작품", "공모작_김아무개", true, true, LONG, RE_PASS);
+        productRepository.saveAll(List.of(product1, product2, product3, product4, product5));
 
         // when
+        Page<ProductEntity> products = productRepository.findAllValidProducts(List.of(PASS, RE_PASS), null, search, PageRequest.of(0, 20));
 
         // then
+        assertThat(products.getContent())
+                .hasSize(expectedCount);
     }
 
+    @DisplayName("작품 목록은 심사, 삭제, 판매 조건을 만족한다")
     @Test
-    @DisplayName("findAllValidProducts는 checked, isDelete, script/performance 조건을 유지한다")
     void findAllValidProductsWithDefaultConditions() {
         // given
 
@@ -85,9 +103,19 @@ class ProductRepositoryTest {
         // then
     }
 
+    @DisplayName("작품 목록에서 playType과 검색어 조건을 동시에 적용한다")
     @Test
-    @DisplayName("findAllValidProducts는 playType과 검색어 조건을 동시에 적용한다")
     void findAllValidProductsByPlayTypeAndSearch() {
+        // given
+
+        // when
+
+        // then
+    }
+
+    @DisplayName("작품 목록이 정렬 조건에 따라 조회된다")
+    @Test
+    void findAllValidProductsWithSort() {
         // given
 
         // when
