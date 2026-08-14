@@ -63,11 +63,11 @@ public class ProductService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public Page<ScriptMainResponseDTO> getAllScripts(int page, UserEntity userInfo, int size, ProductSortType sortType) {
+    public Page<ScriptMainResponseDTO> getAllScripts(int page, UserEntity userInfo, int size, ProductSortType sortType, PlayType playType, String search) {
         List<ProductStatus> validStatuses = List.of(ProductStatus.PASS, ProductStatus.RE_WAIT, ProductStatus.RE_PASS);
 
         Sort sort = createProductSort(sortType);
-        Page<ProductEntity> products = productRepo.findAllValidProducts(validStatuses, PageRequest.of(page, size, sort));
+        Page<ProductEntity> products = productRepo.findAllValidProducts(validStatuses, playType, search, PageRequest.of(page, size, sort));
 
         return products.map(product -> ScriptMainResponseDTO.builder()
                 .id(product.getId())
