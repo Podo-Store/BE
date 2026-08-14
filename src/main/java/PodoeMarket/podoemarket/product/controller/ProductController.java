@@ -43,8 +43,10 @@ public class ProductController {
     public ResponseEntity<Page<ScriptMainResponseDTO>> allProducts(@AuthenticationPrincipal UserEntity userInfo,
                                                                    @RequestParam(defaultValue = "0") int page,
                                                                    @RequestParam(defaultValue = "40") int size,
-                                                                   @RequestParam(defaultValue = "POPULAR") ProductSortType sortType) {
-        return ResponseEntity.ok(productService.getAllScripts(page, userInfo, size, sortType));
+                                                                   @RequestParam(defaultValue = "POPULAR") ProductSortType sortType,
+                                                                   @RequestParam(required = false) PlayType playType,
+                                                                   @RequestParam(defaultValue = "") String search) {
+        return ResponseEntity.ok(productService.getAllScripts(page, userInfo, size, sortType, playType, search));
     }
 
     @GetMapping("/long")

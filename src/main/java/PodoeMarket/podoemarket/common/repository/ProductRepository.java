@@ -36,15 +36,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query("SELECT p FROM ProductEntity p " +
             "WHERE p.checked IN :statuses " +
             "AND p.isDelete = false " +
-            "AND (p.script = true OR p.performance = true)")
-    Page<ProductEntity> findAllValidProducts(
-            @Param("statuses") List<ProductStatus> statuses,
-            Pageable pageable
-    );
-
-    @Query("SELECT p FROM ProductEntity p " +
-            "WHERE p.checked IN :statuses " +
-            "AND p.isDelete = false " +
             "AND (p.script = true OR p.performance = true) " +
             "AND (:playType IS NULL OR p.playType = :playType) " +
             "AND (:search = '' OR p.title LIKE CONCAT('%', :search, '%') OR p.writer LIKE CONCAT('%', :search, '%'))")
