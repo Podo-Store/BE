@@ -1,5 +1,6 @@
 package PodoeMarket.podoemarket.service;
 
+import PodoeMarket.podoemarket.common.entity.type.StandardType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -28,17 +30,6 @@ public class MailSendService {
         if(verificationService.getData(authNum) == null)
             return false;
         else return verificationService.getData(authNum).equals(email);
-    }
-
-    // 임의의 6자리 양수를 반환
-    public void makeRandomNumber() {
-        Random r = new Random();
-        String randomNumber = "";
-
-        for(int i = 0; i < 6; i++)
-            randomNumber += Integer.toString(r.nextInt(9) + 1);
-
-        authNumber = Integer.parseInt(randomNumber);
     }
 
     // 인증번호
@@ -561,6 +552,98 @@ public class MailSendService {
         mailSend(setFrom, email, title, content);
     }
 
+    // 작품 리뷰 작성 시, 댓글 알림
+    @Async
+    public void joinCommentAlertEmail(final String email,
+                                      final UUID productId,
+                                      final String scriptTitle,
+                                      final String commenterNickname,
+                                      final Integer rating,
+                                      final StandardType standardType,
+                                      final String content) {
+        String setFrom = username;
+        String title = "[포도상점] '" + scriptTitle + "'에 새 댓글이 달렸어요";
+
+        String safeNickname = escapeHtml(commenterNickname);
+        String safeContent = escapeHtml(content).replace("\n", "<br />");
+
+        String contentHtml =
+                "<table align=\"center\" width=\"600px\" height=\"490px\"" +
+                        "<tr>" +
+                        "<td align=\"center\" style=\"background-color: #f5f0ff\">" +
+                        "<!-- 로고 영역 -->" +
+                        "<div style=\"margin-top: 40px; margin-bottom: 44.45px\">" +
+                        "<img src=\"https://api.podo-store.com/mailLogo.png\" " +
+                        "alt=\"포도상점 로고\" " +
+                        "style=\"width: 118.93px; height: 32.05px; display: block\"/>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #ffffff; height: 247px\">" +
+                        "<!-- 본문 내용 -->" +
+                        "<p style=\"font-size: 12.5px; margin-bottom: 20px; margin-left: 35.5px; margin-top: 38px; color: black\">" +
+                        "새로운 댓글이 작성되었습니다." +
+                        "</p>" +
+                        "<p style=\"font-size: 15px; font-weight: 900; margin-left: 35.5px; margin-top: 0; margin-bottom: 18px; color: black\">" +
+                        scriptTitle +
+                        "</p>" +
+                        "<table role=\"presentation\" style=\"margin-left: 35.5px; margin-right: 35.5px; width: 511px; border: 1px solid #ece3fa; border-radius: 8px;\">" +
+                        "<tr>" +
+                        "<td style=\"padding: 16px 18px\">" +
+                        "<p style=\"font-size: 12.5px; font-weight: 700; color: black; margin: 0 0 8px\">" +
+                        safeNickname +
+                        "</p>" +
+                        "<p style=\"font-size: 13px; margin: 0 0 10px\">" +
+                        "<span style=\"color: #c9982f; letter-spacing: 2px\">" + starsHtml(rating) + "</span>" +
+                        "<span style=\"color: #777; font-size: 11.5px; margin-left: 4px\">" + rating + "/5</span>" +
+                        "&nbsp;&nbsp;" +
+                        "<span style=\"display: inline-block; font-size: 11px; font-weight: 700; color: #6a39c0; background: #f0e9fb; padding: 3px 9px; border-radius: 999px\">" +
+                        standardTypeLabel(standardType) +
+                        "</span>" +
+                        "</p>" +
+                        "<p style=\"font-size: 12.5px; color: black; line-height: 20px; margin: 0\">" +
+                        safeContent +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>" +
+                        "<table role=\"presentation\" style=\"width: 150px; height: 35px; background: #6a39c0; border-radius: 4.5px; margin-top: 22px; margin-left: 35.5px; text-align: center;\">" +
+                        "<tr>" +
+                        "<td style=\"font-size: 12.5px; font-weight: 400; padding: 3px 0; border-radius: 4.5px;\">" +
+                        "<a href=\"https://www.podo-store.com/detail?script=" + productId + "\" style=\"display: block; text-decoration: none; color: #ffffff\">" +
+                        "댓글 확인하기" +
+                        "</a>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>" +
+                        "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-top: 22px; margin-bottom: 36.5px; line-height: 14px\">" +
+                        "포도상점은 언제나 작가님의 이야기를 응원합니다.<br />" +
+                        "We're always cheering for your stories to shine." +
+                        "</p>" +
+                        "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td align=\"left\" style=\"background-color: #f5f0ff; height: 121.5px\">" +
+                        "<!-- 연락처 정보 -->" +
+                        "<div style=\"font-size: 10px; color: black\">" +
+                        "<p style=\"color: black; margin-left: 14px; line-height: 16px\">Contact" +
+                        "<br />" +
+                        "Email: podostore1111@gmail.com" +
+                        "<br />" +
+                        "Instagram: <a href=\"https://www.instagram.com/podosangjeom/\" style=\"text-decoration:none;\">@podosangjeom</a>" +
+                        "<br />" +
+                        "Web: www.podo-store.com" +
+                        "</p>" +
+                        "<p style=\"margin-top: 10px; margin-left: 14px; line-height: 16px\">Podo Store © All Rights Reserved</p>" +
+                        "</div>" +
+                        "</td>" +
+                        "</tr>" +
+                        "</table>";
+
+        mailSend(setFrom, email, title, contentHtml);
+    }
+
     // 이메일 전송
     public void mailSend(final String setFrom, final String toMail, final String title, final String content) {
         MimeMessage message = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
@@ -579,5 +662,45 @@ public class MailSendService {
             throw new RuntimeException(e);
         }
         verificationService.setDataExpire(Integer.toString(authNumber),toMail,60*5L);
+    }
+
+    // ============== private method ===============
+
+    private void makeRandomNumber() {
+        Random r = new Random();
+        StringBuilder randomNumber = new StringBuilder();
+
+        for(int i = 0; i < 6; i++)
+            randomNumber.append(r.nextInt(9) + 1);
+
+        authNumber = Integer.parseInt(randomNumber.toString());
+    }
+
+    private String starsHtml(final int rating) {
+        int filled = Math.max(0, Math.min(5, rating));
+
+        return "★".repeat(filled) + "☆".repeat(5 - filled);
+    }
+
+    private String standardTypeLabel(final StandardType standardType) {
+        if (standardType == null)
+            return "";
+
+        return switch (standardType) {
+            case CHARACTER -> "캐릭터";
+            case RELATION -> "관계성";
+            case STORY -> "스토리";
+        };
+    }
+
+    private String escapeHtml(final String text) {
+        if (text == null)
+            return "";
+
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }
