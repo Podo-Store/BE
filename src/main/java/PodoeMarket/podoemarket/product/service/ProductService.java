@@ -11,6 +11,7 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptDetailResponseDTO;
 import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
+import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -57,6 +58,7 @@ public class ProductService {
     private final ReviewLikeRepository reviewLikeRepo;
 
     private final ViewCountService viewCountService;
+    private final MailSendService mailSendService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
 
@@ -330,6 +332,16 @@ public class ProductService {
                     .build();
 
             reviewRepo.save(review);
+
+            mailSendService.joinCommentAlertEmail(
+                    product.getUser().getEmail(),
+                    product.getId(),
+                    product.getTitle(),
+                    userInfo.getNickname(),
+                    review.getRating(),
+                    review.getStandardType(),
+                    review.getContent()
+            );
         } catch (Exception e) {
             throw e;
         }

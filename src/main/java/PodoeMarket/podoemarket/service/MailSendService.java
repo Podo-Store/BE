@@ -563,10 +563,8 @@ public class MailSendService {
                                       final String content) {
         String setFrom = username;
         String title = "[포도상점] '" + scriptTitle + "'에 새 댓글이 달렸어요";
-
         String safeNickname = escapeHtml(commenterNickname);
         String safeContent = escapeHtml(content).replace("\n", "<br />");
-
         String contentHtml =
                 "<table align=\"center\" width=\"600px\" height=\"490px\"" +
                         "<tr>" +
