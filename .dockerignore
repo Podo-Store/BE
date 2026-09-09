@@ -1,0 +1,24 @@
+# VCS / CI / IDE
+.git
+.gitignore
+.github
+.idea
+*.iml
+
+# Gradle 산출물 / 캐시 (이미지 안에서 새로 빌드함)
+.gradle
+build/
+bin/
+
+# 환경변수 / 시크릿
+.env
+.env.*
+*.env
+
+# 구 AWS 배포 자산 (Cloud Run 이미지에 불필요)
+legacy/
+scripts/
+
+# 기타
+HELP.md
+*.log

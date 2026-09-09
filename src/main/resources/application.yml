@@ -1,0 +1,153 @@
+# =============================================================================
+# 로컬 개발 전용 설정 (default 프로필)
+# -----------------------------------------------------------------------------
+# 이 파일은 git 에 커밋된다. 실제 운영/외부 서비스 시크릿을 절대 넣지 말 것.
+# 로컬 MySQL 계정(root/1234)처럼 로컬에서만 쓰는 값은 허용.
+# 운영(Cloud Run) 값은 application-docker.yml + 환경변수로 주입한다.
+# =============================================================================
+
+# MySQL (로컬 개발 DB)
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/pododb?characterEncoding=UTF-8
+    username: root
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.cache.use_second_level_cache: false
+    open-in-view: false
+
+  thymeleaf:
+    check-template-location: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    # 로컬 더미값 - 실제 메일 발송이 필요하면 개인 계정을 로컬에서만 채워서 사용
+    username: local-dev
+    password: local-dummy-app-password
+    properties:
+      transport:
+        protocol: smtp
+      smtp:
+        auth: true
+        socketFactory:
+          class: javax.net.ssl.SSLSocketFactory
+        starttls:
+          enable: true
+      #        connectiontimeout: 5000
+      #        timeout: 5000
+      #        writetimeout: 5000
+      debug: true
+      trust: smtp.naver.com
+      protocols: TLSv1.2
+    #    auth-code-expiration-millis: 1800000  # 30 * 60 * 1000 == 30분
+
+  # Redis (로컬 개발)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 300ms
+
+  servlet:
+    multipart:
+      enabled: true
+      resolve-lazily: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
+
+# JWT (로컬 더미 시크릿 - 운영 값은 환경변수 JWT_SECRET_KEY 로 주입)
+jwt:
+  issuer: admin@spring.security.com
+  secret_key: local-dev-secret-not-for-production-0000000000
+
+# AWS (로컬 더미값 - 운영 값은 환경변수로 주입)
+cloud:
+  aws:
+    s3:
+      bucket: devpodostore
+      folder:
+        folderName1: script/
+        folderName2: scriptImage/
+        folderName3: description/
+        folderName4: delete/
+        folderName5: poster/
+      url: https://devpodostore.s3.ap-northeast-2.amazonaws.com/
+    credentials:
+      access-key: local-dummy-access-key
+      secret-key: local-dummy-secret-key
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+server:
+  servlet:
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
+  ssl:
+    enabled: false
+  forward-headers-strategy: native
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: -1
+
+#logging:
+#  level:
+#    root: warn
+
+logo:
+  path: src/main/resources/logo.png
+
+# 소셜 로그인 (client-id / client-secret 은 로컬 더미값 - 운영 값은 환경변수로 주입)
+sns:
+  google:
+    url: https://accounts.google.com/o/oauth2/v2/auth
+    client-id: dummy-google-client-id
+    client-secret: dummy-google-client-secret
+    callback-url: http://localhost:8080/auth/google/callback
+    token-url: https://oauth2.googleapis.com/token
+    user-url: https://openidconnect.googleapis.com/v1/userinfo
+
+  kakao:
+    url: https://kauth.kakao.com/oauth/authorize
+    client-id: dummy-kakao-client-id
+    client-secret: dummy-kakao-client-secret
+    callback-url: http://localhost:8080/auth/kakao/callback
+    token-url: https://kauth.kakao.com/oauth/token
+    user-url: https://kapi.kakao.com/v2/user/me
+
+  naver:
+    url: https://nid.naver.com/oauth2.0/authorize
+    client-id: dummy-naver-client-id
+    client-secret: dummy-naver-client-secret
+    callback-url: http://localhost:8080/auth/naver/callback
+    token-url: https://nid.naver.com/oauth2.0/token
+    user-url: https://openapi.naver.com/v1/nid/me
+
+# 결제 (로컬 더미값 - 운영 값은 환경변수로 주입)
+nicepay:
+  client-key: dummy-nicepay-client-key
+  secret-key: dummy-nicepay-secret-key
+
+management:
+  endpoints:
+    web:
+      base-path: /internal
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

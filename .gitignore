@@ -40,10 +40,18 @@ out/
 *.yml
 *.properties
 src/main/resources/application.properties
-src/main/resources/application.yml
 
 # .github/ISSUE_TEMPLATE 디렉터리 안의 YAML 파일 제외
 !**/.github/ISSUE_TEMPLATE/*.yml
 
 # docker-compose.yml 제외
 !**/docker/*.yml
+
+# 로컬 개발용 설정 (더미값만 포함, 시크릿 없음) - Cloud Build 소스에 포함되어야 함
+!src/main/resources/application.yml
+
+# Cloud Run docker 프로필 설정 (환경변수 플레이스홀더만 포함, 시크릿 없음)
+!src/main/resources/application-docker.yml
+
+# legacy 폴더의 구 배포 파일은 추적 유지
+!legacy/*.yml

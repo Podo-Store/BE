@@ -1,0 +1,67 @@
+# =============================================================================
+# Cloud Run 전용 오버라이드 (spring.profiles.active=docker)
+# -----------------------------------------------------------------------------
+# 민감정보 / 환경별 값은 이미지에 굽지 않고 런타임 환경변수로 주입한다.
+#   ${VAR}          -> 필수. 미설정 시 기동 실패(fail-fast)
+#   ${VAR:default}  -> 선택. 미설정 시 default 사용
+# DB   : Cloud SQL(서울)   -> SPRING_DATASOURCE_*
+# Redis: Memorystore(서울) -> SPRING_DATA_REDIS_*
+# =============================================================================
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      # 운영 스키마는 읽기만(검증). 변경이 필요할 때만 환경변수로 오버라이드
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      timeout: 300ms
+
+  mail:
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+# JWT
+jwt:
+  issuer: ${JWT_ISSUER:admin@spring.security.com}
+  secret_key: ${JWT_SECRET_KEY}
+
+# AWS S3
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+      url: ${AWS_S3_URL}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ${AWS_REGION:ap-northeast-2}
+
+# 소셜 로그인
+sns:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    callback-url: ${GOOGLE_CALLBACK_URL:https://api.podo-store.com/auth/google/callback}
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    callback-url: ${KAKAO_CALLBACK_URL:https://api.podo-store.com/auth/kakao/callback}
+  naver:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    callback-url: ${NAVER_CALLBACK_URL:https://api.podo-store.com/auth/naver/callback}
+
+# 결제
+nicepay:
+  client-key: ${NICEPAY_CLIENT_KEY}
+  secret-key: ${NICEPAY_SECRET_KEY}
