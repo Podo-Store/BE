@@ -42,7 +42,8 @@ public class RedisConfig {
                 .build();
 
         LettuceConnectionFactory factory = new LettuceConnectionFactory(serverConfig, clientConfig);
-        factory.setValidateConnection(true);
+        factory.setValidateConnection(false);
+
         return factory;
     }
 
@@ -50,6 +51,7 @@ public class RedisConfig {
     public RedisTemplate<String, String> redisTemplate() {
         StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
         stringRedisTemplate.setConnectionFactory(redisConnectionFactory());
+
         return stringRedisTemplate;
     }
 
