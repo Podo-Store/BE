@@ -23,7 +23,7 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST}
       port: ${SPRING_DATA_REDIS_PORT:6379}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
-      timeout: 300ms
+      timeout: 3s
       connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT:3s}
 
   mail:
