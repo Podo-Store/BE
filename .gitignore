@@ -1,7 +1,6 @@
 HELP.md
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -38,7 +37,9 @@ out/
 
 ## 환경변수 설정
 *.yml
+*.yaml
 *.properties
+!gradle/wrapper/gradle-wrapper.properties
 src/main/resources/application.properties
 
 # .github/ISSUE_TEMPLATE 디렉터리 안의 YAML 파일 제외
