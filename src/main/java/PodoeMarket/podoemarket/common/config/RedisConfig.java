@@ -22,21 +22,23 @@ public class RedisConfig {
     private int redisPort;
     @Value("${spring.data.redis.timeout:300ms}")
     private Duration commandTimeout;
+    @Value("${spring.data.redis.connect-timeout:3s}")
+    private Duration connectTimeout;
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
 
-        // 연결 단계 블로킹도 command timeout과 동일하게 제한
+        // 연결 초기화(TCP handshake)는 VPC 커넥터 경유 시 지연될 수 있어 넉넉하게 허용
         ClientOptions clientOptions = ClientOptions.builder()
                 .socketOptions(SocketOptions.builder()
-                        .connectTimeout(commandTimeout)
+                        .connectTimeout(connectTimeout) // 기본값 10s -> 3s (연결 수립 전용)
                         .build())
                 .build();
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 .clientOptions(clientOptions)
-                .commandTimeout(commandTimeout) // 기본값 60s -> 명시적으로 300ms
+                .commandTimeout(commandTimeout) // 기본값 60s -> 300ms (연결 후 개별 명령, fail-open 목적)
                 .build();
 
         LettuceConnectionFactory factory = new LettuceConnectionFactory(serverConfig, clientConfig);
