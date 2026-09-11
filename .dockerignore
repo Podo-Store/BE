@@ -6,7 +6,7 @@
 *.iml
 
 # Gradle 산출물 / 캐시 (이미지 안에서 새로 빌드함)
-.gradle
+/.gradle
 build/
 bin/
 
