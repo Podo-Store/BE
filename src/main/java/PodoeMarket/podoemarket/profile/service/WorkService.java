@@ -144,10 +144,7 @@ public class WorkService {
             scriptDetailDTO.setAny(script.getAny());
             scriptDetailDTO.setMale(script.getMale());
             scriptDetailDTO.setFemale(script.getFemale());
-            scriptDetailDTO.setStageComment(script.getStageComment());
             scriptDetailDTO.setRunningTime(script.getRunningTime());
-            scriptDetailDTO.setScene(script.getScene());
-            scriptDetailDTO.setAct(script.getAct());
 
             return scriptDetailDTO;
         } catch (Exception e) {
@@ -170,14 +167,8 @@ public class WorkService {
             if(dto.getAny() < 0 || dto.getMale() < 0 || dto.getFemale() < 0)
                 throw new RuntimeException("등장인물이 0명 이상이어야 함");
 
-            if(dto.getStageComment() == null)
-                throw new RuntimeException("무대 설명이 작성되어야 함");
-
             if(dto.getRunningTime() <= 0)
                 throw new RuntimeException("공연 시간이 0분 이상이어야 함");
-
-            if(dto.getScene() < 0 || dto.getAct() < 0)
-                throw new RuntimeException("장과 막이 작성되어야 함");
 
             if(!isValidIntention(dto.getIntention()))
                 throw new RuntimeException("작가 의도 300자 초과");
@@ -234,10 +225,7 @@ public class WorkService {
             product.setAny(dto.getAny());
             product.setMale(dto.getMale());
             product.setFemale(dto.getFemale());
-            product.setStageComment(dto.getStageComment());
             product.setRunningTime(dto.getRunningTime());
-            product.setScene(dto.getScene());
-            product.setAct(dto.getAct());
 
             productRepo.save(product);
         } catch (Exception e) {

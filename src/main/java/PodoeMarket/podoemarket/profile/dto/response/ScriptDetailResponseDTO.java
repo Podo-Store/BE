@@ -40,8 +40,5 @@ public class ScriptDetailResponseDTO {
     private Integer any;
     private Integer male;
     private Integer female;
-    private String stageComment;
     private Integer runningTime;
-    private Integer scene; // 장
-    private Integer act; // 막
 }
