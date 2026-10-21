@@ -95,23 +95,10 @@ public class ProductEntity {
     @ColumnDefault("0")
     private Integer female = 0;
 
-    @Column
-    private String stageComment;
-
     @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer runningTime = 0;
-
-    @Builder.Default
-    @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer scene = 0; // 장
-
-    @Builder.Default
-    @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer act = 0; // 막
 
     @Builder.Default
     @Column(nullable = false)
