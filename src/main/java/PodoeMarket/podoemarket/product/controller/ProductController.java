@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -166,7 +167,19 @@ public class ProductController {
     }
 
     @GetMapping("/view")
-    public ResponseEntity<StreamingResponseBody> scriptView(@RequestParam("script") UUID productId) {
+    public ResponseEntity<StreamingResponseBody> scriptView(@AuthenticationPrincipal UserEntity userInfo,
+                                                            @RequestParam("script") UUID productId) {
+        if(userInfo == null) {
+            StreamingResponseBody errorBody = outputStream -> {
+                outputStream.write("{\"error\": \"로그인이 필요합니다.\"}".getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            };
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(errorBody);
+        }
+
         try{
             StreamingResponseBody script = productService.viewScript(productId);
 
