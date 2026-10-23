@@ -13,6 +13,7 @@ import PodoeMarket.podoemarket.product.dto.response.ScriptMainResponseDTO;
 import PodoeMarket.podoemarket.product.service.ProductService;
 import PodoeMarket.podoemarket.product.type.ProductSortType;
 import PodoeMarket.podoemarket.product.type.ReviewSortType;
+import PodoeMarket.podoemarket.service.LogSaveService;
 import PodoeMarket.podoemarket.service.S3Service;
 import PodoeMarket.podoemarket.service.ViewCountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +42,7 @@ public class ProductController {
     private final ProductService productService;
     private final S3Service s3Service;
     private final ViewCountService viewCountService;
+    private final LogSaveService logSaveService;
 
     @GetMapping("/v2")
     public ResponseEntity<Page<ScriptMainResponseDTO>> allProducts(@AuthenticationPrincipal UserEntity userInfo,
@@ -166,8 +171,22 @@ public class ProductController {
     }
 
     @GetMapping("/view")
-    public ResponseEntity<StreamingResponseBody> scriptView(@RequestParam("script") UUID productId) {
+    public ResponseEntity<StreamingResponseBody> scriptView(@AuthenticationPrincipal UserEntity userInfo,
+                                                            @RequestParam("script") UUID productId) {
+        if(userInfo == null) {
+            StreamingResponseBody errorBody = outputStream -> {
+                outputStream.write("{\"error\": \"로그인이 필요합니다.\"}".getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            };
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(errorBody);
+        }
+
         try{
+            logSaveService.saveScriptViewLog(productId, userInfo.getId(), LocalDateTime.now(ZoneId.of("Asia/Seoul"))); // 열람 로그
+
             StreamingResponseBody script = productService.viewScript(productId);
 
             return ResponseEntity.ok()

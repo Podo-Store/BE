@@ -2,6 +2,7 @@ package PodoeMarket.podoemarket.common.security;
 
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
+import PodoeMarket.podoemarket.service.AccessLogService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
+    private final AccessLogService accessLogService;
 
     // token을 사용하여 사용자 인증 및 등록
     @Override
@@ -84,6 +86,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContext securityContext = SecurityContextHolder.createEmptyContext(); /// 빈 SecurityContext 생성
                     securityContext.setAuthentication(authentication); // context에 인증 정보 설정
                     SecurityContextHolder.setContext(securityContext); // SecurityContextHolder 저장
+
+                    accessLogService.recordAccess(user.getId()); // 접속 로그 (30분 단위)
                 }
             } else {
 //                log.warn("Token is null");
