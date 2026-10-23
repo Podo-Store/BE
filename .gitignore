@@ -56,3 +56,6 @@ src/main/resources/application.properties
 
 # legacy 폴더의 구 배포 파일은 추적 유지
 !legacy/*.yml
+
+# 로컬 전용 배포 스크립트 (계정/프로젝트 정보 포함, git에 올리지 않음)
+/deploy.sh
