@@ -5,6 +5,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.service.AccessLogService;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.service.VerificationService;
 import PodoeMarket.podoemarket.user.dto.request.*;
@@ -36,6 +37,7 @@ public class UserService {
     private final VerificationService verificationService;
     private final TokenProvider tokenProvider;
     private final JwtProperties jwtProperties;
+    private final AccessLogService accessLogService;
 
     public Boolean validateUserId(UserIdCheckRequestDTO dto) {
         try {
@@ -123,6 +125,8 @@ public class UserService {
             final UserEntity user = userRepo.findByUserId(userId);
 
             if(user != null && pwdEncoder.matches(password, user.getPassword())) {
+                accessLogService.recordLogin(user.getId()); // 접속 로그
+
                 return TokenCreateResponseDTO.builder()
                         .nickname(user.getNickname())
                         .auth(user.isAuth())

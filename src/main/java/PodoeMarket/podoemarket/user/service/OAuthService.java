@@ -4,6 +4,7 @@ import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.SocialLoginType;
 import PodoeMarket.podoemarket.common.repository.UserRepository;
 import PodoeMarket.podoemarket.common.security.TokenProvider;
+import PodoeMarket.podoemarket.service.AccessLogService;
 import PodoeMarket.podoemarket.service.MailSendService;
 import PodoeMarket.podoemarket.user.dto.OAuthUserDTO;
 import PodoeMarket.podoemarket.user.dto.request.SocialSignUpRequestDTO;
@@ -34,6 +35,7 @@ public class OAuthService {
     private final UserRepository userRepo;
     private final TempAuthService tempAuthService;
     private final MailSendService mailService;
+    private final AccessLogService accessLogService;
 
     // 소셜 로그인 요청 URL을 반환하는 메서드
     public String request(SocialLoginType socialLoginType) {
@@ -76,6 +78,8 @@ public class OAuthService {
         try {
             if(signInUser == null)
                 throw new RuntimeException("사용자를 찾을 수 없습니다.");
+
+            accessLogService.recordLogin(signInUser.getId()); // 접속 로그
 
             return TokenCreateResponseDTO.builder()
                     .nickname(signInUser.getNickname())
