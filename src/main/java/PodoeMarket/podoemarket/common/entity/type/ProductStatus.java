@@ -5,6 +5,5 @@ public enum ProductStatus {
     PASS,
     REJECT,
     RE_WAIT,
-    RE_PASS,
-    RE_REJECT
+    RE_PASS
 }
