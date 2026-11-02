@@ -289,6 +289,9 @@ public class WorkService {
         if(product.getChecked() == ProductStatus.RE_WAIT)
             throw new RuntimeException("재심사 결과 대기 중에는 재신청이 불가합니다.");
 
+        if(product.getChecked() != ProductStatus.PASS && product.getChecked() != ProductStatus.RE_PASS)
+            throw new RuntimeException("심사 승인된 작품만 재심사를 신청할 수 있습니다.");
+
         // 파일 처리 필요
         String tempFilePath = uploadScript(file, user.getNickname());
         String normalizedTitle = Normalizer.normalize(FilenameUtils.getBaseName(file.getOriginalFilename()), Normalizer.Form.NFKC);
