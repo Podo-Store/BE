@@ -522,11 +522,12 @@ public class MailSendService {
                         "</p>" +
                         "<p style=\"font-size: 12.5px; margin-bottom: 12.5px; margin-left: 35.5px; color: black\">" +
                         "제출하신 변경 파일이 검토 기준에 부합하지 않아 반려되었습니다.<br />" +
-                        "수정 후 다시 신청해 주시면 신속히 재검토하겠습니다.<br />" +
+                        "작품 정보와 파일은 변경 신청 이전 상태로 유지되며, 별도로 조치하실 필요는 없습니다.<br />" +
+                        "변경을 원하시면 내용을 수정하여 다시 신청해 주세요.<br />" +
                         "추가 문의가 있을 경우 이메일로 문의 부탁드립니다." +
                         "</p>" +
                         "<p style=\"font-size: 9px; color: #777; margin-left: 35.5px; margin-bottom: 36.5px; line-height: 14px\">" +
-                        "포도상점은 언제나 작가님의 이야기를 응원합니다..<br />" +
+                        "포도상점은 언제나 작가님의 이야기를 응원합니다.<br />" +
                         "We're always cheering for your stories to shine." +
                         "</p>" +
                         "</td>" +

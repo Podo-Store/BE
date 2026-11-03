@@ -4,6 +4,8 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
+import PodoeMarket.podoemarket.common.exception.CustomException;
+import PodoeMarket.podoemarket.common.exception.ErrorCode;
 import PodoeMarket.podoemarket.common.repository.ProductRepository;
 import PodoeMarket.podoemarket.profile.dto.request.DetailUpdateRequestDTO;
 import PodoeMarket.podoemarket.profile.dto.response.ScriptDetailResponseDTO;
@@ -281,13 +283,16 @@ public class WorkService {
         final ProductEntity product = productRepo.findById(productId);
 
         if(product == null)
-            throw new RuntimeException("작품을 찾을 수 없습니다.");
+            throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
 
         if(!product.getUser().getId().equals(user.getId()))
-            throw new RuntimeException("작가가 아닙니다.");
+            throw new CustomException(ErrorCode.NOT_PRODUCT_OWNER);
 
         if(product.getChecked() == ProductStatus.RE_WAIT)
-            throw new RuntimeException("재심사 결과 대기 중에는 재신청이 불가합니다.");
+            throw new CustomException(ErrorCode.REVIEW_ALREADY_REQUESTED);
+
+        if(product.getChecked() != ProductStatus.PASS && product.getChecked() != ProductStatus.RE_PASS)
+            throw new CustomException(ErrorCode.REVIEW_NOT_ALLOWED);
 
         // 파일 처리 필요
         String tempFilePath = uploadScript(file, user.getNickname());
@@ -426,14 +431,14 @@ public class WorkService {
 
     protected String uploadScript(MultipartFile file, String writer) throws IOException {
         if(file.isEmpty())
-            throw new RuntimeException("선택된 파일이 없음");
+            throw new CustomException(ErrorCode.FILE_NOT_SELECTED);
 
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.toLowerCase().endsWith(".pdf"))
-            throw new RuntimeException("PDF 파일만 업로드 가능합니다.");
+            throw new CustomException(ErrorCode.INVALID_SCRIPT_TYPE);
 
         if (file.getSize() > 50 * 1024 * 1024)
-            throw new RuntimeException("파일은 50MB 이하만 업로드 가능합니다.");
+            throw new CustomException(ErrorCode.FILE_SIZE_EXCEEDED);
 
         // 파일 이름 가공
         final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMddHHmmss");
