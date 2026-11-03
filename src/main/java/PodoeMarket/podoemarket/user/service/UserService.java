@@ -125,7 +125,7 @@ public class UserService {
             final UserEntity user = userRepo.findByUserId(userId);
 
             if(user != null && pwdEncoder.matches(password, user.getPassword())) {
-                accessLogService.recordLogin(user.getId()); // 접속 로그
+                accessLogService.recordLogin(user); // 접속 로그
 
                 return TokenCreateResponseDTO.builder()
                         .nickname(user.getNickname())

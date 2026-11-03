@@ -79,7 +79,7 @@ public class OAuthService {
             if(signInUser == null)
                 throw new RuntimeException("사용자를 찾을 수 없습니다.");
 
-            accessLogService.recordLogin(signInUser.getId()); // 접속 로그
+            accessLogService.recordLogin(signInUser); // 접속 로그
 
             return TokenCreateResponseDTO.builder()
                     .nickname(signInUser.getNickname())
