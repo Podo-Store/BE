@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     securityContext.setAuthentication(authentication); // context에 인증 정보 설정
                     SecurityContextHolder.setContext(securityContext); // SecurityContextHolder 저장
 
-                    accessLogService.recordAccess(user.getId()); // 접속 로그 (30분 단위)
+                    accessLogService.recordAccess(user); // 접속 로그 (30분 단위)
                 }
             } else {
 //                log.warn("Token is null");

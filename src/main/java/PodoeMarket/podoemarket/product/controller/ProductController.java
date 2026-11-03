@@ -185,7 +185,8 @@ public class ProductController {
         }
 
         try{
-            logSaveService.saveScriptViewLog(productId, userInfo.getId(), LocalDateTime.now(ZoneId.of("Asia/Seoul"))); // 열람 로그
+            if(!userInfo.isAuth())
+                logSaveService.saveScriptViewLog(productId, userInfo.getId(), LocalDateTime.now(ZoneId.of("Asia/Seoul"))); // 열람 로그 (어드민 제외)
 
             StreamingResponseBody script = productService.viewScript(productId);
 
