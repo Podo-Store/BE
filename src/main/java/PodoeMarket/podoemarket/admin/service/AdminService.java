@@ -164,8 +164,13 @@ public class AdminService {
                         deleteFile(bucket, product.getImagePath()); // 작품 이미지 파일
 
                     productRepo.delete(product);
-                } else if(product.getChecked() == ProductStatus.RE_WAIT) {
-                    product.setChecked(ProductStatus.RE_REJECT);
+                } else if(product.getChecked() == ProductStatus.RE_WAIT) { // 재심사 거절 시 신청 이전 상태로 원복
+                    if (product.getTempFilePath() != null)
+                        deleteFile(bucket, product.getTempFilePath()); // 재심사용 임시 파일
+
+                    product.setChecked(ProductStatus.PASS);
+                    product.setTempFilePath(null);
+                    product.setTempFileTitle(null);
                     productRepo.save(product);
 
                     mailSendService.joinReviewRejectEmail(product.getUser().getEmail(), product.getTitle());

@@ -49,7 +49,7 @@ public class AdminController {
             else if(status == ProductStatus.WAIT)
                 statuses = List.of(ProductStatus.WAIT, ProductStatus.RE_WAIT);
             else if(status == ProductStatus.REJECT)
-                statuses = List.of(ProductStatus.REJECT,  ProductStatus.RE_REJECT);
+                statuses = List.of(ProductStatus.REJECT);
             else if(status == null)
                 statuses = null;
 
