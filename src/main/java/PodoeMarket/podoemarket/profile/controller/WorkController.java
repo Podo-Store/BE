@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -87,14 +88,11 @@ public class WorkController {
     }
 
     @PostMapping(path = "/changeScript", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo, @RequestParam("id") UUID id, @RequestParam("script") MultipartFile file) {
-        try {
-            workService.changeScript(id, userInfo, file);
+    public ResponseEntity<?> changeScript(@AuthenticationPrincipal UserEntity userInfo,
+                                          @RequestParam("id") UUID id,
+                                          @RequestParam("script") MultipartFile file) throws IOException {
+        workService.changeScript(id, userInfo, file);
 
-            return ResponseEntity.ok().body(true);
-        } catch (Exception e) {
-            ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(resDTO);
-        }
+        return ResponseEntity.ok().body(true);
     }
 }
