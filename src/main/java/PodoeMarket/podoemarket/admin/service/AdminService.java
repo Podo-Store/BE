@@ -1,9 +1,12 @@
 package PodoeMarket.podoemarket.admin.service;
 
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
+import PodoeMarket.podoemarket.admin.dto.response.AccessLogResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.StatisticsResponseDTO;
+import PodoeMarket.podoemarket.admin.dto.response.ViewLogResponseDTO;
+import PodoeMarket.podoemarket.admin.type.LogSearchType;
 import PodoeMarket.podoemarket.common.entity.OrderItemEntity;
 import PodoeMarket.podoemarket.common.entity.OrdersEntity;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
@@ -33,6 +36,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,6 +54,8 @@ public class AdminService {
     private final OrderItemRepository orderItemRepo;
     private final UserRepository userRepo;
     private final ReviewRepository reviewRepo;
+    private final ScriptViewLogRepository scriptViewLogRepo;
+    private final UserAccessLogRepository userAccessLogRepo;
     private final AmazonS3 amazonS3;
     private final MailSendService mailSendService;
     private final StringRedisTemplate redisTemplate;
@@ -320,13 +327,62 @@ public class AdminService {
                     .scriptCnt(getCheckedCount(ProductStatus.PASS))
                     .viewCnt(getViewCount())
                     .reviewCnt(getReviewCount())
+                    .viewLogCnt(scriptViewLogRepo.count())
+                    .accessLogCnt(userAccessLogRepo.count())
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("통계 조회 실패", e);
         }
     }
 
+    public Page<ViewLogResponseDTO> getAllViewLogs(final LocalDate startDate, final LocalDate endDate,
+                                                   final LogSearchType searchType, final String keyword,
+                                                   final int page, final int size) {
+        final String kw = normalizeKeyword(keyword);
+
+        return scriptViewLogRepo.findViewLogs(
+                toStartOfDay(startDate), toStartOfNextDay(endDate),
+                keywordFor(searchType, LogSearchType.NICKNAME, kw),
+                keywordFor(searchType, LogSearchType.EMAIL, kw),
+                keywordFor(searchType, LogSearchType.TITLE, kw),
+                toLogPageRequest(page, size));
+    }
+
+    public Page<AccessLogResponseDTO> getAllAccessLogs(final LocalDate startDate, final LocalDate endDate,
+                                                       final LogSearchType searchType, final String keyword,
+                                                       final int page, final int size) {
+        final String kw = normalizeKeyword(keyword);
+
+        return userAccessLogRepo.findAccessLogs(
+                toStartOfDay(startDate), toStartOfNextDay(endDate),
+                keywordFor(searchType, LogSearchType.NICKNAME, kw),
+                keywordFor(searchType, LogSearchType.EMAIL, kw),
+                toLogPageRequest(page, size));
+    }
+
     // ================= private method =================
+
+    private String normalizeKeyword(final String keyword) {
+        return (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+    }
+
+    // 검색 대상 컬럼이면 키워드, 아니면 null
+    private String keywordFor(final LogSearchType searchType, final LogSearchType target, final String keyword) {
+        return (searchType == LogSearchType.ALL || searchType == target) ? keyword : null;
+    }
+
+    private LocalDateTime toStartOfDay(final LocalDate date) {
+        return date == null ? null : date.atStartOfDay();
+    }
+
+    // 종료일 당일까지 포함하기 위해 다음날 00:00 미만으로 비교
+    private LocalDateTime toStartOfNextDay(final LocalDate date) {
+        return date == null ? null : date.plusDays(1).atStartOfDay();
+    }
+
+    private PageRequest toLogPageRequest(final int page, final int size) {
+        return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
+    }
 
     private Long getUserCount() {
         try {

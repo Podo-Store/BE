@@ -14,7 +14,8 @@ import java.util.UUID;
         name = "scriptViewLog",
         indexes = {
                 @Index(name = "idx_script_view_log_product", columnList = "product_id, viewed_at"),
-                @Index(name = "idx_script_view_log_user", columnList = "user_id, viewed_at")
+                @Index(name = "idx_script_view_log_user", columnList = "user_id, viewed_at"),
+                @Index(name = "idx_script_view_log_viewed", columnList = "viewed_at")
         }
 )
 @Data
