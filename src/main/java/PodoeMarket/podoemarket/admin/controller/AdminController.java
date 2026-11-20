@@ -3,9 +3,12 @@ package PodoeMarket.podoemarket.admin.controller;
 import PodoeMarket.podoemarket.admin.dto.request.PlayTypeRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.UpdateTitleRequestDTO;
 import PodoeMarket.podoemarket.admin.dto.request.UpdateWriterRequestDTO;
+import PodoeMarket.podoemarket.admin.dto.response.AccessLogResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.OrderManagementResponseDTO;
 import PodoeMarket.podoemarket.admin.dto.response.StatisticsResponseDTO;
+import PodoeMarket.podoemarket.admin.dto.response.ViewLogResponseDTO;
 import PodoeMarket.podoemarket.admin.service.AdminService;
+import PodoeMarket.podoemarket.admin.type.LogSearchType;
 import PodoeMarket.podoemarket.admin.dto.response.ProductManagementResponseDTO;
 import PodoeMarket.podoemarket.common.dto.ResponseDTO;
 import PodoeMarket.podoemarket.common.entity.ProductEntity;
@@ -14,6 +17,7 @@ import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -179,5 +184,31 @@ public class AdminController {
             ResponseDTO resDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(resDTO);
         }
+    }
+
+    @GetMapping("/logs/views")
+    public ResponseEntity<Page<ViewLogResponseDTO>> getViewLogs(@AuthenticationPrincipal UserEntity userInfo,
+                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                                @RequestParam(defaultValue = "ALL") LogSearchType searchType,
+                                                                @RequestParam(required = false) String keyword,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "20") int size) {
+        adminService.checkAuth(userInfo);
+
+        return ResponseEntity.ok(adminService.getAllViewLogs(startDate, endDate, searchType, keyword, page, size));
+    }
+
+    @GetMapping("/logs/accesses")
+    public ResponseEntity<Page<AccessLogResponseDTO>> getAccessLogs(@AuthenticationPrincipal UserEntity userInfo,
+                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                                    @RequestParam(defaultValue = "ALL") LogSearchType searchType,
+                                                                    @RequestParam(required = false) String keyword,
+                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "20") int size) {
+        adminService.checkAuth(userInfo);
+
+        return ResponseEntity.ok(adminService.getAllAccessLogs(startDate, endDate, searchType, keyword, page, size));
     }
 }
