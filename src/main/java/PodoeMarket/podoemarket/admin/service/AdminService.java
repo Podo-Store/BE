@@ -10,6 +10,8 @@ import PodoeMarket.podoemarket.common.entity.ProductEntity;
 import PodoeMarket.podoemarket.common.entity.UserEntity;
 import PodoeMarket.podoemarket.common.entity.type.ProductStatus;
 import PodoeMarket.podoemarket.common.entity.type.StageType;
+import PodoeMarket.podoemarket.common.exception.CustomException;
+import PodoeMarket.podoemarket.common.exception.ErrorCode;
 import PodoeMarket.podoemarket.common.repository.*;
 import PodoeMarket.podoemarket.service.MailSendService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -55,8 +57,11 @@ public class AdminService {
     private String bucket;
 
     public void checkAuth(final UserEntity user) {
+        if (user == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+
         if (!user.isAuth())
-            throw new RuntimeException("어드민이 아닙니다.");
+            throw new CustomException(ErrorCode.NOT_ADMIN);
     }
 
     public Long getCheckedCount(final ProductStatus productStatus) {

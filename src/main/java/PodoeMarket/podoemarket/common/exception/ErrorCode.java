@@ -15,6 +15,9 @@ public enum ErrorCode {
 
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 
+    // 어드민
+    NOT_ADMIN(HttpStatus.FORBIDDEN, "어드민이 아닙니다."),
+
     // 작품 관리
     NOT_PRODUCT_OWNER(HttpStatus.FORBIDDEN, "작가가 아닙니다."),
     REVIEW_ALREADY_REQUESTED(HttpStatus.CONFLICT, "재심사 결과 대기 중에는 재신청이 불가합니다."),
