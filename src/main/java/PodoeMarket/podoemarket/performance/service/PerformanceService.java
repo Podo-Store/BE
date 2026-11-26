@@ -24,8 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -58,6 +60,8 @@ public class PerformanceService {
 
     @Value("${cloud.aws.s3.url}")
     private String bucketURL;
+
+    private static final int MAX_POSTER_LONG_SIDE = 2500;
 
     @Transactional
     public void uploadPerformanceInfo(UserEntity userInfo, PerformanceRegisterRequestDTO dto, MultipartFile file) throws IOException {
@@ -261,6 +265,9 @@ public class PerformanceService {
             if(file.getSize() > maxSize)
                 throw new RuntimeException("이미지 파일은 최대 15MB까지만 업로드할 수 있습니다.");
 
+            // 해상도 확인
+            validatePosterResolution(file);
+
             // S3 Key 구성
             final String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
             final String name = file.getOriginalFilename();
@@ -282,6 +289,31 @@ public class PerformanceService {
             return S3Key;
         } catch (Exception e) {
             throw e;
+        }
+    }
+
+    // 이미지 헤더만 읽어 해상도 확인 (픽셀 디코딩 없이 가로·세로만 조회)
+    private static void validatePosterResolution(MultipartFile file) throws IOException {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(file.getInputStream())) {
+            if (iis == null)
+                throw new RuntimeException("이미지 파일을 읽을 수 없습니다.");
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext())
+                throw new RuntimeException("이미지 파일을 읽을 수 없습니다.");
+
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(iis, true, true);
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+
+                if (Math.max(width, height) > MAX_POSTER_LONG_SIDE)
+                    throw new RuntimeException("포스터 해상도가 너무 큽니다. 긴 변 " + MAX_POSTER_LONG_SIDE
+                            + "px 이하로 올려주세요. (현재 " + width + "×" + height + ")");
+            } finally {
+                reader.dispose();
+            }
         }
     }
 
